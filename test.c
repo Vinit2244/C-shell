@@ -1,70 +1,9 @@
-#include "headers.h"
-
-void prompt(char* home_directory) {
-    // Do not hardcode the prmopt
-    register struct passwd *pw;
-    pw = getpwuid(getuid());
-    char* username = pw->pw_name;
-    if (username == NULL) {
-        perror("Error: ");
-    } else {
-        char* hostname = (char*) malloc(sizeof(char) * 10000);
-        gethostname(hostname, 9999);
-
-        char* pwd = (char*) malloc(sizeof(char) * 10000);
-        getcwd(pwd, 9999);
-        if (pwd == NULL) {
-            perror("Error: ");
-        } else {
-            printf("<");
-            int index_of_difference = is_inside_home_directory(pwd, home_directory); // returns -1 if we are outside the home directory, returns -2 if pwd == home directory else returns the index from where the current directory path starts to differ from our home directory
-            if (index_of_difference != -1 && index_of_difference != -2) {
-                // print the relative path
-                //========================= Method 1 =========================
-                char* relative_path = &pwd[index_of_difference];
-                printf("%s@%s:~%s", username, hostname, relative_path);
-                //========================= Method 2 =========================
-                /*
-                char* relative_path = (char*) malloc(sizeof(char) * strlen(pwd)); // relative path can never be longer than absolute path
-                relative_path[0] = '~';
-                relative_path[1] = '/';
-                int i;
-                for (i = 2; pwd[index_of_difference] != '\0'; i++) {
-                    relative_path[i] = pwd[index_of_difference++];
-                }
-                relative_path[i] = '\0';
-                printf("%s@%s:%s", username, relative_path);
-                free(relative_path);
-                */
-            } else if (index_of_difference == -2) {
-                printf("%s@%s:~", username, hostname);
-            } else {
-                // print the absolute path
-                printf("%s@%s:%s", username, hostname, pwd);
-            }
-            printf(">"); 
-        }
-        free(hostname);
-        free(pwd);
-    }
-}
-
-int is_inside_home_directory(char* pwd, char* home_directory) {
-    int index = 0;
-    while(pwd[index] != '\0' && home_directory[index] != '\0') {
-        if (pwd[index] != home_directory[index]) {
-            break;
-        }
-        index++;
-    }
-    if (pwd[index] == '\0' && home_directory[index] == '\0') {
-        return -2;
-    } else if (pwd[index] != '\0' && home_directory[index] == '\0') {
-        return index;
-    } else {
-        return -1;
-    }
-}
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/utsname.h>
+#include <unistd.h>
+#include <pwd.h>
 
 char* remove_leading_and_trailing_spaces(char* str) {
     // removing leading spaces 
@@ -154,13 +93,17 @@ char** get_list_of_commands(char* input) {
     return list_of_commands;
 }
 
-void free_commands_list(char** list_of_commands) {
+int main(int argc, char* argv[]) {
+    char* input = (char*) calloc(5000, sizeof(char));
+    fgets(input, 4096, stdin);
+
+    char** list_of_commands = get_list_of_commands(input);
     int idx = 0;
     char* curr_command = list_of_commands[idx];
     while (curr_command != NULL) {
-        free(curr_command);
+        printf("Command %d: %s\n", idx + 1, curr_command);
         idx++;
         curr_command = list_of_commands[idx];
     }
-    free(list_of_commands);
+    return 0;
 }
