@@ -11,8 +11,8 @@ void prompt(char* home_directory, char* cwd) {
         perror("Error: ");
     } else {
         // Extracting the hostname
-        char* hostname = (char*) malloc(sizeof(char) * 10000);
-        gethostname(hostname, 9999);
+        char* hostname = (char*) malloc(sizeof(char) * (MAX_LEN + 1));
+        gethostname(hostname, MAX_LEN);
         printf("<");
 
         /*
@@ -122,9 +122,9 @@ char** get_list_of_commands(char* input) {
         }
     }
     no_of_commands++;
-    char** list_of_commands = (char**) malloc(sizeof(char*) * (no_of_commands + 1));
+    char** list_of_commands = (char**) calloc((no_of_commands + 1), sizeof(char*));
     for (int i = 0; i < no_of_commands + 1; i++) {
-        list_of_commands[i] = (char*) malloc(sizeof(char) * 5000);
+        list_of_commands[i] = (char*) calloc(5000, sizeof(char));
         list_of_commands[i][0] = '\0';
     }
     int input_str_index = 0;
@@ -182,10 +182,11 @@ char** get_list_of_commands(char* input) {
 void free_commands_list(char** list_of_commands) {
     int idx = 0;
     char* curr_command = list_of_commands[idx];
-    while (curr_command != NULL) {
+    while (curr_command[0] != '\0') {
         free(curr_command);
         idx++;
         curr_command = list_of_commands[idx];
     }
+    free(curr_command);
     free(list_of_commands);
 }
