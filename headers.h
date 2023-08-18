@@ -8,10 +8,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <pwd.h>
+#include <grp.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "prompt.h"
 #include "warp.h"
+#include "peek.h"
 #endif

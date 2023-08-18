@@ -42,9 +42,9 @@ int main()
             // printf("Command %d: %s\n", idx + 1, curr_command);
 
             // Different commands
-
+// ===================================================================================
             // warp
-            char* warp_str = "warp";
+            char warp_str[5] = "warp";
             int warp_flag = 1;
 
             for (int i = 0; i < 4; i++) {
@@ -55,7 +55,7 @@ int main()
                 }
             }
 
-            // checking which command is present
+            // checking if warp command is present
             if (warp_flag) {
                 char** path_tokens = generate_tokens(curr_command, ' ');
                 int no_of_arguments = 0;
@@ -74,6 +74,77 @@ int main()
                 free_tokens(path_tokens);
             }
 
+// ===================================================================================
+            // peek
+            char peek_str[5] = "peek";
+            int peek_flag = 1;
+
+            for (int i = 0; i < 4; i++) {
+                if (peek_str[i] == curr_command[i]) continue;
+                else {
+                    peek_flag = 0;
+                    break;
+                }
+            }
+
+            // checking if peek command is present
+            if (peek_flag) {
+                char** argument_tokens = generate_tokens(curr_command, ' ');
+                int no_of_arguments = 0;
+                while(argument_tokens[no_of_arguments] != NULL) {
+                    no_of_arguments++;
+                }
+                no_of_arguments--;
+
+                char path[MAX_LEN];
+
+                if (no_of_arguments == 0) {
+                    for (int i = 0; i < strlen(cwd); i++) {
+                        path[i] = cwd[i];
+                    }
+                    path[strlen(cwd)] = '\0';
+                    peek(path, 0, 0, cwd, home_directory, prev_dir);
+                } else {
+                    char minus_a[3] = "-a";
+                    char minus_l[3] = "-l";
+                    char minus_al[4] = "-al";
+                    char minus_la[4] = "-la";
+
+                    int a = 0;
+                    int l = 0;
+
+                    int path_flag = 0;
+                    for (int i = 1; i <= no_of_arguments; i++) {
+                        if (strcmp(argument_tokens[i], minus_a) == 0) {
+                            a = 1;
+                        } else if (strcmp(argument_tokens[i], minus_l) == 0) {
+                            l = 1;
+                        } else if (strcmp(argument_tokens[i], minus_la) == 0 || strcmp(argument_tokens[i], minus_al) == 0) {
+                            a = 1;
+                            l = 1;
+                        } else {
+                            path_flag = 1;
+                            for (int j = 0; j < strlen(argument_tokens[i]); j++) {
+                                path[j] = argument_tokens[i][j];
+                            }
+                            path[strlen(argument_tokens[i])] = '\0';
+                        }
+                    }
+
+                    peek(path, a, l, cwd, home_directory, prev_dir);
+                }
+                // if (no_of_arguments == 0) {
+                //     char* c = "~";
+                //     warp(cwd, c, prev_dir, home_directory);
+                // } else {
+                //     for (int i = 1; i <= no_of_arguments; i++) {
+                //         warp(cwd, path_tokens[i], prev_dir, home_directory);
+                //     }
+                // }
+                free_tokens(argument_tokens);
+            }
+
+// ===================================================================================
             idx++;
             curr_command = list_of_commands[idx];
         }
