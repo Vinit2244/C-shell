@@ -1,30 +1,33 @@
 #include "headers.h"
 
-void wrap(char* cwd, char* path, char* prev_dir, char* home_dir) {
+void warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
     char* tilde = "~";
     char* dash = "-";
     char* double_dots = "..";
     char* dot = ".";
     char* base_folder = "/";
+    
+    /* Handling of absolute paths is remaining */
 
-    struct stat path_stat;
-    stat(path, &path_stat);
-    int a = S_ISDIR(path_stat.st_mode);
-    if (a == 1) {
-        // change prev to cwd
-        for (int i = 0; i < strlen(cwd); i++) {
-            prev_dir[i] = cwd[i];
-        }
-        prev_dir[strlen(cwd)] = '\0';
+    // struct stat path_stat;
+    // stat(path, &path_stat);
+    // int a = S_ISDIR(path_stat.st_mode);
+    // if (a == 1) {
+    //     // change prev to cwd
+    //     printf("Abcd\n");
+    //     for (int i = 0; i < strlen(cwd); i++) {
+    //         prev_dir[i] = cwd[i];
+    //     }
+    //     prev_dir[strlen(cwd)] = '\0';
 
-        // change cwd to path
-        for (int i = 0; i < strlen(path); i++) {
-            cwd[i] = path[i];
-        }
-        cwd[strlen(path)] = '\0';
-        printf("%s\n", path);
-        return;
-    }
+    //     // change cwd to path
+    //     for (int i = 0; i < strlen(path); i++) {
+    //         cwd[i] = path[i];
+    //     }
+    //     cwd[strlen(path)] = '\0';
+    //     printf("%s\n", path);
+    //     return;
+    // }
 
     char present_dir_temp[MAX_LEN];
     for (int i = 0; i < strlen(cwd); i++) {

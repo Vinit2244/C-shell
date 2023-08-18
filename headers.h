@@ -13,5 +13,5 @@
 #include <sys/stat.h>
 
 #include "prompt.h"
-#include "wrap.h"
+#include "warp.h"
 #endif

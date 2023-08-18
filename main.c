@@ -4,7 +4,7 @@ int main()
 {
     char home_directory[MAX_LEN + 1]; // stores the absolute path to the home directory
     char cwd[MAX_LEN + 1];            // stores the absolute path to the current working directory
-    char prev_dir[MAX_LEN + 1];       // stores the absolute path of the latest previous directory (used in wrap -)
+    char prev_dir[MAX_LEN + 1];       // stores the absolute path of the latest previous directory (used in warp -)
 
     char* buff1 = home_directory;
     char* buff2 = cwd;
@@ -43,20 +43,20 @@ int main()
 
             // Different commands
 
-            // wrap
-            char* wrap_str = "wrap";
-            int wrap_flag = 1;
+            // warp
+            char* warp_str = "warp";
+            int warp_flag = 1;
 
             for (int i = 0; i < 4; i++) {
-                if (wrap_str[i] == curr_command[i]) continue;
+                if (warp_str[i] == curr_command[i]) continue;
                 else {
-                    wrap_flag = 0;
+                    warp_flag = 0;
                     break;
                 }
             }
 
             // checking which command is present
-            if (wrap_flag) {
+            if (warp_flag) {
                 char** path_tokens = generate_tokens(curr_command, ' ');
                 int no_of_arguments = 0;
                 while(path_tokens[no_of_arguments] != NULL) {
@@ -65,15 +65,15 @@ int main()
                 no_of_arguments--;
                 if (no_of_arguments == 0) {
                     char* c = "~";
-                    wrap(cwd, c, prev_dir, home_directory);
+                    warp(cwd, c, prev_dir, home_directory);
                 } else {
                     for (int i = 1; i <= no_of_arguments; i++) {
-                        wrap(cwd, path_tokens[i], prev_dir, home_directory);
+                        warp(cwd, path_tokens[i], prev_dir, home_directory);
                     }
                 }
                 free_tokens(path_tokens);
             }
-            
+
             idx++;
             curr_command = list_of_commands[idx];
         }
