@@ -34,24 +34,46 @@ int main()
 
         char** list_of_commands = get_list_of_commands(input); // contains the list of all commands as separate strings in the form of a 2D array
         
-        // ================= Printing the commands =================
         int idx = 0;
         char* curr_command = list_of_commands[idx];
         while (curr_command[0] != '\0') {
+
+            // ================= Printing the commands =================
             // printf("Command %d: %s\n", idx + 1, curr_command);
-            char* wrap_str = "wrap ";
+
+            // Different commands
+
+            // wrap
+            char* wrap_str = "wrap";
             int wrap_flag = 1;
-            for (int i = 0; i < 5; i++) {
+
+            for (int i = 0; i < 4; i++) {
                 if (wrap_str[i] == curr_command[i]) continue;
                 else {
                     wrap_flag = 0;
                     break;
                 }
             }
+
+            // checking which command is present
             if (wrap_flag) {
-                // printf("%s\n", &curr_command[5]);
-                wrap(&curr_command[5], cwd, prev_dir, home_directory);
+                char** path_tokens = generate_tokens(curr_command, ' ');
+                int no_of_arguments = 0;
+                while(path_tokens[no_of_arguments] != NULL) {
+                    no_of_arguments++;
+                }
+                no_of_arguments--;
+                if (no_of_arguments == 0) {
+                    char* c = "~";
+                    wrap(cwd, c, prev_dir, home_directory);
+                } else {
+                    for (int i = 1; i <= no_of_arguments; i++) {
+                        wrap(cwd, path_tokens[i], prev_dir, home_directory);
+                    }
+                }
+                free_tokens(path_tokens);
             }
+            
             idx++;
             curr_command = list_of_commands[idx];
         }
