@@ -49,6 +49,7 @@ int main()
                 }
             }
             if (wrap_flag) {
+                // printf("%s\n", &curr_command[5]);
                 wrap(&curr_command[5], cwd, prev_dir, home_directory);
             }
             idx++;

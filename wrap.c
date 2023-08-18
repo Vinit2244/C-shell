@@ -5,14 +5,12 @@ void wrap(char* path, char* cwd, char* prev_dir, char* home_dir) {
     char* dash = "-";
     char* double_dots = "..";
     char* dot = ".";
+    char* base_folder = "/";
 
-    const char command_delim[] = " ";
+    char** path_tokens = generate_tokens(path, ' ');
+    int path_token_id = 0;
 
-    // First call to strtok with the input string
-    char *separate_command_token = strtok(path, command_delim);
-
-    // Subsequent calls with NULL to continue tokenizing
-    while (separate_command_token != NULL) {
+    while (path_tokens[path_token_id] != NULL) {
         char present_dir_temp[MAX_LEN];
         for (int i = 0; i < strlen(cwd); i++) {
             present_dir_temp[i] = cwd[i];
@@ -21,19 +19,29 @@ void wrap(char* path, char* cwd, char* prev_dir, char* home_dir) {
 
         int success = 1;
         const char dir_delim[] = "/";
-        char *dir_token = strtok(separate_command_token, dir_delim);
-        while(dir_token != NULL) {
+
+        char** dir_tokens = generate_tokens(path_tokens[path_token_id], '/');
+        int dir_token_id = 0;
+
+        while(dir_tokens[dir_token_id] != NULL) {
             int dir_exists = 0;
-            char* next_dir = dir_token;
+            char* next_dir = dir_tokens[dir_token_id];
             if (strcmp(next_dir, dot) == 0) {
                 // do nothing
             } else if (strcmp(next_dir, double_dots) == 0) {
-                // write code for double dot (parent folder)
-                int rear_index = strlen(cwd) - 1;
-                while (cwd[rear_index] != '/') {
-                    rear_index--;
+                if (strcmp(base_folder, cwd) == 0) {
+                    // do nothing as we cannot move to the parent of the base folder
+                } else {
+                    int rear_index = strlen(cwd) - 1;
+                    while (cwd[rear_index] != '/') {
+                        rear_index--;
+                    }
+                    cwd[rear_index] = '\0';
+                    if (strlen(cwd) == 0) {
+                        cwd[0] = '/';
+                        cwd[1] = '\0';
+                    }
                 }
-                cwd[rear_index] = '\0';
             } else if (strcmp(next_dir, tilde) == 0) {
                 for (int i = 0; i < strlen(home_dir); i++) {
                     cwd[i] = home_dir[i];
@@ -49,13 +57,13 @@ void wrap(char* path, char* cwd, char* prev_dir, char* home_dir) {
                 if (dir_exists == 1) {
                     update_cwd(cwd, next_dir);
                 } else {
-                    printf("wrap: no such directory exists: %s\n", separate_command_token);
+                    printf("wrap: no such directory exists: %s\n", path_tokens[path_token_id]);
                     success = 0;
-                    dir_token = strtok(NULL, dir_delim);
+                    dir_token_id++;
                     break;
                 }
             }
-            dir_token = strtok(NULL, dir_delim);
+            dir_token_id++;
         }
         if (success == 1) {
             // update the previous directory
@@ -71,9 +79,10 @@ void wrap(char* path, char* cwd, char* prev_dir, char* home_dir) {
             }
             cwd[strlen(present_dir_temp)] = '\0';
         }
-
-        separate_command_token = strtok(NULL, command_delim);
+        path_token_id++;
+        free_tokens(dir_tokens);
     }
+    free_tokens(path_tokens);
 }
 
 void check_if_such_dir_exists(char* cwd, int* dir_exists, char* next_dir) {
@@ -117,4 +126,45 @@ int check_if_dir(char* cwd, char* file_name) {
     struct stat path_stat;
     stat(complete_path, &path_stat);
     return S_ISDIR(path_stat.st_mode);
+}
+
+char** generate_tokens(char* str, char c) {
+    int no_of_characters = 0;
+    int idx = 0;
+    while (str[idx] != '\0') {
+        if (str[idx] == c) no_of_characters++;
+        idx++;
+    }
+    int no_of_partitions = no_of_characters + 1;
+    char** tokens_array = (char**) calloc(no_of_partitions + 1, sizeof(char*));
+    for (int i = 0; i < no_of_partitions; i++) {
+        tokens_array[i] = (char*) calloc(MAX_LEN, sizeof(char));
+    }
+    tokens_array[no_of_partitions] = NULL;
+    int str_idx = 0;
+    int tokens_array_idx = 0;
+    int token_idx = 0;
+    while (str[str_idx] != '\0') {
+        if (str[str_idx] == c) {
+            tokens_array[tokens_array_idx][token_idx] = '\0';
+            token_idx = 0;
+            tokens_array_idx++;
+        } else {
+            tokens_array[tokens_array_idx][token_idx] = str[str_idx];
+            token_idx++;
+        }
+        str_idx++;
+    }
+
+    tokens_array[tokens_array_idx][token_idx] = '\0';
+    return tokens_array;
+}
+
+void free_tokens(char** tokens) {
+    int idx = 0;
+    while (tokens[idx] != NULL) {
+        free(tokens[idx]);
+        idx++;
+    }
+    free(tokens);
 }
