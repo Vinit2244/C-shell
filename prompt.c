@@ -82,33 +82,6 @@ int is_inside_home_directory(char* cwd, char* home_directory) {
     }
 }
 
-// Removes the leading and trailing spaces/tabs from the input string and outputs the new modified string
-void remove_leading_and_trailing_spaces(char* str) {
-    // removing leading spaces 
-    int front_index = 0;
-    while (str[front_index] == ' ' || str[front_index] == '\t') {
-        front_index++;
-    }
-    int rear_index = strlen(str) - 1;
-    while (str[rear_index] == ' ' || str[rear_index] == '\t') {
-        rear_index--;
-    }
-    if (rear_index < front_index) {
-        str[0] = '\0';
-        return;
-    }
-    int len = rear_index - front_index + 1;
-    char* final = (char*) malloc(sizeof(char) * (len + 1));
-    for (int i = 0; i < len; i++) {
-        final[i] = str[front_index++];
-    }
-    final[len] = '\0';
-    for (int i = 0; i < len + 1; i++) {
-        str[i] = final[i];
-    }
-    free(final);
-}
-
 char** get_list_of_commands(char* input) {
     int no_of_commands = 0;
     int q_flag = 0;

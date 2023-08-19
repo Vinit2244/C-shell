@@ -1,5 +1,5 @@
-#ifndef HEADERS_H_
-#define HEADERS_H_
+#ifndef __HEADERS_H_
+#define __HEADERS_H_
 
 #define MAX_LEN 10000
 
@@ -17,4 +17,8 @@
 #include "prompt.h"
 #include "warp.h"
 #include "peek.h"
+#include "utilities.h"
+#include "pastevents.h"
+#include "input.h"
+
 #endif

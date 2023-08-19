@@ -1,0 +1,12 @@
+warp ~
+warp ..
+warp prog
+warp test
+peek -al
+warp -
+warp ..
+peek -a
+peek
+warp .. programming
+warp prog
+warp test

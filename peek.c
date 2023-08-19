@@ -1,10 +1,10 @@
 #include "headers.h"
 
-void peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
+int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
     if (path[0] == '-') {
         printf("peek: no such file or directory\n");
-        return;
+        return 0;
     } else if (path[0] == '\0') {
         for (int i = 0; i < strlen(cwd); i++) {
             path[i] = cwd[i];
@@ -17,6 +17,10 @@ void peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
         new_path[strlen(path)] = '\0';
     } else {
         new_path = generate_new_path(cwd, path, prev_dir, home_dir);
+        if (new_path == NULL) {
+            printf("peek: no such file or directory\n");
+            return 0;
+        }
     }
 
     char** files_list = generate_sorted_file_list(new_path);
@@ -111,6 +115,7 @@ void peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     }
     free(new_path);
     free_tokens(files_list);
+    return 1;
 }
 
 char** generate_sorted_file_list(char* path) {
@@ -153,99 +158,6 @@ char** generate_sorted_file_list(char* path) {
 
     sort_strings(files_list, no_of_files);
     return files_list;
-}
-
-char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
-    int success = 1;
-
-    char tilde[2]       = "~";
-    char dash[2]        = "-";
-    char double_dots[3] = "..";
-    char dot[2]         = ".";
-    char base_folder[2] = "/";
-
-    char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
-    for (int i = 0; i < strlen(cwd); i++) {
-        new_path[i] = cwd[i];
-    }
-    new_path[strlen(cwd)] = '\0';
-
-    char** dir_tokens = generate_tokens(path, '/');
-    int dir_tokens_idx = 0;
-
-    while (dir_tokens[dir_tokens_idx] != NULL) {
-        char* curr_token = dir_tokens[dir_tokens_idx];
-        if (strcmp(curr_token, tilde) == 0) {
-            // change cwd to home
-            for (int i = 0; i < strlen(home_dir); i++) {
-                new_path[i] = home_dir[i];
-            }
-            new_path[strlen(home_dir)] = '\0';
-            // printf("%s\n", new_path);
-        } else if (strcmp(curr_token, dash) == 0) {
-            // change cwd to prev
-            // checking if the warp - command is called just after the first initiation
-            if (prev_dir[0] == '\0') {
-                success = 2;
-                printf("OLDPWD not set\n");
-                // don't change the cwd
-            } else {
-                for (int i = 0; i < strlen(prev_dir); i++) {
-                    new_path[i] = prev_dir[i];
-                }
-                new_path[strlen(prev_dir)] = '\0';
-            }
-        } else if (strcmp(curr_token, double_dots) == 0) {
-            if (strcmp(base_folder, cwd) == 0) {
-                // do nothing as we cannot move to the parent of the base folder
-            } else {
-                int rear_index = strlen(new_path) - 1;
-                while (new_path[rear_index] != '/') {
-                    rear_index--;
-                }
-                new_path[rear_index] = '\0';
-                if (strlen(new_path) == 0) {
-                    new_path[0] = '/';
-                    new_path[1] = '\0';
-                }
-            }
-        } else if (strcmp(curr_token, dot) == 0) {
-            // do nothing
-        } else {
-            int dir_exists = check_if_such_dir_exists(new_path, curr_token);
-            if (dir_exists == 1) {
-                update_path(new_path, curr_token);
-            } else {
-                success = 0;
-                break;
-            }
-        }
-        dir_tokens_idx++;
-    }
-    free_tokens(dir_tokens);
-    if (success == 1) return new_path;
-    else if (success == 2) {
-        char* temp = (char*) malloc(2 * sizeof(char));
-        temp[0] = '^';
-        temp[1] = '\0';
-        return temp;
-    } else {
-        free(new_path);
-        return NULL;
-    }
-}
-
-void sort_strings(char** strings, int no_of_strings) {
-    char s[MAX_LEN];
-    for (int i = 0; i < no_of_strings; i++) {
-        for(int j = i + 1; j < no_of_strings; j++) {
-            if (strcmp(strings[i], strings[j]) > 0) {
-            strcpy(s, strings[i]);
-            strcpy(strings[i], strings[j]);
-            strcpy(strings[j], s);
-            }
-        }
-    }
 }
 
 void print_extra_details(char* complete_path_of_file, char** files_list, int idx) {
