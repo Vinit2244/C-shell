@@ -8,12 +8,12 @@ int main()
 
     char* buff1 = home_directory;
     char* buff2 = cwd;
-    char* buff3 = prev_dir;
     do {
         char* buff1 = getcwd(home_directory, MAX_LEN);
         char* buff2 = getcwd(cwd, MAX_LEN);          // initially current working directory will be same as the home_directory
-        char* buff3 = getcwd(prev_dir, MAX_LEN);
     } while (buff1 == NULL || buff2 == NULL);
+
+    prev_dir[0] = '\0';
     
     
     // Keep accepting commands
@@ -97,21 +97,19 @@ int main()
                 no_of_arguments--;
 
                 char path[MAX_LEN];
+                for (int i = 0; i < strlen(cwd); i++) {
+                    path[i] = cwd[i];
+                }
+                path[strlen(cwd)] = '\0';
 
-                if (no_of_arguments == 0) {
-                    for (int i = 0; i < strlen(cwd); i++) {
-                        path[i] = cwd[i];
-                    }
-                    path[strlen(cwd)] = '\0';
-                    peek(path, 0, 0, cwd, home_directory, prev_dir);
-                } else {
+                int a = 0;
+                int l = 0;
+
+                if (no_of_arguments != 0) {
                     char minus_a[3] = "-a";
                     char minus_l[3] = "-l";
                     char minus_al[4] = "-al";
                     char minus_la[4] = "-la";
-
-                    int a = 0;
-                    int l = 0;
 
                     int path_flag = 0;
                     for (int i = 1; i <= no_of_arguments; i++) {
@@ -130,17 +128,8 @@ int main()
                             path[strlen(argument_tokens[i])] = '\0';
                         }
                     }
-
-                    peek(path, a, l, cwd, home_directory, prev_dir);
                 }
-                // if (no_of_arguments == 0) {
-                //     char* c = "~";
-                //     warp(cwd, c, prev_dir, home_directory);
-                // } else {
-                //     for (int i = 1; i <= no_of_arguments; i++) {
-                //         warp(cwd, path_tokens[i], prev_dir, home_directory);
-                //     }
-                // }
+                peek(path, a, l, cwd, home_directory, prev_dir);
                 free_tokens(argument_tokens);
             }
 

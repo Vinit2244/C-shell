@@ -20,14 +20,14 @@ void peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     }
 
     char** files_list = generate_sorted_file_list(new_path);
+
+    char complete_path_of_file[MAX_LEN];
+    for (int i = 0; i < strlen(new_path); i++) {
+        complete_path_of_file[i] = new_path[i];
+    }
+    complete_path_of_file[strlen(new_path)] = '/';
+    int start = strlen(new_path) + 1;
     if (a && l) {
-        char complete_path_of_file[MAX_LEN];
-        for (int i = 0; i < strlen(new_path); i++) {
-            complete_path_of_file[i] = new_path[i];
-        }
-        complete_path_of_file[strlen(new_path)] = '/';
-        int start = strlen(new_path) + 1;
-        
         int idx = 0;
         while (files_list[idx] != NULL) {
             for (int j = start; j < start + strlen(files_list[idx]); j++) {
@@ -40,7 +40,23 @@ void peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     } else if (a) {
         int idx = 0;
         while (files_list[idx] != NULL) {
-            printf("\033[1;31m%s\033[0m\n", files_list[idx]);
+            for (int j = start; j < start + strlen(files_list[idx]); j++) {
+                complete_path_of_file[j] = files_list[idx][j - start];
+            }
+            complete_path_of_file[start + strlen(files_list[idx])] = '\0';
+
+            struct stat file_info;
+            stat(complete_path_of_file, &file_info);
+            if (S_ISDIR(file_info.st_mode)) { // checking if directory
+                // color blue
+                printf("\033[1;34m%s\033[1;0m\n", files_list[idx]);
+            } else if (file_info.st_mode & S_IXUSR) { // checking if a file is executable
+                // color green
+                printf("\033[1;32m%s\033[1;0m\n", files_list[idx]);
+            } else { // else the file is regular
+                // color white
+                printf("%s\n", files_list[idx]);
+            }
             idx++;
         }
     } else if (l) {
@@ -72,7 +88,24 @@ void peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
                 idx++;
                 continue;
             }
-            printf("%s\n", files_list[idx]);
+
+            for (int j = start; j < start + strlen(files_list[idx]); j++) {
+                complete_path_of_file[j] = files_list[idx][j - start];
+            }
+            complete_path_of_file[start + strlen(files_list[idx])] = '\0';
+
+            struct stat file_info;
+            stat(complete_path_of_file, &file_info);
+            if (S_ISDIR(file_info.st_mode)) { // checking if directory
+                // color blue
+                printf("\033[1;34m%s\033[1;0m\n", files_list[idx]);
+            } else if (file_info.st_mode & S_IXUSR) { // checking if a file is executable
+                // color green
+                printf("\033[1;32m%s\033[1;0m\n", files_list[idx]);
+            } else { // else the file is regular
+                // color white
+                printf("%s\n", files_list[idx]);
+            }
             idx++;
         }
     }
@@ -151,10 +184,17 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
             // printf("%s\n", new_path);
         } else if (strcmp(curr_token, dash) == 0) {
             // change cwd to prev
-            for (int i = 0; i < strlen(prev_dir); i++) {
-                new_path[i] = prev_dir[i];
+            // checking if the warp - command is called just after the first initiation
+            if (prev_dir[0] == '\0') {
+                success = 2;
+                printf("OLDPWD not set\n");
+                // don't change the cwd
+            } else {
+                for (int i = 0; i < strlen(prev_dir); i++) {
+                    new_path[i] = prev_dir[i];
+                }
+                new_path[strlen(prev_dir)] = '\0';
             }
-            new_path[strlen(prev_dir)] = '\0';
         } else if (strcmp(curr_token, double_dots) == 0) {
             if (strcmp(base_folder, cwd) == 0) {
                 // do nothing as we cannot move to the parent of the base folder
@@ -184,7 +224,12 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
     }
     free_tokens(dir_tokens);
     if (success == 1) return new_path;
-    else {
+    else if (success == 2) {
+        char* temp = (char*) malloc(2 * sizeof(char));
+        temp[0] = '^';
+        temp[1] = '\0';
+        return temp;
+    } else {
         free(new_path);
         return NULL;
     }
@@ -262,5 +307,16 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
     }
     year[4] = '\0';
 
-    printf("%s %s %s %s %s\n", month, date, hour, mins, files_list[idx]);
+    printf("%s %s %s %s ", month, date, hour, mins);
+
+    if (S_ISDIR(file_stat.st_mode)) { // checking if directory
+        // color blue
+        printf("\033[1;34m%s\033[1;0m\n", files_list[idx]);
+    } else if (file_stat.st_mode & S_IXUSR) { // checking if a file is executable
+        // color green
+        printf("\033[1;32m%s\033[1;0m\n", files_list[idx]);
+    } else { // else the file is regular
+        // color white
+        printf("%s\n", files_list[idx]);
+    }
 }

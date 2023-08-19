@@ -21,6 +21,9 @@ void warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
     char* new_path = generate_new_path(cwd, path, prev_dir, home_dir);
     if (new_path == NULL) {
         printf("warp: no such directory exists: %s\n", path);
+    } else if (new_path[0] == '^') {
+        // print nothing
+        free(new_path);
     } else {
         // change prev to cwd
         for (int i = 0; i < strlen(cwd); i++) {
