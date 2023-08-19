@@ -27,7 +27,7 @@ void prompt(char* home_directory, char* cwd) {
             // print the relative path
             //========================= Method 1 =========================
             char* relative_path = &cwd[index_of_difference];
-            printf("%s@%s:~%s", username, hostname, relative_path);
+            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, relative_path);
 
             //========================= Method 2 =========================
             /*
@@ -39,16 +39,16 @@ void prompt(char* home_directory, char* cwd) {
                 relative_path[i] = cwd[index_of_difference++];
             }
             relative_path[i] = '\0';
-            printf("%s@%s:%s", username, relative_path);
+            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, relative_path);
             free(relative_path);
             */
 
         } else if (index_of_difference == -2) { // cwd == home_directory
-            printf("%s@%s:~", username, hostname);
+            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m", username, hostname);
 
         } else {                                // We are outside home_directory
             // print the absolute path
-            printf("%s@%s:%s", username, hostname, cwd);
+            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, cwd);
         }
 
         printf("> "); 
