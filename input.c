@@ -1,6 +1,8 @@
 #include "headers.h"
 
 void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store) {
+    int overall_success = 1;
+    int pastevents_present = 0;
     char* input = (char*) calloc(5000, sizeof(char));
     if (command == NULL) {
         store = 1;
@@ -67,7 +69,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     if (exit_code == 0) success = 0;
                 }
             }
-            if (success && store) store_command(curr_command);
+            if (success == 0) overall_success = 0;
+            // if (success && store) store_command(curr_command);
             free_tokens(path_tokens);
         }
 
@@ -127,7 +130,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 }
             }
             int exit_code = peek(path, a, l, cwd, home_directory, prev_dir);
-            if (exit_code == 1 && store == 1) store_command(curr_command);
+            // if (exit_code == 1 && store == 1) store_command(curr_command);
+            if (exit_code == 0) overall_success = 0;
             free_tokens(argument_tokens);
         }
 // ===================================================================================
@@ -145,6 +149,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
         // checking if pastevents command is present
         if (pastevents_flag) {
+            pastevents_present = 1;
             char** argument_tokens = generate_tokens(curr_command, ' ');
             int no_of_arguments = 0;
             while(argument_tokens[no_of_arguments] != NULL) {
@@ -215,7 +220,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         idx++;
         curr_command = list_of_commands[idx];
     }
-    
+    if (store == 1 && pastevents_present == 0 && overall_success == 1) store_command(input);
     free(input);
     free_commands_list(list_of_commands);
 }
