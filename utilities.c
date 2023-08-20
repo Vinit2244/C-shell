@@ -114,6 +114,7 @@ void remove_leading_and_trailing_spaces(char* str) {
 }
 
 char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
+    // printf("%s\n", path);
     int success = 1;
 
     char tilde[2]       = "~";
@@ -123,10 +124,7 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
     char base_folder[2] = "/";
 
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
-    for (int i = 0; i < strlen(cwd); i++) {
-        new_path[i] = cwd[i];
-    }
-    new_path[strlen(cwd)] = '\0';
+    strcpy(new_path, cwd);
 
     char** dir_tokens = generate_tokens(path, '/');
     int dir_tokens_idx = 0;
@@ -135,11 +133,7 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
         char* curr_token = dir_tokens[dir_tokens_idx];
         if (strcmp(curr_token, tilde) == 0) {
             // change cwd to home
-            for (int i = 0; i < strlen(home_dir); i++) {
-                new_path[i] = home_dir[i];
-            }
-            new_path[strlen(home_dir)] = '\0';
-            // printf("%s\n", new_path);
+            strcpy(new_path, home_dir);
         } else if (strcmp(curr_token, dash) == 0) {
             // change cwd to prev
             // checking if the warp - command is called just after the first initiation
@@ -148,10 +142,7 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
                 printf("OLDPWD not set\n");
                 // don't change the cwd
             } else {
-                for (int i = 0; i < strlen(prev_dir); i++) {
-                    new_path[i] = prev_dir[i];
-                }
-                new_path[strlen(prev_dir)] = '\0';
+                strcpy(new_path, prev_dir);
             }
         } else if (strcmp(curr_token, double_dots) == 0) {
             if (strcmp(base_folder, cwd) == 0) {
@@ -205,3 +196,60 @@ void sort_strings(char** strings, int no_of_strings) {
         }
     }
 }
+
+int str_to_int(char* str) {
+    int ans = 0;
+    int idx = 0;
+    while (str[idx] != '\0') {
+        int digit;
+        switch(str[idx]) {
+            case '1':
+                digit = 1;
+                break;
+            case '2':
+                digit = 2;
+                break;
+            case '3':
+                digit = 3;
+                break;
+            case '4':
+                digit = 4;
+                break;
+            case '5':
+                digit = 5;
+                break;
+            case '6':
+                digit = 6;
+                break;
+            case '7':
+                digit = 7;
+                break;
+            case '8':
+                digit = 8;
+                break;
+            case '9':
+                digit = 9;
+                break;
+            case '0':
+                digit = 0;
+                break;
+            default:
+                return -1;
+        }
+        ans *= 10;
+        ans += digit;
+    }
+    return ans;
+}
+
+char* remove_extension(char* file_name) {
+    char* final = (char*) calloc(MAX_LEN, sizeof(char));
+    int idx = 0;
+    while (file_name[idx] != '\0' || file_name[idx] != '.') {
+        final[idx] = file_name[idx];
+        idx++;
+    }
+    final[idx] = '\0';
+    return final;
+}
+

@@ -84,7 +84,7 @@ void purge() {
     fclose(fptr);
 }
 
-int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store) {
+int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char* last_command, int* t) {
     FILE *fptr;
     fptr = fopen("past_commands.txt", "r");
 
@@ -99,18 +99,10 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store) {
         }
         fclose(fptr);
 
-        int count = 1;
-        for (int i = 14; i >= 0; i--) {
-            if (past_commands[i][0] == '\0') {
-                continue;
-            } else {
-                if (count == num) {
-                    input(past_commands[i], home_dir, cwd, prev_dir, store);
-                    break;
-                } else {
-                    count++;
-                }
-            }
+        if (past_commands[num - 1][0] == '\0') {
+            printf("Invalid Argument\n");
+        } else {
+            input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t);
         }
 
         for (int i = 0; i < 15; i++) {

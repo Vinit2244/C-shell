@@ -1,5 +1,7 @@
 #include "headers.h"
 
+LL_Head LL;
+
 int main()
 {
     char home_directory[MAX_LEN + 1]; // stores the absolute path to the home directory
@@ -14,11 +16,16 @@ int main()
     } while (buff1 == NULL || buff2 == NULL);
 
     prev_dir[0] = '\0';
-    
+
+    LL = create_LL();
+
+    char* last_command = (char*) calloc(MAX_LEN, sizeof(char));
+    int t = 0;
     // Keep accepting commands
     while (1)
     {
-        input(NULL, home_directory, cwd, prev_dir, 1);
+        input(NULL, home_directory, cwd, prev_dir, 1, last_command, &t);
     }
+    free(last_command);
     return 0;
 }

@@ -12,7 +12,9 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
+#include <signal.h>
 
 #include "prompt.h"
 #include "warp.h"
@@ -20,5 +22,7 @@
 #include "utilities.h"
 #include "pastevents.h"
 #include "input.h"
+#include "seek.h"
+#include "linked_list.h"
 
 #endif

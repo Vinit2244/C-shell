@@ -1,6 +1,6 @@
 #include "headers.h"
 
-void prompt(char* home_directory, char* cwd) {
+void prompt(char* home_directory, char* cwd, int* t, char* last_command) {
     // Do not hardcode the prmopt
     // Getting the name of the current user
     register struct passwd *pw;
@@ -27,7 +27,12 @@ void prompt(char* home_directory, char* cwd) {
             // print the relative path
             //========================= Method 1 =========================
             char* relative_path = &cwd[index_of_difference];
-            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, relative_path);
+            if (*t < 2) {
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, relative_path);
+            } else {
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, relative_path, last_command, *t);
+                *t = 0;
+            }
 
             //========================= Method 2 =========================
             /*
@@ -44,11 +49,21 @@ void prompt(char* home_directory, char* cwd) {
             */
 
         } else if (index_of_difference == -2) { // cwd == home_directory
-            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m", username, hostname);
+            if (*t < 2) {
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m", username, hostname);
+            } else {
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, last_command, *t);
+                *t = 0;
+            }
 
         } else {                                // We are outside home_directory
             // print the absolute path
-            printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, cwd);
+            if (*t < 2) {
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, cwd);
+            } else {
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, cwd, last_command, *t);
+                *t = 0;
+            }
         }
 
         printf("> "); 
@@ -111,9 +126,14 @@ char** get_list_of_commands(char* input) {
             // use store and reset function
             flag = 0;
             // buffer[buffer_index] = '&';
-            list_of_commands[no_of_commands_extracted][buffer_index] = '&';
-            buffer_index++;
-            list_of_commands[no_of_commands_extracted][buffer_index] = '\0';
+            if (list_of_commands[no_of_commands_extracted][buffer_index - 1] == ' ') {
+                list_of_commands[no_of_commands_extracted][buffer_index - 1] = '&';
+                list_of_commands[no_of_commands_extracted][buffer_index] = '\0';
+            } else {
+                list_of_commands[no_of_commands_extracted][buffer_index] = '&';
+                buffer_index++;
+                list_of_commands[no_of_commands_extracted][buffer_index] = '\0';
+            }
             remove_leading_and_trailing_spaces(list_of_commands[no_of_commands_extracted]);
             buffer_index = 0;
             no_of_commands_extracted++;

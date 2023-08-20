@@ -1,13 +1,23 @@
 #include "headers.h"
 
-void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store) {
+void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t) {
+    // handling signals from child
+    struct sigaction sa;
+    
+    sa.sa_sigaction = handle_child_signal;
+    sa.sa_flags = SA_SIGINFO;
+    
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("sigaction");
+    }
+    
     int overall_success = 1;
     int pastevents_present = 0;
     char* input = (char*) calloc(5000, sizeof(char));
     if (command == NULL) {
         store = 1;
         // Print appropriate prompt with username, systemname and directory before accepting input
-        prompt(home_directory, cwd);
+        prompt(home_directory, cwd, t, last_command);
         
         fgets(input, 4096, stdin);
         input[strlen(input)] = '\0';
@@ -31,33 +41,26 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     int idx = 0;
     char* curr_command = list_of_commands[idx];
     while (curr_command[0] != '\0') {
+        read_and_free_LL(); // printing the status of the background processes if any completed
 
         // ================= Printing the commands =================
         // printf("Command %d: %s\n", idx + 1, curr_command);
 
+        char** argument_tokens = generate_tokens(curr_command, ' ');
+        int no_of_arguments = 0;
+        while(argument_tokens[no_of_arguments] != NULL) {
+            no_of_arguments++;
+        }
+        no_of_arguments--;
+
         // Different commands
 // ===================================================================================
         // warp
-        char warp_str[5] = "warp";
-        int warp_flag = 1;
-
-        for (int i = 0; i < 4; i++) {
-            if (warp_str[i] == curr_command[i]) continue;
-            else {
-                warp_flag = 0;
-                break;
-            }
-        }
+        // char warp_str[5] = "warp";
+        // int warp_flag = check(warp_str, curr_command, 4);
 
         // checking if warp command is present
-        if (warp_flag) {
-            char** path_tokens = generate_tokens(curr_command, ' ');
-            int no_of_arguments = 0;
-            while(path_tokens[no_of_arguments] != NULL) {
-                no_of_arguments++;
-            }
-            no_of_arguments--;
-
+        if (strcmp("warp", argument_tokens[0]) == 0) {
             int success = 1;
             if (no_of_arguments == 0) {
                 char* c = "~";
@@ -65,37 +68,20 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (exit_code == 0) success = 0;
             } else {
                 for (int i = 1; i <= no_of_arguments; i++) {
-                    int exit_code = warp(cwd, path_tokens[i], prev_dir, home_directory);
+                    int exit_code = warp(cwd, argument_tokens[i], prev_dir, home_directory);
                     if (exit_code == 0) success = 0;
                 }
             }
             if (success == 0) overall_success = 0;
-            // if (success && store) store_command(curr_command);
-            free_tokens(path_tokens);
+            // goto next_iteration;
         }
-
 // ===================================================================================
         // peek
-        char peek_str[5] = "peek";
-        int peek_flag = 1;
-
-        for (int i = 0; i < 4; i++) {
-            if (peek_str[i] == curr_command[i]) continue;
-            else {
-                peek_flag = 0;
-                break;
-            }
-        }
+        // char peek_str[5] = "peek";
+        // int peek_flag = check(peek_str, curr_command, 4);
 
         // checking if peek command is present
-        if (peek_flag) {
-            char** argument_tokens = generate_tokens(curr_command, ' ');
-            int no_of_arguments = 0;
-            while(argument_tokens[no_of_arguments] != NULL) {
-                no_of_arguments++;
-            }
-            no_of_arguments--;
-
+        else if (strcmp("peek", argument_tokens[0]) == 0) {
             char path[MAX_LEN];
             for (int i = 0; i < strlen(cwd); i++) {
                 path[i] = cwd[i];
@@ -130,41 +116,23 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 }
             }
             int exit_code = peek(path, a, l, cwd, home_directory, prev_dir);
-            // if (exit_code == 1 && store == 1) store_command(curr_command);
             if (exit_code == 0) overall_success = 0;
-            free_tokens(argument_tokens);
+            // goto next_iteration;
         }
 // ===================================================================================
         // pastevents
-        char pastevents_str[11] = "pastevents";
-        int pastevents_flag = 1;
-
-        for (int i = 0; i < 10; i++) {
-            if (pastevents_str[i] == curr_command[i]) continue;
-            else {
-                pastevents_flag = 0;
-                break;
-            }
-        }
+        // char pastevents_str[11] = "pastevents";
+        // int pastevents_flag = check(pastevents_str, curr_command, 10);
 
         // checking if pastevents command is present
-        if (pastevents_flag) {
+        else if (strcmp("pastevents", argument_tokens[0]) == 0) {
             pastevents_present = 1;
-            char** argument_tokens = generate_tokens(curr_command, ' ');
-            int no_of_arguments = 0;
-            while(argument_tokens[no_of_arguments] != NULL) {
-                no_of_arguments++;
-            }
-            no_of_arguments--;
-
             if (no_of_arguments == 0) {
                 pastevents();
             } else {
-                char purge_str[6] = "purge";
-                char execute_str[8] = "execute";
-                if (strcmp(argument_tokens[1], purge_str) == 0) {
+                if (strcmp(argument_tokens[1], "purge") == 0) {
                     purge();
-                } else if (strcmp(argument_tokens[1], execute_str) == 0) {
+                } else if (strcmp(argument_tokens[1], "execute") == 0) {
                     if (no_of_arguments == 1) {
                         printf("pastevents: missing argument in \"%s\"\n", curr_command);
                     } else if (no_of_arguments == 2) {
@@ -206,7 +174,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             printf("pastevents: argument value should a positive integer less than or equal to 15\n");
                         }
                         if (flag) {
-                            int exit_code = execute(num, home_directory, cwd, prev_dir, store);
+                            printf("%d\n", num);
+                            int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t);
                         }
                     } else {
                         printf("pastevents: excess arguments in \"%s\"\n", curr_command);
@@ -215,12 +184,236 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     printf("pastevents: invalid arguments in \"%s\"\n", curr_command);
                 }
             }
+            // goto next_iteration;
         }
 // ===================================================================================
+        // // proclore
+        // char proclore_str[9] = "proclore";
+        // int proclore_flag = check(proclore_str, curr_command, 8);
+
+        // // checking if proclore command is present
+        // if (proclore_flag) {
+        //     if (no_of_arguments == 0) {
+
+        //     } else if (no_of_arguments == 1) {
+        //         int pid = str_to_int(argument_tokens[1]);
+        //         if (pid == -1) {
+        //             printf("proclore: invalid argument (argument should be number)\n");
+        //         } else {
+        //             printf("pid : %d\n", pid);
+
+        //         }
+        //     } else {
+        //         printf("proclore: excess number of arguments\n");
+        //     }
+        //     goto next_iteration;
+        // }
+// ===================================================================================
+        // // seek
+        // char seek_str[5] = "seek";
+        // int seek_flag = check(seek_str, curr_command, 4);
+
+        // // checking if seek command is present
+        // if (seek_flag) {
+        //     char d_flag[3] = "-d";
+        //     char f_flag[3] = "-f";
+        //     char e_flag[3] = "-e";
+
+        //     char* base_dir = (char*) calloc(MAX_LEN, sizeof(char));
+        //     char* file_name = (char*) calloc(MAX_LEN, sizeof(char));
+
+        //     int d = 0;
+        //     int f = 0;
+        //     int e = 0;
+
+        //     int base_dir_flag = 0;
+        //     int valid_flags = 1;
+        //     int file_name_flag = 0;
+
+        //     int success = 1;
+
+        //     if (no_of_arguments == 0) {
+        //         printf("seek: missing arguments\n");
+        //         overall_success = 0;
+        //         goto free_mem;
+        //     } else {
+        //         for (int i = 1; i <= no_of_arguments; i++) {
+        //             char* curr_argument = argument_tokens[i];
+
+        //             if (curr_argument[0] == '-') {
+        //                 if (base_dir_flag == 1) {
+        //                     printf("seek: Invalid Arguments\n");
+        //                     overall_success = 0;
+        //                     goto free_mem;
+        //                 } else {
+        //                     if (strcmp(curr_argument, d_flag) == 0) {
+        //                         d = 1;
+        //                     } else if (strcmp(curr_argument, f_flag) == 0) {
+        //                         f = 1;
+        //                     } else if (strcmp(curr_argument, e_flag) == 0) {
+        //                         e = 1;
+        //                     } else {
+        //                         printf("seek: Invalid Flag\n");
+        //                         overall_success = 0;
+        //                         valid_flags = 0;
+        //                         goto free_mem;
+        //                     }
+        //                 }
+        //             } else if (curr_argument[0] == '.') {
+        //                 base_dir_flag = 1;
+        //                 strcpy(base_dir, curr_argument);
+        //             } else {
+        //                 if (file_name_flag == 1) {
+        //                     printf("seek: invalid arguments\n");
+        //                     overall_success = 0;
+        //                     goto free_mem;
+        //                 }
+        //                 file_name_flag = 1;
+        //                 for (int j = 0; j < strlen(curr_argument); j++) {
+        //                     file_name[j] = curr_argument[j];
+        //                 }
+        //                 file_name[strlen(curr_argument)] = '\0';
+        //             }
+        //         }
+        //     }
+        //     if (valid_flags == 1 && file_name_flag == 1) {
+        //         if (d == 1 && f == 1) {
+        //             printf("Invalid flags\n");
+        //             overall_success = 0;
+        //             goto free_mem;
+        //         } else {
+        //             int size = 20;
+        //             int no_of_files_or_dir_found = 0;
+        //             char** paths;
+        //             paths = (char**) calloc(size + 1, sizeof(char*));
+        //             for (int i = 0; i < size; i++) {
+        //                 paths[i] = (char*) calloc(MAX_LEN, sizeof(char));
+        //             }
+        //             paths[size] = NULL;
+
+        //             // printf("%s %s\n", base_dir, file_name);
+                    
+        //             char* path_to_base_dir;
+        //             if (base_dir_flag) {
+        //                 path_to_base_dir = generate_new_path(cwd, base_dir, prev_dir, home_directory);
+        //             } else {
+        //                 path_to_base_dir = (char*) calloc(MAX_LEN, sizeof(char));
+        //                 strcpy(path_to_base_dir, cwd);
+        //             }
+        //             printf("%s\n", path_to_base_dir);
+        //             printf("%s\n", file_name);
+        //             printf("%p\n", &no_of_files_or_dir_found);
+        //             printf("%p\n", &size);
+        //             paths = seek(path_to_base_dir, file_name, &no_of_files_or_dir_found, paths, &size);
+
+        //             printf("%d\n", no_of_files_or_dir_found);
+        //             free(path_to_base_dir);
+        //             free_tokens(paths);
+        //         }
+        //     }
+
+        //     free(base_dir);
+        //     free(file_name);
+        //     if (success == 0) overall_success = 0;
+        //     goto next_iteration;
+        // }
+// ===================================================================================
+        // exit
+        // char exit_str[5] = "exit";
+        // int exit_flag = check(exit_str, curr_command, 4);
+
+        // checking if exit command is present
+        else if (strcmp("exit", argument_tokens[0]) == 0) {
+            if (no_of_arguments > 1) {
+                printf("Invalid command\n");
+            } else {
+                store_command(curr_command);
+                exit(0);
+            }
+        }
+// ===================================================================================
+        // echo
+        // char echo_str[5] = "echo";
+        // int echo_flag = check(echo_str, curr_command, 4);
+
+        // checking if echo command is present
+        else if (strcmp("echo", argument_tokens[0]) == 0) {
+            for (int i = 1; i <= no_of_arguments; i++) {
+                for (int j = 0; j < strlen(argument_tokens[no_of_arguments]); j++) {
+                    if (argument_tokens[i][j] == '"') continue;
+                    printf("%c", argument_tokens[i][j]);
+                }
+                printf(" ");
+            }
+            printf("\n");
+            // goto next_iteration;
+        }
+// ===================================================================================
+        else {
+            // system commands
+            int bg_process = 0;
+            if (curr_command[strlen(curr_command) - 1] == '&') {
+                bg_process = 1;
+                argument_tokens[no_of_arguments][strlen(argument_tokens[no_of_arguments]) - 1] = '\0';
+            }
+
+            int start = 0;
+            time_t tyme = 0;
+            int status;
+            // int ppid = getpid();
+            int pid = fork();
+            if (pid == 0) {
+
+                execvp(argument_tokens[0], argument_tokens);
+                perror(argument_tokens[0]);
+            } else if (pid > 0) {
+                if (!bg_process) {
+                    start = time(NULL);
+                    wait(NULL);
+                    tyme = time(NULL) - start;
+
+                    *t = tyme;
+                    strcpy(last_command, argument_tokens[0]);
+                } else {
+                    printf("%d\n", pid);
+                    // char* str = (char*) calloc(200, sizeof(char));
+                    // strcpy(str, "background process ended normally (");
+                    // char* num = (char*) calloc(10, sizeof(char));
+                    // sprintf(num, "%d", getpid());
+                    // strcat(str, num);
+                    // free(num);
+                    // strcat(str, ")");
+                    // insert_in_LL(LL, pid);
+                }
+            } else {
+                perror("fork");
+            }
+        }
+// ===================================================================================
+    // next_iteration:
+        free_tokens(argument_tokens);
         idx++;
         curr_command = list_of_commands[idx];
     }
     if (store == 1 && pastevents_present == 0 && overall_success == 1) store_command(input);
     free(input);
     free_commands_list(list_of_commands);
+}
+
+// int check(char* str, char* command, int len) {
+//     for (int i = 0; i < len; i++) {
+//         if (str[i] == command[i]) continue;
+//         else return 0;
+//     }
+//     return 1;
+// }
+
+void handle_child_signal(int signum, siginfo_t *info, void *context) {
+    // printf("Received signal %d from process with PID %d.\n", signum, info->si_pid);
+    // Additional handling logic can go here
+    if (signum == 20) {
+        insert_in_LL(info->si_pid, 1);
+    } else {
+        insert_in_LL(info->si_pid, 0);
+    }
 }

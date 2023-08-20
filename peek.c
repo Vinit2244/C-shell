@@ -3,7 +3,7 @@
 int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
     if (path[0] == '-') {
-        printf("peek: no such file or directory\n");
+        printf("Invalid Flags\n");
         return 0;
     } else if (path[0] == '\0') {
         for (int i = 0; i < strlen(cwd); i++) {
@@ -161,8 +161,6 @@ char** generate_sorted_file_list(char* path) {
 }
 
 void print_extra_details(char* complete_path_of_file, char** files_list, int idx) {
-    DIR *dr;
-    struct dirent *en;
     struct stat file_stat;
 
     if (!stat(complete_path_of_file, &file_stat)) {

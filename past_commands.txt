@@ -1,5 +1,3 @@
-peek -l -a ~; warp test
-seek -l -a ~
-seek -l -a ~; warp ..
-warp prog; warp ..
-warp test
+exit
+peek
+peek -la
