@@ -245,11 +245,29 @@ int str_to_int(char* str) {
 char* remove_extension(char* file_name) {
     char* final = (char*) calloc(MAX_LEN, sizeof(char));
     int idx = 0;
-    while (file_name[idx] != '\0' || file_name[idx] != '.') {
+    while (file_name[idx] != '\0' && file_name[idx] != '.') {
         final[idx] = file_name[idx];
         idx++;
     }
     final[idx] = '\0';
     return final;
+}
+
+char* relative_path(char* complete_path, char* base_dir_path) {
+    char* rel_path = (char*) calloc(MAX_LEN, sizeof(char));
+    int idx = 0;
+    for (int i = 0; i < strlen(complete_path); i++) {
+        if (complete_path[i] == base_dir_path[i]) {
+            continue;
+        }
+        idx = i;
+        break;
+    }
+    rel_path[0] = '.';
+    rel_path[1] = '/';
+    for (int i = idx + 1; i < strlen(complete_path); i++) {
+        rel_path[i - idx + 1] = complete_path[i];
+    }
+    return rel_path;
 }
 

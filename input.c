@@ -58,7 +58,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         // warp
         // char warp_str[5] = "warp";
         // int warp_flag = check(warp_str, curr_command, 4);
-
         // checking if warp command is present
         if (strcmp("warp", argument_tokens[0]) == 0) {
             int success = 1;
@@ -184,15 +183,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     printf("pastevents: invalid arguments in \"%s\"\n", curr_command);
                 }
             }
-            // goto next_iteration;
         }
 // ===================================================================================
         // // proclore
-        // char proclore_str[9] = "proclore";
-        // int proclore_flag = check(proclore_str, curr_command, 8);
 
         // // checking if proclore command is present
-        // if (proclore_flag) {
+        // if (strcmp("proclore", argument_tokens[0])) {
         //     if (no_of_arguments == 0) {
 
         //     } else if (no_of_arguments == 1) {
@@ -209,118 +205,130 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         //     goto next_iteration;
         // }
 // ===================================================================================
-        // // seek
-        // char seek_str[5] = "seek";
-        // int seek_flag = check(seek_str, curr_command, 4);
+        // seek
+        // checking if seek command is present
+        else if (strcmp("seek", argument_tokens[0]) == 0) {
+            char* base_dir = (char*) calloc(MAX_LEN, sizeof(char));
+            char* file_name = (char*) calloc(MAX_LEN, sizeof(char));
 
-        // // checking if seek command is present
-        // if (seek_flag) {
-        //     char d_flag[3] = "-d";
-        //     char f_flag[3] = "-f";
-        //     char e_flag[3] = "-e";
+            int d = 0;
+            int f = 0;
+            int e = 0;
 
-        //     char* base_dir = (char*) calloc(MAX_LEN, sizeof(char));
-        //     char* file_name = (char*) calloc(MAX_LEN, sizeof(char));
+            int base_dir_flag = 0;
+            int valid_flags = 1;
+            int file_name_flag = 0;
 
-        //     int d = 0;
-        //     int f = 0;
-        //     int e = 0;
+            int success = 1;
 
-        //     int base_dir_flag = 0;
-        //     int valid_flags = 1;
-        //     int file_name_flag = 0;
+            if (no_of_arguments == 0) {
+                printf("seek: missing arguments\n");
+                overall_success = 0;
+            } else {
+                for (int i = 1; i <= no_of_arguments; i++) {
+                    char* curr_argument = argument_tokens[i];
 
-        //     int success = 1;
+                    if (curr_argument[0] == '-') {
+                        if (base_dir_flag == 1) {
+                            printf("seek: Invalid Arguments\n");
+                            overall_success = 0;
+                        } else {
+                            if (strcmp(curr_argument, "-d") == 0) {
+                                d = 1;
+                            } else if (strcmp(curr_argument, "-f") == 0) {
+                                f = 1;
+                            } else if (strcmp(curr_argument, "-e") == 0) {
+                                e = 1;
+                            } else {
+                                printf("seek: Invalid Flag\n");
+                                overall_success = 0;
+                                valid_flags = 0;
+                            }
+                        }
+                    } else if (curr_argument[0] == '.') {
+                        base_dir_flag = 1;
+                        strcpy(base_dir, curr_argument);
+                    } else {
+                        if (file_name_flag == 1) {
+                            printf("seek: invalid arguments\n");
+                            overall_success = 0;
+                        } else {
+                            file_name_flag = 1;
+                            strcpy(file_name, curr_argument);
+                        }
+                    }
+                }
+            }
+            if (valid_flags == 1 && file_name_flag == 1) {
+                if (d == 1 && f == 1) {
+                    printf("Invalid flags\n");
+                    overall_success = 0;
+                } else {
+                    linked_list_head paths = create_linked_list_head();
+                    char* path_to_base_dir;
+                    if (base_dir_flag) {
+                        path_to_base_dir = generate_new_path(cwd, base_dir, prev_dir, home_directory);
+                    } else {
+                        path_to_base_dir = (char*) calloc(MAX_LEN, sizeof(char));
+                        strcpy(path_to_base_dir, cwd);
+                    }
 
-        //     if (no_of_arguments == 0) {
-        //         printf("seek: missing arguments\n");
-        //         overall_success = 0;
-        //         goto free_mem;
-        //     } else {
-        //         for (int i = 1; i <= no_of_arguments; i++) {
-        //             char* curr_argument = argument_tokens[i];
+                    seek(path_to_base_dir, file_name, paths);
 
-        //             if (curr_argument[0] == '-') {
-        //                 if (base_dir_flag == 1) {
-        //                     printf("seek: Invalid Arguments\n");
-        //                     overall_success = 0;
-        //                     goto free_mem;
-        //                 } else {
-        //                     if (strcmp(curr_argument, d_flag) == 0) {
-        //                         d = 1;
-        //                     } else if (strcmp(curr_argument, f_flag) == 0) {
-        //                         f = 1;
-        //                     } else if (strcmp(curr_argument, e_flag) == 0) {
-        //                         e = 1;
-        //                     } else {
-        //                         printf("seek: Invalid Flag\n");
-        //                         overall_success = 0;
-        //                         valid_flags = 0;
-        //                         goto free_mem;
-        //                     }
-        //                 }
-        //             } else if (curr_argument[0] == '.') {
-        //                 base_dir_flag = 1;
-        //                 strcpy(base_dir, curr_argument);
-        //             } else {
-        //                 if (file_name_flag == 1) {
-        //                     printf("seek: invalid arguments\n");
-        //                     overall_success = 0;
-        //                     goto free_mem;
-        //                 }
-        //                 file_name_flag = 1;
-        //                 for (int j = 0; j < strlen(curr_argument); j++) {
-        //                     file_name[j] = curr_argument[j];
-        //                 }
-        //                 file_name[strlen(curr_argument)] = '\0';
-        //             }
-        //         }
-        //     }
-        //     if (valid_flags == 1 && file_name_flag == 1) {
-        //         if (d == 1 && f == 1) {
-        //             printf("Invalid flags\n");
-        //             overall_success = 0;
-        //             goto free_mem;
-        //         } else {
-        //             int size = 20;
-        //             int no_of_files_or_dir_found = 0;
-        //             char** paths;
-        //             paths = (char**) calloc(size + 1, sizeof(char*));
-        //             for (int i = 0; i < size; i++) {
-        //                 paths[i] = (char*) calloc(MAX_LEN, sizeof(char));
-        //             }
-        //             paths[size] = NULL;
+                    if (paths->number_of_nodes == 0) {
+                        printf("No match found!\n");
+                    } else {
+                        if (e) {
+                            if (paths->number_of_nodes > 1) {
+                                // do nothing
+                            } else {
+                                linked_list_node trav = paths->first;
+                                struct stat dir_stat;
+                                stat(trav->path, &dir_stat);
+                                if (S_ISDIR(dir_stat.st_mode) != 0 && f == 0) {
+                                    // directory
+                                    if (dir_stat.st_mode & S_IXUSR) {
+                                        printf("\033[1;34m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
+                                        strcpy(prev_dir, cwd);
+                                        strcpy(cwd, trav->path);
+                                    } else {
+                                        printf("Missing permissions for task!\n");
+                                    }
+                                } else {
+                                    // file
+                                    if (dir_stat.st_mode & S_IRUSR && d == 0) {
+                                        printf("\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
+                                        char buffer[9999999];
+                                        FILE* fptr = fopen(trav->path, "r");
+                                        fgets(buffer, 9999999, fptr);
+                                        fclose(fptr);
+                                        printf("%s\n", buffer);
+                                    } else {
+                                        printf("Missing permissions for task!\n");
+                                    }
+                                }
+                            }
+                        } else {
+                            if (f) {
+                                traverse_and_print(paths, 1, 0, path_to_base_dir);
+                            } else if (d) {
+                                traverse_and_print(paths, 0, 1, path_to_base_dir);
+                            } else {
+                                traverse_and_print(paths, 1, 1, path_to_base_dir);
+                            }
+                        }
+                    }
+                    free(path_to_base_dir);
+                    free_linked_list(paths);
+                }
+            }
 
-        //             // printf("%s %s\n", base_dir, file_name);
-                    
-        //             char* path_to_base_dir;
-        //             if (base_dir_flag) {
-        //                 path_to_base_dir = generate_new_path(cwd, base_dir, prev_dir, home_directory);
-        //             } else {
-        //                 path_to_base_dir = (char*) calloc(MAX_LEN, sizeof(char));
-        //                 strcpy(path_to_base_dir, cwd);
-        //             }
-        //             printf("%s\n", path_to_base_dir);
-        //             printf("%s\n", file_name);
-        //             printf("%p\n", &no_of_files_or_dir_found);
-        //             printf("%p\n", &size);
-        //             paths = seek(path_to_base_dir, file_name, &no_of_files_or_dir_found, paths, &size);
-
-        //             printf("%d\n", no_of_files_or_dir_found);
-        //             free(path_to_base_dir);
-        //             free_tokens(paths);
-        //         }
-        //     }
-
-        //     free(base_dir);
-        //     free(file_name);
-        //     if (success == 0) overall_success = 0;
-        //     goto next_iteration;
-        // }
+            free(base_dir);
+            free(file_name);
+            if (success == 0) overall_success = 0;
+        }
 // ===================================================================================
         // exit
-        // char exit_str[5] = "exit";
-        // int exit_flag = check(exit_str, curr_command, 4);
 
         // checking if exit command is present
         else if (strcmp("exit", argument_tokens[0]) == 0) {
@@ -333,8 +341,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         }
 // ===================================================================================
         // echo
-        // char echo_str[5] = "echo";
-        // int echo_flag = check(echo_str, curr_command, 4);
 
         // checking if echo command is present
         else if (strcmp("echo", argument_tokens[0]) == 0) {
@@ -399,14 +405,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     free(input);
     free_commands_list(list_of_commands);
 }
-
-// int check(char* str, char* command, int len) {
-//     for (int i = 0; i < len; i++) {
-//         if (str[i] == command[i]) continue;
-//         else return 0;
-//     }
-//     return 1;
-// }
 
 void handle_child_signal(int signum, siginfo_t *info, void *context) {
     // printf("Received signal %d from process with PID %d.\n", signum, info->si_pid);

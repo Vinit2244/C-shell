@@ -1,3 +1,15 @@
-exit
-peek
-peek -la
+seek abcd
+seek abcd.txt
+seek abcd
+seek abcd.txt
+seek prog
+seek -e prog
+seek -d -e prog
+seek -e -d prog
+seek prog
+seek -e prog
+seek prog ..
+seek -d prog
+seek -f prog
+seek aak
+seek abcd

@@ -11,5 +11,6 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir);
 void sort_strings(char** strings, int no_of_strings);
 int str_to_int(char* str);
 char* remove_extension(char* file_name);
+char* relative_path(char* complete_path, char* base_dir_path);
 
 #endif

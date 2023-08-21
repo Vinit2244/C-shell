@@ -24,5 +24,6 @@
 #include "input.h"
 #include "seek.h"
 #include "linked_list.h"
+#include "LL2.h"
 
 #endif
