@@ -5,6 +5,17 @@ char* bg_process_buffer;
 
 int main()
 {
+    struct sigaction sa;
+    sa.sa_handler = &handle_failed;
+    sa.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &sa, NULL);
+
+    struct sigaction sa2;
+    sa2.sa_handler = &handle_passed;
+    sa2.sa_flags = SA_SIGINFO;
+    sigaction(SIGCHLD, &sa2, NULL);
+
+
     bg_process_buffer = calloc(9999999, sizeof(char));
     char home_directory[MAX_LEN + 1]; // stores the absolute path to the home directory
     char cwd[MAX_LEN + 1];            // stores the absolute path to the current working directory

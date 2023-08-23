@@ -7,9 +7,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     int overall_success = 1;
     int pastevents_present = 0;
     char* input = (char*) calloc(5000, sizeof(char));
+    input[0] = '\0';
     
     if (command == NULL) {
         store = 1;
+
         // Print appropriate prompt with username, systemname and directory before accepting input
         prompt(home_directory, cwd, t, last_command);
         
@@ -23,7 +25,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 input[i] = '\0';
             }
         }
-        
+
         read_and_free_LL(); // printing the status of the background processes if any completed
         if (bg_process_buffer[0] == '\0') {
             // don't print anything
@@ -31,6 +33,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             printf("%s", bg_process_buffer);
             bg_process_buffer[0] = '\0';
         }
+
     } else {
         store = 0;
         for (int i = 0; i < strlen(command); i++) {
@@ -46,7 +49,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     while (curr_command[0] != '\0') {
 
         // ================= Printing the commands =================
-        // printf("Command %d: %s\n", idx + 1, curr_command);
+        printf("Command %d: %s\n", idx + 1, curr_command);
 
         char** argument_tokens = generate_tokens(curr_command, ' ');
         int no_of_arguments = 0;
@@ -382,25 +385,16 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             int status;
             int ppid = getpid();
             int pid = fork();
+
             if (pid == 0) {
                 execvp(argument_tokens[0], argument_tokens);
                 kill(ppid, SIGUSR1);
             } else if (pid > 0) {
-                int status;
-
-                struct sigaction sa;
-                sa.sa_handler = &handle_failed;
-                sa.sa_flags = SA_SIGINFO;
-                sigaction(SIGUSR1, &sa, NULL);
-
-                struct sigaction sa2;
-                sa2.sa_handler = &handle_passed;
-                sa2.sa_flags = SA_SIGINFO;
-                sigaction(SIGCHLD, &sa2, NULL);
-
-                if (!bg_process) {
+                // int status;
+                if (bg_process == 0) {
                     start = time(NULL);
-                    while (wait(&status) > 0);
+                    // while (wait(&status) > 0);
+                    wait(NULL);
                     tyme = time(NULL) - start;
 
                     *t = tyme;
@@ -408,6 +402,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 } else {
                     printf("%d\n", pid);
                     insert_in_LL(pid, -1);
+                    // goto next_iteration;
                 }
             } else {
                 perror("fork");
@@ -422,6 +417,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     if (store == 1 && pastevents_present == 0 && overall_success == 1) {
         store_command(input);
     }
+
     free(input);
     free_commands_list(list_of_commands);
 }
