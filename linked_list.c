@@ -1,6 +1,5 @@
 #include "headers.h"
 
-
 LL_Head create_LL() {
     LL_Head LL = (LL_Head) malloc(sizeof(LL_Head_struct));
     LL->no_of_nodes = 0;
@@ -65,29 +64,22 @@ void free_node(LL_Node node) {
     }
 }
 
-void read_and_free_LL() {
-    LL_Node curr = LL->first;
-    while (curr != NULL) {
-        if (curr->flag == 1) {
-            sprintf(bg_process_buffer, "Process exited normally (%d)\n", curr->pid);
-            LL_Node temp = curr->next;
-            free_node(curr);
-            curr = temp;
-        } else if (curr->flag == 0) {
-            sprintf(bg_process_buffer, "Process exited abnormally (%d)\n", curr->pid);
-            LL_Node temp = curr->next;
-            free_node(curr);
-            curr = temp;
+void check_and_print() {
+    LL_Node trav = LL->first;
+    while (trav != NULL) {
+        int cstatus;
+        if (waitpid(trav->pid, &cstatus, WNOHANG) == trav->pid) {
+            if (WIFEXITED(cstatus)) {
+                printf("Process exited normally (%d)\n", trav->pid);
+            } else {
+                printf("Process exited abnormally (%d)\n", trav->pid);
+            }
+            LL_Node temp = trav;
+            trav = trav->next;
+            free_node(temp);
+        } else {
+            trav = trav->next;
         }
     }
 }
 
-void update_LL(int pid, int status) {
-    LL_Node trav = LL->first;
-    while (trav != NULL) {
-        if (trav->pid == pid) {
-            trav->flag = status;
-        }
-        trav = trav->next;
-    }
-}

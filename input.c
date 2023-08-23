@@ -25,8 +25,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 input[i] = '\0';
             }
         }
-
-        read_and_free_LL(); // printing the status of the background processes if any completed
+        // check through the linked list of all the background processes and print the ones which are done
+        check_and_print();
+        
         if (bg_process_buffer[0] == '\0') {
             // don't print anything
         } else {
@@ -49,7 +50,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     while (curr_command[0] != '\0') {
 
         // ================= Printing the commands =================
-        printf("Command %d: %s\n", idx + 1, curr_command);
+        // printf("Command %d: %s\n", idx + 1, curr_command);
 
         char** argument_tokens = generate_tokens(curr_command, ' ');
         int no_of_arguments = 0;
@@ -76,7 +77,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 }
             }
             if (success == 0) overall_success = 0;
-            // goto next_iteration;
         }
 // ===================================================================================
         // peek
@@ -382,18 +382,14 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
             int start = 0;
             time_t tyme = 0;
-            int status;
             int ppid = getpid();
             int pid = fork();
 
             if (pid == 0) {
                 execvp(argument_tokens[0], argument_tokens);
-                kill(ppid, SIGUSR1);
             } else if (pid > 0) {
-                // int status;
                 if (bg_process == 0) {
                     start = time(NULL);
-                    // while (wait(&status) > 0);
                     wait(NULL);
                     tyme = time(NULL) - start;
 
@@ -402,14 +398,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 } else {
                     printf("%d\n", pid);
                     insert_in_LL(pid, -1);
-                    // goto next_iteration;
                 }
             } else {
                 perror("fork");
             }
         }
 // ===================================================================================
-    // next_iteration:
         free_tokens(argument_tokens);
         idx++;
         curr_command = list_of_commands[idx];
@@ -420,14 +414,4 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
     free(input);
     free_commands_list(list_of_commands);
-}
-
-void handle_passed(int sig, siginfo_t *info, void* context) {
-    update_LL(info->si_pid, 1);
-    kill(info->si_pid, SIGKILL);
-}
-
-void handle_failed(int sig, siginfo_t *info, void* context) {
-    update_LL(info->si_pid, 0);
-    kill(info->si_pid, SIGKILL);
 }
