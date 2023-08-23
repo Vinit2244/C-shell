@@ -1,19 +1,13 @@
 #include "headers.h"
 
+int bg_process = 0;
+
 void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t) {
-    // handling signals from child
-    struct sigaction sa;
-    
-    sa.sa_sigaction = handle_child_signal;
-    sa.sa_flags = SA_SIGINFO;
-    
-    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-        perror("sigaction");
-    }
-    
+
     int overall_success = 1;
     int pastevents_present = 0;
     char* input = (char*) calloc(5000, sizeof(char));
+    
     if (command == NULL) {
         store = 1;
         // Print appropriate prompt with username, systemname and directory before accepting input
@@ -28,6 +22,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 input[i] = '\0';
             }
         }
+        read_and_free_LL(); // printing the status of the background processes if any completed
     } else {
         store = 0;
         for (int i = 0; i < strlen(command); i++) {
@@ -41,7 +36,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     int idx = 0;
     char* curr_command = list_of_commands[idx];
     while (curr_command[0] != '\0') {
-        read_and_free_LL(); // printing the status of the background processes if any completed
 
         // ================= Printing the commands =================
         // printf("Command %d: %s\n", idx + 1, curr_command);
@@ -56,8 +50,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         // Different commands
 // ===================================================================================
         // warp
-        // char warp_str[5] = "warp";
-        // int warp_flag = check(warp_str, curr_command, 4);
+
         // checking if warp command is present
         if (strcmp("warp", argument_tokens[0]) == 0) {
             int success = 1;
@@ -76,8 +69,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         }
 // ===================================================================================
         // peek
-        // char peek_str[5] = "peek";
-        // int peek_flag = check(peek_str, curr_command, 4);
 
         // checking if peek command is present
         else if (strcmp("peek", argument_tokens[0]) == 0) {
@@ -116,12 +107,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
             int exit_code = peek(path, a, l, cwd, home_directory, prev_dir);
             if (exit_code == 0) overall_success = 0;
-            // goto next_iteration;
         }
 // ===================================================================================
         // pastevents
-        // char pastevents_str[11] = "pastevents";
-        // int pastevents_flag = check(pastevents_str, curr_command, 10);
 
         // checking if pastevents command is present
         else if (strcmp("pastevents", argument_tokens[0]) == 0) {
@@ -189,23 +177,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
         // // checking if proclore command is present
         // if (strcmp("proclore", argument_tokens[0])) {
-        //     if (no_of_arguments == 0) {
 
-        //     } else if (no_of_arguments == 1) {
-        //         int pid = str_to_int(argument_tokens[1]);
-        //         if (pid == -1) {
-        //             printf("proclore: invalid argument (argument should be number)\n");
-        //         } else {
-        //             printf("pid : %d\n", pid);
-
-        //         }
-        //     } else {
-        //         printf("proclore: excess number of arguments\n");
-        //     }
-        //     goto next_iteration;
         // }
 // ===================================================================================
         // seek
+
         // checking if seek command is present
         else if (strcmp("seek", argument_tokens[0]) == 0) {
             char* base_dir = (char*) calloc(MAX_LEN, sizeof(char));
@@ -278,33 +254,62 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     if (paths->number_of_nodes == 0) {
                         printf("No match found!\n");
                     } else {
+                        int no_of_files = 0;
+                        int no_of_dir = 0;
+
+                        linked_list_node temp = paths->first;
+                        struct stat dir_stat_temp;
+                        stat(temp->path, &dir_stat_temp);
+                        if (S_ISDIR(dir_stat_temp.st_mode) != 0) {
+                            no_of_dir++;
+                        } else {
+                            no_of_files++;
+                        }
+
                         if (e) {
-                            if (paths->number_of_nodes > 1) {
+                            if ((d && (no_of_dir > 1)) || (f && (no_of_files > 1))) {
                                 // do nothing
                             } else {
-                                linked_list_node trav = paths->first;
-                                struct stat dir_stat;
-                                stat(trav->path, &dir_stat);
-                                if (S_ISDIR(dir_stat.st_mode) != 0 && f == 0) {
-                                    // directory
-                                    if (dir_stat.st_mode & S_IXUSR) {
-                                        printf("\033[1;34m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
-                                        strcpy(prev_dir, cwd);
-                                        strcpy(cwd, trav->path);
-                                    } else {
-                                        printf("Missing permissions for task!\n");
+                                if (d) {
+                                    linked_list_node trav = paths->first;
+                                    while (trav != NULL) {
+                                        struct stat dir_stat;
+                                        stat(trav->path, &dir_stat);
+                                        if (S_ISDIR(dir_stat.st_mode) != 0) { // checking if it's a dir
+                                            if (dir_stat.st_mode & S_IXUSR) {
+                                                printf("\033[1;34m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
+                                                strcpy(prev_dir, cwd);
+                                                strcpy(cwd, trav->path);
+                                            } else {
+                                                printf("Missing permissions for task!\n");
+                                            }
+                                        }
+                                        trav = trav->next;
+                                    }
+                                } else if (f) {
+                                    linked_list_node trav = paths->first;
+                                    while (trav != NULL) {
+                                        struct stat dir_stat;
+                                        stat(trav->path, &dir_stat);
+                                        if (S_ISDIR(dir_stat.st_mode) == 0) { // checking if it's a file
+                                            if (dir_stat.st_mode & S_IRUSR) {
+                                                printf("\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
+                                                char buffer[9999999];
+                                                FILE* fptr = fopen(trav->path, "r");
+                                                fgets(buffer, 9999999, fptr);
+                                                fclose(fptr);
+                                                printf("%s\n", buffer);
+                                            } else {
+                                                printf("Missing permissions for task!\n");
+                                            }
+                                        }
+                                        trav = trav->next;
                                     }
                                 } else {
-                                    // file
-                                    if (dir_stat.st_mode & S_IRUSR && d == 0) {
-                                        printf("\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
-                                        char buffer[9999999];
-                                        FILE* fptr = fopen(trav->path, "r");
-                                        fgets(buffer, 9999999, fptr);
-                                        fclose(fptr);
-                                        printf("%s\n", buffer);
+                                    if (paths->number_of_nodes > 1) {
+                                        // do nothing
                                     } else {
-                                        printf("Missing permissions for task!\n");
+                                        traverse_and_print(paths, 1, 1, path_to_base_dir);
                                     }
                                 }
                             }
@@ -352,44 +357,50 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 printf(" ");
             }
             printf("\n");
-            // goto next_iteration;
         }
 // ===================================================================================
         else {
             // system commands
-            int bg_process = 0;
+            bg_process = 0;
+
             if (curr_command[strlen(curr_command) - 1] == '&') {
                 bg_process = 1;
                 argument_tokens[no_of_arguments][strlen(argument_tokens[no_of_arguments]) - 1] = '\0';
+            } else {
+                bg_process = 0;
             }
 
             int start = 0;
             time_t tyme = 0;
             int status;
-            // int ppid = getpid();
+            int ppid = getpid();
             int pid = fork();
             if (pid == 0) {
-
                 execvp(argument_tokens[0], argument_tokens);
-                perror(argument_tokens[0]);
+                kill(ppid, SIGUSR1);
             } else if (pid > 0) {
+                int status;
+
+                struct sigaction sa;
+                sa.sa_handler = &handle_failed;
+                sa.sa_flags = SA_SIGINFO;
+                sigaction(SIGUSR1, &sa, NULL);
+
+                struct sigaction sa2;
+                sa2.sa_handler = &handle_passed;
+                sa2.sa_flags = SA_SIGINFO;
+                sigaction(SIGCHLD, &sa2, NULL);
+
                 if (!bg_process) {
                     start = time(NULL);
-                    wait(NULL);
+                    while (wait(&status) > 0);
                     tyme = time(NULL) - start;
 
                     *t = tyme;
                     strcpy(last_command, argument_tokens[0]);
                 } else {
                     printf("%d\n", pid);
-                    // char* str = (char*) calloc(200, sizeof(char));
-                    // strcpy(str, "background process ended normally (");
-                    // char* num = (char*) calloc(10, sizeof(char));
-                    // sprintf(num, "%d", getpid());
-                    // strcat(str, num);
-                    // free(num);
-                    // strcat(str, ")");
-                    // insert_in_LL(LL, pid);
+                    insert_in_LL(pid, -1);
                 }
             } else {
                 perror("fork");
@@ -406,12 +417,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     free_commands_list(list_of_commands);
 }
 
-void handle_child_signal(int signum, siginfo_t *info, void *context) {
-    // printf("Received signal %d from process with PID %d.\n", signum, info->si_pid);
-    // Additional handling logic can go here
-    if (signum == 20) {
-        insert_in_LL(info->si_pid, 1);
-    } else {
-        insert_in_LL(info->si_pid, 0);
-    }
+void handle_passed(int sig, siginfo_t *info, void* context) {
+    update_LL(info->si_pid, 1);
+    kill(info->si_pid, SIGKILL);
+}
+
+void handle_failed(int sig, siginfo_t *info, void* context) {
+    update_LL(info->si_pid, 0);
+    kill(info->si_pid, SIGKILL);
 }

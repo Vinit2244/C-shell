@@ -21,6 +21,8 @@ extern struct LL_Head_struct* LL;
 LL_Head create_LL();
 LL_Node create_node(int pid, int flag);
 void insert_in_LL(int pid, int flag);
+void free_node(LL_Node node);
 void read_and_free_LL();
+void update_LL(int pid, int status) ;
 
 #endif

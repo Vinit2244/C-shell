@@ -33,18 +33,60 @@ void insert_in_LL(int pid, int flag) {
     }
 }
 
+void free_node(LL_Node node) {
+    int pid_to_free = node->pid;
+    LL_Node trav = LL->first;
+    LL_Node prev = NULL;
+    while (trav != NULL) {
+        if (trav->pid == pid_to_free) {
+            if (prev != NULL) {
+                prev->next = trav->next;
+                free(trav);
+                LL->no_of_nodes--;
+                if (LL->no_of_nodes == 0) {
+                    LL->first = NULL;
+                    LL->last = NULL;
+                }
+                break;
+            } else {
+                LL->first = trav->next;
+                free(trav);
+                LL->no_of_nodes--;
+                if (LL->no_of_nodes == 0) {
+                    LL->first = NULL;
+                    LL->last = NULL;
+                }
+                break;
+            }
+        }
+        prev = trav;
+        trav = trav->next;
+    }
+}
+
 void read_and_free_LL() {
     LL_Node curr = LL->first;
     while (curr != NULL) {
         if (curr->flag == 1) {
             printf("Process exited normally (%d)\n", curr->pid);
-        } else {
+            LL_Node temp = curr->next;
+            free_node(curr);
+            curr = temp;
+        } else if (curr->flag == 0) {
             printf("Process exited abnormally (%d)\n", curr->pid);
+            LL_Node temp = curr->next;
+            free_node(curr);
+            curr = temp;
         }
-        LL->first = curr->next;
-        free(curr);
-        curr = LL->first;
     }
-    LL->last = NULL;
-    LL->no_of_nodes = 0;
+}
+
+void update_LL(int pid, int status) {
+    LL_Node trav = LL->first;
+    while (trav != NULL) {
+        if (trav->pid == pid) {
+            trav->flag = status;
+        }
+        trav = trav->next;
+    }
 }
