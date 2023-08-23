@@ -1,15 +1,15 @@
-sleep 3
-sleep 5&
-sleep 3
-exit
-sleep 3
-sleep 5&
-sleep 3
-exit
-sleep 5
-sleep 5&
-sleep 3
-exit
-sleep 5
+warp test
 sleep 3&
+sleep 5&
+sleep 5 &
+sleep 5&
 sleep 3
+warp test;
+sleep 10&
+sleep 5&
+sleep 3
+sleep 5&
+sleep 3
+exit
+sleep 3
+sleep 5&

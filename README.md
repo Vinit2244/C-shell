@@ -10,4 +10,9 @@
 ## Peek
 - "peek -" gives error
 ## Background processes
-- 
+
+## Seek
+- If flag -e is provided and only one file is found then a maximum of 9999999 characters will be read and printed as output even if the file is bigger than that
+
+## Echo
+- Handling echo by myself and not using execvp()

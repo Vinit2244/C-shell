@@ -1,5 +1,6 @@
 #include "headers.h"
 
+
 LL_Head create_LL() {
     LL_Head LL = (LL_Head) malloc(sizeof(LL_Head_struct));
     LL->no_of_nodes = 0;
@@ -68,12 +69,12 @@ void read_and_free_LL() {
     LL_Node curr = LL->first;
     while (curr != NULL) {
         if (curr->flag == 1) {
-            printf("Process exited normally (%d)\n", curr->pid);
+            sprintf(bg_process_buffer, "Process exited normally (%d)\n", curr->pid);
             LL_Node temp = curr->next;
             free_node(curr);
             curr = temp;
         } else if (curr->flag == 0) {
-            printf("Process exited abnormally (%d)\n", curr->pid);
+            sprintf(bg_process_buffer, "Process exited abnormally (%d)\n", curr->pid);
             LL_Node temp = curr->next;
             free_node(curr);
             curr = temp;

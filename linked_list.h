@@ -17,6 +17,7 @@ typedef struct LL_Node_struct {
 } LL_Node_struct;
 
 extern struct LL_Head_struct* LL;
+extern char* bg_process_buffer;
 
 LL_Head create_LL();
 LL_Node create_node(int pid, int flag);

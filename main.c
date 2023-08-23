@@ -1,9 +1,11 @@
 #include "headers.h"
 
 LL_Head LL;
+char* bg_process_buffer;
 
 int main()
 {
+    bg_process_buffer = calloc(9999999, sizeof(char));
     char home_directory[MAX_LEN + 1]; // stores the absolute path to the home directory
     char cwd[MAX_LEN + 1];            // stores the absolute path to the current working directory
     char prev_dir[MAX_LEN + 1];       // stores the absolute path of the latest previous directory (used in warp -)

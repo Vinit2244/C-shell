@@ -16,13 +16,21 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         fgets(input, 4096, stdin);
         input[strlen(input)] = '\0';
 
+        // removing endline character
         for (int i = 0; i < strlen(input); i++) {
             if (input[i] != '\n') continue;
             else {
                 input[i] = '\0';
             }
         }
+        
         read_and_free_LL(); // printing the status of the background processes if any completed
+        if (bg_process_buffer[0] == '\0') {
+            // don't print anything
+        } else {
+            printf("%s", bg_process_buffer);
+            bg_process_buffer[0] = '\0';
+        }
     } else {
         store = 0;
         for (int i = 0; i < strlen(command); i++) {
@@ -177,7 +185,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
         // // checking if proclore command is present
         // if (strcmp("proclore", argument_tokens[0])) {
-
         // }
 // ===================================================================================
         // seek
@@ -412,7 +419,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         idx++;
         curr_command = list_of_commands[idx];
     }
-    if (store == 1 && pastevents_present == 0 && overall_success == 1) store_command(input);
+    if (store == 1 && pastevents_present == 0 && overall_success == 1) {
+        store_command(input);
+    }
     free(input);
     free_commands_list(list_of_commands);
 }
