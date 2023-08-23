@@ -1,15 +1,15 @@
 warp test
-sleep 3&
-sleep 5&
-sleep 5 &
-sleep 5&
-sleep 3
-warp test;
-sleep 10&
+warp ..
+warp test
 sleep 5&
 sleep 3
+seek prog
+peek
+sleep 4&
+peek
+warp ~
+warp ..
+sleep 5&
+warp test
 sleep 5&
 sleep 3
-exit
-sleep 3
-sleep 5&

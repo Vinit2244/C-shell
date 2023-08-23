@@ -23,8 +23,10 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 input[i] = '\0';
             }
         }
+
+        // check through the linked list of all the background processes and print the ones which are done
+        check_and_print();
         
-        read_and_free_LL(); // printing the status of the background processes if any completed
         if (bg_process_buffer[0] == '\0') {
             // don't print anything
         } else {
@@ -379,28 +381,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
             int start = 0;
             time_t tyme = 0;
-            int status;
             int ppid = getpid();
             int pid = fork();
             if (pid == 0) {
                 execvp(argument_tokens[0], argument_tokens);
-                kill(ppid, SIGUSR1);
             } else if (pid > 0) {
-                int status;
-
-                struct sigaction sa;
-                sa.sa_handler = &handle_failed;
-                sa.sa_flags = SA_SIGINFO;
-                sigaction(SIGUSR1, &sa, NULL);
-
-                struct sigaction sa2;
-                sa2.sa_handler = &handle_passed;
-                sa2.sa_flags = SA_SIGINFO;
-                sigaction(SIGCHLD, &sa2, NULL);
 
                 if (!bg_process) {
                     start = time(NULL);
-                    while (wait(&status) > 0);
+                    wait(NULL);
                     tyme = time(NULL) - start;
 
                     *t = tyme;
@@ -414,7 +403,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
         }
 // ===================================================================================
-    // next_iteration:
         free_tokens(argument_tokens);
         idx++;
         curr_command = list_of_commands[idx];
@@ -424,14 +412,4 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     }
     free(input);
     free_commands_list(list_of_commands);
-}
-
-void handle_passed(int sig, siginfo_t *info, void* context) {
-    update_LL(info->si_pid, 1);
-    kill(info->si_pid, SIGKILL);
-}
-
-void handle_failed(int sig, siginfo_t *info, void* context) {
-    update_LL(info->si_pid, 0);
-    kill(info->si_pid, SIGKILL);
 }
