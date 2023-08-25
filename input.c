@@ -56,22 +56,26 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
     char** list_of_commands = get_list_of_commands(input); // contains the list of all commands as separate strings in the form of a 2D array
 
-    start = time(NULL);
+    start = time(NULL); // record the time before we start executing the commands
 
-    int idx = 0;
+    int idx = 0;        // index variable to hold the index of command to be executed
     char* curr_command = list_of_commands[idx];
     while (curr_command[0] != '\0') {
 
         // ================= Printing the commands =================
         // printf("Command %d: %s\n", idx + 1, curr_command);
 
+        // tokenize the command based on strings
         char** argument_tokens = generate_tokens(curr_command, ' ');
+
+        // calculating the number of arguments passed to the command
         int no_of_arguments = 0;
         while(argument_tokens[no_of_arguments] != NULL) {
             no_of_arguments++;
         }
         no_of_arguments--;
 
+        // storing the name of commands in the last command array
         if (strlen(last_command) == 0) {
             strcpy(last_command, argument_tokens[0]);
         } else {
@@ -82,15 +86,19 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         // Different commands
 // ===================================================================================
         // warp
+        /*
+            Changes the current working directory to the relative/absolute path provided
+        */
 
         // checking if warp command is present
         if (strcmp("warp", argument_tokens[0]) == 0) {
-            int success = 1;
-            if (no_of_arguments == 0) {
+            int success = 1;            // flag to keep track if warp exited successfully or not
+            if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
                 char* c = "~";
+                // returns 1 if successfull and returns 0 if some error occured
                 int exit_code = warp(cwd, c, prev_dir, home_directory);
                 if (exit_code == 0) success = 0;
-            } else {
+            } else {                    // if multiple arguments are passed then warp to those arguments one by one (each argument treated as a separate command)
                 for (int i = 1; i <= no_of_arguments; i++) {
                     int exit_code = warp(cwd, argument_tokens[i], prev_dir, home_directory);
                     if (exit_code == 0) success = 0;
@@ -100,10 +108,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         }
 // ===================================================================================
         // peek
+        /*
+            Prints the files/directories present in the path of file provided
+        */
 
         // checking if peek command is present
         else if (strcmp("peek", argument_tokens[0]) == 0) {
-            char path[MAX_LEN];
+            char path[MAX_LEN]; // stores path of directory to peek into
+            
+            // copying cwd into path
             for (int i = 0; i < strlen(cwd); i++) {
                 path[i] = cwd[i];
             }
@@ -113,13 +126,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             int l = 0;
 
             if (no_of_arguments != 0) {
+                // valid flags
                 char minus_a[3] = "-a";
                 char minus_l[3] = "-l";
                 char minus_al[4] = "-al";
                 char minus_la[4] = "-la";
 
-                int path_flag = 0;
+                int path_flag = 0; // path to some directory is present or not
                 for (int i = 1; i <= no_of_arguments; i++) {
+                    // checking which all flags are present
                     if (strcmp(argument_tokens[i], minus_a) == 0) {
                         a = 1;
                     } else if (strcmp(argument_tokens[i], minus_l) == 0) {
@@ -128,7 +143,10 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         a = 1;
                         l = 1;
                     } else {
+                        // any argument not starting with "-" is treated as some path given
                         path_flag = 1;
+
+                        // copying the provided path into the path array replacing cwd
                         for (int j = 0; j < strlen(argument_tokens[i]); j++) {
                             path[j] = argument_tokens[i][j];
                         }
@@ -136,27 +154,36 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 }
             }
+            // returns 1 if peeked successfully else returns 0
             int exit_code = peek(path, a, l, cwd, home_directory, prev_dir);
             if (exit_code == 0) overall_success = 0;
         }
 // ===================================================================================
         // pastevents
+        /*
+            Prints the pastevents that has been executed or executes some pastevents
+        */
 
         // checking if pastevents command is present
         else if (strcmp("pastevents", argument_tokens[0]) == 0) {
             pastevents_present = 1;
-            if (no_of_arguments == 0) {
+            if (no_of_arguments == 0) { // no arguments are passed than just print the pastevents
                 pastevents();
-            } else {
+            } else {                    // if some argument is present
                 if (strcmp(argument_tokens[1], "purge") == 0) {
+                    // clears the stored list
                     purge();
-                } else if (strcmp(argument_tokens[1], "execute") == 0) {
+                } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
                     if (no_of_arguments == 1) {
+                        // if no index is given which command to execute then show error
                         printf("\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
                     } else if (no_of_arguments == 2) {
                         char* number = argument_tokens[2];
-                        int num = 0;
-                        int flag = 1;
+                        int num = 0;    // variable to store the index of command to execute
+                        int flag = 1;   // valid index is passed between 1 and 15 (both inclusive)
+                        
+                        // converting char to int
+                        // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
                         if (strcmp(number, "1") == 0) {
                             num = 1;
                         } else if (strcmp(number, "2") == 0) {
@@ -193,26 +220,33 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         }
                         if (flag) {
                             printf("%d\n", num);
+                            // executing the command at the given index
                             int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t);
+                            if (exit_code == 0) overall_success = 0;
                         }
                     } else {
+                        // excess of arguments are passed
                         printf("\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
                     }
                 } else {
+                    // invalid arguments are passed
                     printf("\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
                 }
             }
         }
 // ===================================================================================
         // proclore
+        /*
+            Prints all the details about the process whose process id is passed as an argument
+        */
 
         // checking if proclore command is present
         else if (strcmp("proclore", argument_tokens[0]) == 0) {
             char* pid = (char*) calloc(50, sizeof(char));
-            if (no_of_arguments == 0) {
-                int curr_pid = getppid();
-                sprintf(pid, "%d", curr_pid);
-            } else {
+            if (no_of_arguments == 0) {         // if no arguments are passed than print the details of the termianl process
+                int curr_pid = getpid();        // getting the pid of the current running process
+                sprintf(pid, "%d", curr_pid);   // writing the pid in the form of a string to pass
+            } else { // if pid of the process is provided
                 strcpy(pid, argument_tokens[1]);
             }
             proclore(pid);
@@ -220,6 +254,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         }
 // ===================================================================================
         // seek
+        /*
+            Searches for a file/directory in the relative/absolute path provided
+            Searches the entire depth of the tree starting from the provided path
+            flags: -e: Checks if only one directory/file with the given name is found
+                       (if file is found      : prints it's outpus)
+                       (if directory is found : changes cwd to that directory)
+                   -f: Checks only for files of specified name
+                   -d: Checks only for directories of specified name
+        */
 
         // checking if seek command is present
         else if (strcmp("seek", argument_tokens[0]) == 0) {
@@ -237,6 +280,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             int success = 1;
 
             if (no_of_arguments == 0) {
+                // file/directory name to be searched should be provided
                 printf("\033[1;31mseek: missing arguments\033[1;0m\n");
                 overall_success = 0;
             } else {
@@ -245,9 +289,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                     if (curr_argument[0] == '-') {
                         if (base_dir_flag == 1) {
+                            // flags should be provided before providing the path to the base directory
                             printf("\033[1;31mseek: Invalid Arguments\033[1;0m\n");
                             overall_success = 0;
                         } else {
+                            // checking for flags present
                             if (strcmp(curr_argument, "-d") == 0) {
                                 d = 1;
                             } else if (strcmp(curr_argument, "-f") == 0) {
@@ -255,12 +301,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             } else if (strcmp(curr_argument, "-e") == 0) {
                                 e = 1;
                             } else {
+                                // if any other flag is provided other than the three mentioned
                                 printf("\033[1;31mseek: Invalid Flag\033[1;0m\n");
                                 overall_success = 0;
                                 valid_flags = 0;
                             }
                         }
-                    } else if (curr_argument[0] == '.') {
+                    } else if (curr_argument[0] == '.') { // if path relative to current directory is provided
                         base_dir_flag = 1;
                         strcpy(base_dir, curr_argument);
                     } else {
@@ -276,9 +323,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
             if (valid_flags == 1 && file_name_flag == 1) {
                 if (d == 1 && f == 1) {
+                    // both d and f flags cannot be provided simultaneously
                     printf("\033[1;31mInvalid flags\033[1;0m\n");
                     overall_success = 0;
                 } else {
+                    // iterating through all the files in the path
                     linked_list_head paths = create_linked_list_head();
                     char* path_to_base_dir;
                     if (base_dir_flag) {
@@ -288,6 +337,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         strcpy(path_to_base_dir, cwd);
                     }
 
+                    // seeking in each file/folder recursively
                     seek(path_to_base_dir, file_name, paths);
 
                     if (paths->number_of_nodes == 0) {
@@ -298,7 +348,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                         linked_list_node temp = paths->first;
                         struct stat dir_stat_temp;
-                        stat(temp->path, &dir_stat_temp);
+                        lstat(temp->path, &dir_stat_temp);
                         if (S_ISDIR(dir_stat_temp.st_mode) != 0) {
                             no_of_dir++;
                         } else {
@@ -313,7 +363,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                     linked_list_node trav = paths->first;
                                     while (trav != NULL) {
                                         struct stat dir_stat;
-                                        stat(trav->path, &dir_stat);
+                                        lstat(trav->path, &dir_stat);
                                         if (S_ISDIR(dir_stat.st_mode) != 0) { // checking if it's a dir
                                             if (dir_stat.st_mode & S_IXUSR) {
                                                 printf("\033[1;34m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
@@ -329,7 +379,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                     linked_list_node trav = paths->first;
                                     while (trav != NULL) {
                                         struct stat dir_stat;
-                                        stat(trav->path, &dir_stat);
+                                        lstat(trav->path, &dir_stat);
                                         if (S_ISDIR(dir_stat.st_mode) == 0) { // checking if it's a file
                                             if (dir_stat.st_mode & S_IRUSR) {
                                                 printf("\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));

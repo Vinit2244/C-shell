@@ -16,6 +16,7 @@
 ## Background processes
 
 ## Seek
+- Assuming that if the base directory provided in relative to the current folder starts with "." always
 - If flag -e is provided and only one file is found then a maximum of 100000 characters will be read and printed as output even if the file is bigger than that
 
 ## Echo

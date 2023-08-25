@@ -1,3 +1,7 @@
+seek -f -e prog
+seek -e -d prog
+sleep 3
+warp ..
 warp test
 exit
 vim &
@@ -9,7 +13,3 @@ vim &
 clear
 [I[2;2R]10;rgb:cccc/cccc/cccc\]11;rgb:1818/1818/1818\[?12;2$y:::exit
 exit
-clear
-quit
-exit
-quit
