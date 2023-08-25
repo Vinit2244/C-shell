@@ -36,7 +36,7 @@ void proclore(char* pid) {
 
     FILE* fptr2 = fopen(path_maps, "r");
     if (fptr2 != NULL) {
-        char buffer[5000];
+        char buffer[50000];
         unsigned long start;
         unsigned long end;
         fgets(buffer, 50000, fptr2);
