@@ -180,7 +180,7 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
 
     struct passwd *pw = getpwuid(file_stat.st_uid);
     struct group  *gr = getgrgid(file_stat.st_gid);
-    printf(" %d %s %s %lld ", file_stat.st_nlink, pw->pw_name, gr->gr_name, file_stat.st_size);
+    printf(" %ld %s %s %ld ", file_stat.st_nlink, pw->pw_name, gr->gr_name, file_stat.st_size);
 
     time_t modificationTime = file_stat.st_mtime;
 

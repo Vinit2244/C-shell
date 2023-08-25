@@ -1,61 +1,17 @@
-#include <stdio.h>
-#include <string.h>
-#include <dirent.h>
-#include <pwd.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "headers.h"
 
-char** generate_tokens(char* str, char c) {
-    int no_of_characters = 0;
-    int idx = 0;
-    while (str[idx] != '\0') {
-        if (str[idx] == c) no_of_characters++;
-        idx++;
-    }
-    int no_of_partitions = no_of_characters + 1;
-    char** tokens_array = (char**) calloc(no_of_partitions + 1, sizeof(char*));
-    for (int i = 0; i < no_of_partitions; i++) {
-        tokens_array[i] = (char*) calloc(1000000, sizeof(char));
-    }
-    tokens_array[no_of_partitions] = NULL;
-    int str_idx = 0;
-    int tokens_array_idx = 0;
-    int token_idx = 0;
-    while (str[str_idx] != '\0') {
-        if (str[str_idx] == c) {
-            tokens_array[tokens_array_idx][token_idx] = '\0';
-            token_idx = 0;
-            tokens_array_idx++;
-        } else {
-            tokens_array[tokens_array_idx][token_idx] = str[str_idx];
-            token_idx++;
-        }
-        str_idx++;
-    }
-
-    tokens_array[tokens_array_idx][token_idx] = '\0';
-    return tokens_array;
-}
-
-void free_tokens(char** tokens) {
-    int idx = 0;
-    while (tokens[idx] != NULL) {
-        free(tokens[idx]);
-        idx++;
-    }
-    free(tokens);
-}
-
-int main(int argc, char* argv[]) {
-    printf("Enter the process id: ");
-    char* pid = (char*) calloc(100, sizeof(char));
-    scanf("%s", pid);
-
+void proclore(char* pid) {
     char* path_stat = (char*) calloc(256, sizeof(char));
     sprintf(path_stat, "/proc/%d/stat", atoi(pid));
+    // strcpy(path_stat, "/proc/");
+    // strcat(path_stat, pid);
+    // strcat(path_stat, "/status");
 
     char* path_maps = (char*) calloc(256, sizeof(char));
     sprintf(path_maps, "/proc/%d/maps", atoi(pid));
+    // strcpy(path_maps, "/proc/");
+    // strcat(path_maps, pid);
+    // strcat(path_maps, "/maps");
 
     char* path_exe = (char*) calloc(256, sizeof(char));
     sprintf(path_exe, "/proc/%d/exe", atoi(pid));
@@ -65,11 +21,11 @@ int main(int argc, char* argv[]) {
     int bg_process;
     char* process_group;
     unsigned long virtual_address;
-    char* executable_path[1000000];
+    char executable_path[MAX_LEN];
 
     char* data = (char*) calloc(100000, sizeof(char));
     char** data_array;
-    char* buffer;
+    char* buffer = (char*) calloc(50000, sizeof(char));
 
     FILE *fptr = fopen(path_stat, "r");
     if (fptr == NULL) {
@@ -85,11 +41,11 @@ int main(int argc, char* argv[]) {
         }
         process_group = data_array[4];
         fclose(fptr);
+        free_tokens(data_array);
     }
 
     FILE* fptr2 = fopen(path_maps, "r");
     if (fptr2 != NULL) {
-        buffer = (char*) calloc(50000, sizeof(char));
         unsigned long start;
         unsigned long end;
         fgets(buffer, 50000, fptr2);
@@ -106,17 +62,14 @@ int main(int argc, char* argv[]) {
     }
     printf("Process group : %s\n", process_group);
     printf("Virtual memory : %lu\n", virtual_address);
-
-
+    
     ssize_t length = readlink(path_exe, executable_path, sizeof(executable_path) - 1);
     executable_path[length] = '\0';
     printf("executable path : %s\n", executable_path);
 
-    // free(buffer);
-    // free_tokens(args);
-    // free_tokens(data_array);
-    // free(data);
-    // free(path_stat);
-    // free(path_maps);
-    return 0;
+    free(buffer);
+    free(data);
+    free(path_stat);
+    free(path_maps);
+    free(path_exe);
 }

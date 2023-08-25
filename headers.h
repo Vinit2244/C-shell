@@ -24,5 +24,6 @@
 #include "seek.h"
 #include "linked_list.h"
 #include "LL2.h"
+#include "proclore.h"
 
 #endif

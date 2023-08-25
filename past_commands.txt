@@ -1,15 +1,15 @@
 exit
-warp ..
-warp test
-sleep 5&
+clear
+vim&
+proclore 310
+proclore
+exit
+proclore 210
+proclore
+exit
+warp test; sleep 3; warp ..
+exit
 sleep 3
 exit
 sleep 3
-warp test
-sleep 3&
-sleep 5&
-sleep 5 &
-sleep 5&
-sleep 3
-warp test;
-sleep 10&
+exit

@@ -1,8 +1,16 @@
 #include "headers.h"
 
 int bg_process = 0;
+int start = 0;
+time_t tyme = 0;
 
 void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t) {
+
+    tyme = time(NULL) - start;
+    *t = tyme;
+
+    start = 0;
+    tyme = 0;
 
     int overall_success = 1;
     int pastevents_present = 0;
@@ -43,8 +51,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         input[strlen(command)] = '\0';
     }
 
+    last_command[0] = '\0';
+
     char** list_of_commands = get_list_of_commands(input); // contains the list of all commands as separate strings in the form of a 2D array
-        
+
+    start = time(NULL);
+
     int idx = 0;
     char* curr_command = list_of_commands[idx];
     while (curr_command[0] != '\0') {
@@ -58,6 +70,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             no_of_arguments++;
         }
         no_of_arguments--;
+
+        if (strlen(last_command) == 0) {
+            strcpy(last_command, argument_tokens[0]);
+        } else {
+            strcat(last_command, ", ");
+            strcat(last_command, argument_tokens[0]);
+        }
 
         // Different commands
 // ===================================================================================
@@ -184,11 +203,20 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
         }
 // ===================================================================================
-        // // proclore
+        // proclore
 
-        // // checking if proclore command is present
-        // if (strcmp("proclore", argument_tokens[0])) {
-        // }
+        // checking if proclore command is present
+        else if (strcmp("proclore", argument_tokens[0]) == 0) {
+            char* pid = (char*) calloc(50, sizeof(char));
+            if (no_of_arguments == 0) {
+                int curr_pid = getppid();
+                sprintf(pid, "%d", curr_pid);
+            } else {
+                strcpy(pid, argument_tokens[1]);
+            }
+            proclore(pid);
+            free(pid);
+        }
 // ===================================================================================
         // seek
 
@@ -369,8 +397,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             printf("\n");
         }
 // ===================================================================================
+        // system commands
+        
         else {
-            // system commands
             bg_process = 0;
 
             if (curr_command[strlen(curr_command) - 1] == '&') {
@@ -380,8 +409,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 bg_process = 0;
             }
 
-            int start = 0;
-            time_t tyme = 0;
             int ppid = getpid();
             int pid = fork();
 
@@ -389,12 +416,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 execvp(argument_tokens[0], argument_tokens);
             } else if (pid > 0) {
                 if (bg_process == 0) {
-                    start = time(NULL);
                     wait(NULL);
-                    tyme = time(NULL) - start;
-
-                    *t = tyme;
-                    strcpy(last_command, argument_tokens[0]);
                 } else {
                     printf("%d\n", pid);
                     insert_in_LL(pid, -1);
