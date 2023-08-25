@@ -3,18 +3,21 @@
 
 #define MAX_LEN 10000
 
+// Built in header files
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <dirent.h>
+#include <time.h>
 #include <pwd.h>
 #include <grp.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <time.h>
+#include <signal.h>
 
+// User defined header files
 #include "prompt.h"
 #include "warp.h"
 #include "peek.h"

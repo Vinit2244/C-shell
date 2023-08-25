@@ -114,7 +114,6 @@ void remove_leading_and_trailing_spaces(char* str) {
 }
 
 char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
-    // printf("%s\n", path);
     int success = 1;
 
     char tilde[2]       = "~";

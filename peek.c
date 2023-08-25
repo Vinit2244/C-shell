@@ -3,7 +3,7 @@
 int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
     if (path[0] == '-') {
-        printf("Invalid Flags\n");
+        printf("\033[1;31mpeek: Invalid Flags\033[1;0m\n");
         return 0;
     } else if (path[0] == '\0') {
         for (int i = 0; i < strlen(cwd); i++) {
@@ -18,7 +18,7 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     } else {
         new_path = generate_new_path(cwd, path, prev_dir, home_dir);
         if (new_path == NULL) {
-            printf("peek: no such file or directory\n");
+            printf("\033[1;31mpeek: no such file or directory\033[1;0m\n");
             return 0;
         }
     }
@@ -175,7 +175,7 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
         printf((file_stat.st_mode & S_IWOTH) ? "w" : "-");
         printf((file_stat.st_mode & S_IXOTH) ? "x" : "-");
     } else {
-        perror("Error in stat");
+        printf("\033[1;31mpeek: error in stat\033[1;0m\n");
     }
 
     struct passwd *pw = getpwuid(file_stat.st_uid);

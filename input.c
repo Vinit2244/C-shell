@@ -1,24 +1,25 @@
 #include "headers.h"
 
-int bg_process = 0;
-int start = 0;
-time_t tyme = 0;
+int bg_process = 0; // Flag to mark if a process is background process or not
+int start = 0;      // Variable to hold the start time of command execution
+time_t tyme = 0;    // Variable to hold the time of execution
 
 void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t) {
 
-    tyme = time(NULL) - start;
-    *t = tyme;
+    tyme = time(NULL) - start;  // current time - start time
+    *t = tyme;                  // global variable to hold the time of last executed command
 
-    start = 0;
-    tyme = 0;
+    start = 0;                  // reset start time to zero
+    tyme = 0;                   // reset execution time to zero
 
-    int overall_success = 1;
-    int pastevents_present = 0;
+    int overall_success = 1;    // flag to mark if the complete command ran without failing
+    int pastevents_present = 0; // flag to mark if pastevents command is present
+
     char* input = (char*) calloc(5000, sizeof(char));
     input[0] = '\0';
     
-    if (command == NULL) {
-        store = 1;
+    if (command == NULL) {  // command is NULL if the input function is called from main and not from pastevents execute function
+        store = 1;          // flag to reflect if the command inputted is to be stored or not
 
         // Print appropriate prompt with username, systemname and directory before accepting input
         prompt(home_directory, cwd, t, last_command);
@@ -33,7 +34,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 input[i] = '\0';
             }
         }
-        // check through the linked list of all the background processes and print the ones which are done
+        // check through the linked list of all the background processes that were running and print the ones which are done
         check_and_print();
         
         if (bg_process_buffer[0] == '\0') {
@@ -43,8 +44,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             bg_process_buffer[0] = '\0';
         }
 
-    } else {
-        store = 0;
+    } else {        // input is called by pastevents execute
+        store = 0;  // don't store the command as it was called by pastevents execute
         for (int i = 0; i < strlen(command); i++) {
             input[i] = command[i];
         }
@@ -151,7 +152,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     purge();
                 } else if (strcmp(argument_tokens[1], "execute") == 0) {
                     if (no_of_arguments == 1) {
-                        printf("pastevents: missing argument in \"%s\"\n", curr_command);
+                        printf("\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
                     } else if (no_of_arguments == 2) {
                         char* number = argument_tokens[2];
                         int num = 0;
@@ -188,17 +189,17 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             num = 15;
                         } else {
                             flag = 0;
-                            printf("pastevents: argument value should a positive integer less than or equal to 15\n");
+                            printf("\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
                         }
                         if (flag) {
                             printf("%d\n", num);
                             int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t);
                         }
                     } else {
-                        printf("pastevents: excess arguments in \"%s\"\n", curr_command);
+                        printf("\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
                     }
                 } else {
-                    printf("pastevents: invalid arguments in \"%s\"\n", curr_command);
+                    printf("\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
                 }
             }
         }
@@ -236,7 +237,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             int success = 1;
 
             if (no_of_arguments == 0) {
-                printf("seek: missing arguments\n");
+                printf("\033[1;31mseek: missing arguments\033[1;0m\n");
                 overall_success = 0;
             } else {
                 for (int i = 1; i <= no_of_arguments; i++) {
@@ -244,7 +245,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                     if (curr_argument[0] == '-') {
                         if (base_dir_flag == 1) {
-                            printf("seek: Invalid Arguments\n");
+                            printf("\033[1;31mseek: Invalid Arguments\033[1;0m\n");
                             overall_success = 0;
                         } else {
                             if (strcmp(curr_argument, "-d") == 0) {
@@ -254,7 +255,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             } else if (strcmp(curr_argument, "-e") == 0) {
                                 e = 1;
                             } else {
-                                printf("seek: Invalid Flag\n");
+                                printf("\033[1;31mseek: Invalid Flag\033[1;0m\n");
                                 overall_success = 0;
                                 valid_flags = 0;
                             }
@@ -264,7 +265,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         strcpy(base_dir, curr_argument);
                     } else {
                         if (file_name_flag == 1) {
-                            printf("seek: invalid arguments\n");
+                            printf("\033[1;31mseek: invalid arguments\033[1;0m\n");
                             overall_success = 0;
                         } else {
                             file_name_flag = 1;
@@ -275,7 +276,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
             if (valid_flags == 1 && file_name_flag == 1) {
                 if (d == 1 && f == 1) {
-                    printf("Invalid flags\n");
+                    printf("\033[1;31mInvalid flags\033[1;0m\n");
                     overall_success = 0;
                 } else {
                     linked_list_head paths = create_linked_list_head();
@@ -332,9 +333,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                         if (S_ISDIR(dir_stat.st_mode) == 0) { // checking if it's a file
                                             if (dir_stat.st_mode & S_IRUSR) {
                                                 printf("\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
-                                                char buffer[9999999];
+                                                char buffer[100000];
                                                 FILE* fptr = fopen(trav->path, "r");
-                                                fgets(buffer, 9999999, fptr);
+                                                fgets(buffer, 100000, fptr);
                                                 fclose(fptr);
                                                 printf("%s\n", buffer);
                                             } else {
@@ -376,8 +377,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         // checking if exit command is present
         else if (strcmp("exit", argument_tokens[0]) == 0) {
             if (no_of_arguments > 1) {
-                printf("Invalid command\n");
+                printf("\033[1;31mInvalid command\033[1;0m\n");
             } else {
+                LL_Node trav = LL->first;
+                while (trav != NULL) {
+                    kill(trav->pid, SIGKILL);
+                    trav = trav->next;
+                }
                 store_command(curr_command);
                 exit(0);
             }
@@ -413,6 +419,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             int pid = fork();
 
             if (pid == 0) {
+                setpgid(0, 0);
                 execvp(argument_tokens[0], argument_tokens);
             } else if (pid > 0) {
                 if (bg_process == 0) {
@@ -422,7 +429,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     insert_in_LL(pid, -1);
                 }
             } else {
-                perror("fork");
+                printf("\033[1;31mfork: could not fork\033[1;0m\n");
             }
         }
 // ===================================================================================

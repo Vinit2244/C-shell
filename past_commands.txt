@@ -1,15 +1,15 @@
+warp test
+exit
+vim &
+exit
+warp test
+sleep 3
+clear
+vim &
+clear
+[I[2;2R]10;rgb:cccc/cccc/cccc\]11;rgb:1818/1818/1818\[?12;2$y:::exit
 exit
 clear
-vim&
-proclore 310
-proclore
+quit
 exit
-proclore 210
-proclore
-exit
-warp test; sleep 3; warp ..
-exit
-sleep 3
-exit
-sleep 3
-exit
+quit

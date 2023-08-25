@@ -35,16 +35,19 @@ void store_command(char* command) {
 
             FILE *fptr2;
             fptr2 = fopen("past_commands.txt", "w");
-            fprintf(fptr2, "%s\n", command);
-            for (int i = 0; i < 14; i++) {
-                if (past_commands[i][0] != '\0') {
-                    fprintf(fptr2, "%s\n", past_commands[i]);
-                } else {
-                    break;
+            if (fptr2 == NULL) {
+                printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+            } else {
+                fprintf(fptr2, "%s\n", command);
+                for (int i = 0; i < 14; i++) {
+                    if (past_commands[i][0] != '\0') {
+                        fprintf(fptr2, "%s\n", past_commands[i]);
+                    } else {
+                        break;
+                    }
                 }
+                fclose(fptr2);
             }
-            fclose(fptr2);
-
             for (int i = 0; i < 15; i++) {
                 free(past_commands[i]);
             }
@@ -81,6 +84,9 @@ void pastevents() {
 void purge() {
     FILE *fptr;
     fptr = fopen("past_commands.txt", "w");
+    if (fptr == NULL) {
+        printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+    }
     fclose(fptr);
 }
 
@@ -100,7 +106,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
         fclose(fptr);
 
         if (past_commands[num - 1][0] == '\0') {
-            printf("Invalid Argument\n");
+            printf("\033[1;31mInvalid Argument\033[1;0m\n");
         } else {
             input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t);
         }

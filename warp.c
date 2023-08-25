@@ -7,7 +7,7 @@ int warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
         if (path[0] == '/') {
             struct stat path_stat;
             if (stat(path, &path_stat) < 0) {
-                printf("warp: no such directory exists: %s\n", path);
+                printf("\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
                 return 0;
             } else {
                 for (int i = 0; i < strlen(path); i++) {
@@ -20,7 +20,7 @@ int warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
 
     char* new_path = generate_new_path(cwd, path, prev_dir, home_dir);
     if (new_path == NULL) {
-        printf("warp: no such directory exists: %s\n", path);
+        printf("\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
         return 0;
     } else if (new_path[0] == '^') {
         // print nothing

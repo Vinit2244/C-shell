@@ -16,7 +16,10 @@
 ## Background processes
 
 ## Seek
-- If flag -e is provided and only one file is found then a maximum of 9999999 characters will be read and printed as output even if the file is bigger than that
+- If flag -e is provided and only one file is found then a maximum of 100000 characters will be read and printed as output even if the file is bigger than that
 
 ## Echo
 - Handling echo by myself and not using execvp()
+
+## Proclore
+- I am considering all the processes spawned by my shell background process only as background process all other processes spawned by the PC terminal is considered as foreground only
