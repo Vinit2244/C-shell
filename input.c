@@ -643,12 +643,22 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (pid == 0) {
                     setpgid(0, 0);
                     if (w == 1) {
+                        char file_path[MAX_LEN];
+                        strcpy(file_path, cwd);
+                        strcat(file_path, "/");
+                        strcat(file_path, file_name);
+
                         close(STDOUT_FILENO);
-                        open(file_name, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                        open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                         execvp(argument_tokens[0], argument_tokens);
                     } else if (ap == 1) {
+                        char file_path[MAX_LEN];
+                        strcpy(file_path, cwd);
+                        strcat(file_path, "/");
+                        strcat(file_path, file_name);
+                        
                         close(STDOUT_FILENO);
-                        open(file_name, O_CREAT | O_WRONLY | O_APPEND, 0644);
+                        open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
                         execvp(argument_tokens[0], argument_tokens);
                     } else {
                         execvp(argument_tokens[0], argument_tokens);
