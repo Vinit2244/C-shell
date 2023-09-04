@@ -108,7 +108,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
         if (past_commands[num - 1][0] == '\0') {
             printf("\033[1;31mInvalid Argument\033[1;0m\n");
         } else {
-            input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t);
+            input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, NULL);
         }
 
         for (int i = 0; i < 15; i++) {

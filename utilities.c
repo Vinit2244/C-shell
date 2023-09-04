@@ -38,6 +38,11 @@ char** generate_tokens(char* str, char c) {
     }
 
     tokens_array[tokens_array_idx][token_idx] = '\0';
+
+    // Removing all the leading and trailing spaces from the commands if any present
+    for (int i = 0; i <= tokens_array_idx; i++) {
+        remove_leading_and_trailing_spaces(tokens_array[i]);
+    }
     return tokens_array;
 }
 
@@ -268,5 +273,16 @@ char* relative_path(char* complete_path, char* base_dir_path) {
         rel_path[i - idx + 1] = complete_path[i];
     }
     return rel_path;
+}
+
+void print_global_buffer_onto_terminal() {
+    printf("%s", global_buffer);
+    global_buffer_empty = 1;
+}
+
+void write_in_global_buffer(char* string_to_be_written) {
+    strcat(global_buffer, string_to_be_written);
+    global_buffer[strlen(global_buffer)] = '\n';
+    global_buffer_empty = 0;
 }
 

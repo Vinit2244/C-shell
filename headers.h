@@ -16,6 +16,9 @@
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 // User defined header files
 #include "prompt.h"
@@ -28,5 +31,6 @@
 #include "linked_list.h"
 #include "LL2.h"
 #include "proclore.h"
+#include "write_redirection.h"
 
 #endif

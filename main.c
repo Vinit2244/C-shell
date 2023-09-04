@@ -3,8 +3,13 @@
 LL_Head LL;
 char* bg_process_buffer;
 
+char* global_buffer;
+int global_buffer_empty;
+
 int main()
 {
+    global_buffer_empty = 1;
+    global_buffer = (char*) calloc(9999999, sizeof(char));
     bg_process_buffer = calloc(9999999, sizeof(char));
     char home_directory[MAX_LEN + 1]; // stores the absolute path to the home directory
     char cwd[MAX_LEN + 1];            // stores the absolute path to the current working directory
@@ -26,7 +31,7 @@ int main()
     // Keep accepting commands
     while (1)
     {
-        input(NULL, home_directory, cwd, prev_dir, 1, last_command, &t);
+        input(NULL, home_directory, cwd, prev_dir, 1, last_command, &t, 0, 0, NULL);
     }
     free(last_command);
     return 0;
