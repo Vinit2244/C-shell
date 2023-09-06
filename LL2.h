@@ -19,6 +19,6 @@ linked_list_head create_linked_list_head();
 linked_list_node create_linked_list_node(char* path);
 void insert_in_linked_list(linked_list_head linked_list, char* path);
 void free_linked_list(linked_list_head linked_list);
-void traverse_and_print(linked_list_head linked_list, int file, int dir, char* path_to_base_dir);
+void traverse_and_print(linked_list_head linked_list, int file, int dir, char* path_to_base_dir, int ap, int w);
 
 #endif

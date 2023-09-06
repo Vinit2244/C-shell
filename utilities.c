@@ -277,12 +277,13 @@ char* relative_path(char* complete_path, char* base_dir_path) {
 
 void print_global_buffer_onto_terminal() {
     printf("%s", global_buffer);
+    memset(global_buffer, 0, strlen(global_buffer));
     global_buffer_empty = 1;
 }
 
-void write_in_global_buffer(char* string_to_be_written) {
-    strcat(global_buffer, string_to_be_written);
-    global_buffer[strlen(global_buffer)] = '\n';
-    global_buffer_empty = 0;
-}
+// void write_in_global_buffer(char* string_to_be_written) {
+//     strcat(global_buffer, string_to_be_written);
+//     global_buffer[strlen(global_buffer)] = '\n';
+//     global_buffer_empty = 0;
+// }
 

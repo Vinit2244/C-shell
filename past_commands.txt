@@ -1,15 +1,15 @@
-ls >> abcd.txt
-ls > abcd.txt
-warp test
 exit
-ls > abcd.txt
-warp test
-peek > abcd.txt
-peek
-warp test
-peek
+seek programming
+seek programming >> temp.txt
 exit
-cd test
-ls
+seek prog
+seek prog > temp.txt
 exit
-clear
+seek prog > test.txt
+exit
+seek prog > temp.txt
+exit
+seek prog > temp.txt
+exit
+seek prog > temp.txt
+exit
