@@ -23,3 +23,6 @@
 
 ## Proclore
 - I am considering all the processes spawned by my shell background process only as background process all other processes spawned by the PC terminal is considered as foreground only
+
+## IO Redirection
+- In input output redirection the errors which are printed in color on terminal is not printed in color in the text file it is just written normally without color coding
