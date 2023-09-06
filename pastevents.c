@@ -1,12 +1,15 @@
 #include "headers.h"
 
-void store_command(char* command) {
-
+void store_command(char* command, char* home_dir) {
+    char past_commands_path[MAX_LEN];
+    strcpy(past_commands_path, home_dir);
+    strcat(past_commands_path, "/");
+    strcat(past_commands_path, "past_commands.txt");
     FILE *fptr;
-    fptr = fopen("past_commands.txt", "r");
+    fptr = fopen(past_commands_path, "r");
 
     if (fptr == NULL) {
-        fptr = fopen("past_commands.txt", "w");
+        fptr = fopen(past_commands_path, "w");
         fprintf(fptr, "%s\n", command);
         fclose(fptr);
     } else {
@@ -34,8 +37,9 @@ void store_command(char* command) {
             fclose(fptr);
 
             FILE *fptr2;
-            fptr2 = fopen("past_commands.txt", "w");
+            fptr2 = fopen(past_commands_path, "w");
             if (fptr2 == NULL) {
+
                 printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
             } else {
                 fprintf(fptr2, "%s\n", command);
@@ -56,9 +60,13 @@ void store_command(char* command) {
     }
 }
 
-void pastevents() {
+void pastevents(char* home_dir) {
+    char past_commands_path[MAX_LEN] = {0};
+    strcpy(past_commands_path, home_dir);
+    strcat(past_commands_path, "/past_commands.txt");
+
     FILE *fptr;
-    fptr = fopen("past_commands.txt", "r");
+    fptr = fopen(past_commands_path, "r");
 
     if (fptr == NULL) {
         return;
@@ -71,7 +79,11 @@ void pastevents() {
         }
 
         for (int i = 14; i >= 0; i--) {
-            if (past_commands[i][0] != '\0') printf("%s\n", past_commands[i]);
+            if (past_commands[i][0] != '\0'){
+                char buff[MAX_LEN] = {0};
+                sprintf(buff, "%s\n", past_commands[i]);
+                bprintf(global_buffer, buff);
+            }
         }
 
         for (int i = 0; i < 15; i++) {
@@ -81,18 +93,30 @@ void pastevents() {
     }
 }
 
-void purge() {
+void purge(int ap, int w, char* home_dir) {
     FILE *fptr;
-    fptr = fopen("past_commands.txt", "w");
+    char past_commands_path[MAX_LEN] = {0};
+    strcpy(past_commands_path, home_dir);
+    strcat(past_commands_path, "/past_commands.txt");
+
+    fptr = fopen(past_commands_path, "w");
     if (fptr == NULL) {
-        printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+        if (ap == 0 && w == 0) {
+            bprintf(global_buffer, "\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+        } else {
+            bprintf(global_buffer, "pastevents: error opening file for writing\n");
+        }
     }
     fclose(fptr);
 }
 
-int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char* last_command, int* t) {
+int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char* last_command, int* t, int ap, int w) {
     FILE *fptr;
-    fptr = fopen("past_commands.txt", "r");
+    char past_commands_path[MAX_LEN] = {0};
+    strcpy(past_commands_path, home_dir);
+    strcat(past_commands_path, "/past_commands.txt");
+
+    fptr = fopen(past_commands_path, "r");
 
     if (fptr == NULL) {
         return 0;
@@ -106,7 +130,11 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
         fclose(fptr);
 
         if (past_commands[num - 1][0] == '\0') {
-            printf("\033[1;31mInvalid Argument\033[1;0m\n");
+            if (ap == 0 && w == 0) {
+                bprintf(global_buffer, "\033[1;31mInvalid Argument\033[1;0m\n");
+            } else {
+                bprintf(global_buffer, "Invalid Argument\n");
+            }
         } else {
             input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, NULL);
         }

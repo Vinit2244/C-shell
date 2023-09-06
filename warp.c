@@ -1,13 +1,20 @@
 #include "headers.h"
 
-int warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
-
+int warp(char* cwd, char* path, char* prev_dir, char* home_dir, int ap, int w) {
     if (strlen(path) > 0) {
         // checking if absolute path
         if (path[0] == '/') {
             struct stat path_stat;
             if (stat(path, &path_stat) < 0) {
-                printf("\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
+                if (ap == 1 || w == 1) {
+                    char buff[MAX_LEN] = {0};
+                    sprintf(buff, "warp: no such directory exists: %s\n", path);
+                    bprintf(global_buffer, buff);
+                } else {
+                    char buff[MAX_LEN] = {0};
+                    sprintf(buff, "\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
+                    bprintf(global_buffer, buff);  
+                }
                 return 0;
             } else {
                 for (int i = 0; i < strlen(path); i++) {
@@ -20,7 +27,15 @@ int warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
 
     char* new_path = generate_new_path(cwd, path, prev_dir, home_dir);
     if (new_path == NULL) {
-        printf("\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
+        if (ap == 0 || w == 0) {
+            char buff[MAX_LEN] = {0};
+            sprintf(buff, "warp: no such directory exists: %s\n", path);
+            bprintf(global_buffer, buff);
+        } else {
+            char buff[MAX_LEN] = {0};
+            sprintf(buff, "\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
+            bprintf(global_buffer, buff);
+        }
         return 0;
     } else if (new_path[0] == '^') {
         // print nothing
@@ -55,7 +70,9 @@ int warp(char* cwd, char* path, char* prev_dir, char* home_dir) {
 
         free(new_path);
 
-        printf("%s\n", cwd);
+        char buff[MAX_LEN] = {0};
+        sprintf(buff, "%s\n", cwd);
+        bprintf(global_buffer, buff);
     }
     return 1;
 }

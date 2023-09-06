@@ -10,6 +10,7 @@
 
 ## Warp
 - File path does not contain any spaces.
+- When the output of warp is redirected into some file then the file gets created into the final path of the folder
 
 ## Peek
 - "peek -" gives error

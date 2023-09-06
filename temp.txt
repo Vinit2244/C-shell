@@ -1,2 +1,3 @@
-./test/prog
-./test/programming
+warp test
+warp ..
+cat seek.c > temp.txt

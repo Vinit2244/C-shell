@@ -1,9 +1,13 @@
 #include "headers.h"
 
-int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
+int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, int ap, int w) {
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
     if (path[0] == '-') {
-        printf("\033[1;31mpeek: Invalid Flags\033[1;0m\n");
+        if (ap == 0 && w == 0) {
+            bprintf(global_buffer, "\033[1;31mpeek: Invalid Flags\033[1;0m\n");
+        } else {
+            bprintf(global_buffer, "peek: Invalid Flags\n");
+        }
         return 0;
     } else if (path[0] == '\0') {
         for (int i = 0; i < strlen(cwd); i++) {
@@ -18,7 +22,11 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
     } else {
         new_path = generate_new_path(cwd, path, prev_dir, home_dir);
         if (new_path == NULL) {
-            printf("\033[1;31mpeek: no such file or directory\033[1;0m\n");
+            if (ap == 0 && w == 0) {
+                bprintf(global_buffer, "\033[1;31mpeek: no such file or directory\033[1;0m\n");
+            } else {
+                bprintf(global_buffer, "peek: no such file or directory\n");
+            }
             return 0;
         }
     }
@@ -38,7 +46,7 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
                 complete_path_of_file[j] = files_list[idx][j - start];
             }
             complete_path_of_file[start + strlen(files_list[idx])] = '\0';
-            print_extra_details(complete_path_of_file, files_list, idx);
+            print_extra_details(complete_path_of_file, files_list, idx, ap, w);
             idx++;
         }
     } else if (a) {
@@ -53,13 +61,31 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
             stat(complete_path_of_file, &file_info);
             if (S_ISDIR(file_info.st_mode)) { // checking if directory
                 // color blue
-                printf("\033[1;34m%s\033[1;0m\n", files_list[idx]);
+                if (ap == 0 && w == 0) {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "\033[1;34m%s\033[1;0m\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                } else {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "%s\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                }
             } else if (file_info.st_mode & S_IXUSR) { // checking if a file is executable
                 // color green
-                printf("\033[1;32m%s\033[1;0m\n", files_list[idx]);
+                if (ap == 0 && w == 0) {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "\033[1;32m%s\033[1;0m\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                } else {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "%s\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                }
             } else { // else the file is regular
                 // color white
-                printf("%s\n", files_list[idx]);
+                char buff[MAX_LEN];
+                sprintf(buff, "%s\n", files_list[idx]);
+                bprintf(global_buffer, buff);
             }
             idx++;
         }
@@ -81,7 +107,7 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
                 complete_path_of_file[j] = files_list[idx][j - start];
                 }
                 complete_path_of_file[start + strlen(files_list[idx])] = '\0';
-                print_extra_details(complete_path_of_file, files_list, idx);
+                print_extra_details(complete_path_of_file, files_list, idx, ap, w);
             }
             idx++;
         }
@@ -102,13 +128,31 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir) {
             stat(complete_path_of_file, &file_info);
             if (S_ISDIR(file_info.st_mode)) { // checking if directory
                 // color blue
-                printf("\033[1;34m%s\033[1;0m\n", files_list[idx]);
+                if (ap == 0 && w == 0) {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "\033[1;34m%s\033[1;0m\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                } else {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "%s\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                }
             } else if (file_info.st_mode & S_IXUSR) { // checking if a file is executable
                 // color green
-                printf("\033[1;32m%s\033[1;0m\n", files_list[idx]);
+                if (ap == 0 && w == 0) {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "\033[1;32m%s\033[1;0m\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                } else {
+                    char buff[MAX_LEN];
+                    sprintf(buff, "%s\n", files_list[idx]);
+                    bprintf(global_buffer, buff);
+                }
             } else { // else the file is regular
                 // color white
-                printf("%s\n", files_list[idx]);
+                char buff[MAX_LEN];
+                sprintf(buff, "%s\n", files_list[idx]);
+                bprintf(global_buffer, buff);
             }
             idx++;
         }
@@ -160,27 +204,34 @@ char** generate_sorted_file_list(char* path) {
     return files_list;
 }
 
-void print_extra_details(char* complete_path_of_file, char** files_list, int idx) {
+void print_extra_details(char* complete_path_of_file, char** files_list, int idx, int ap, int w) {
     struct stat file_stat;
 
     if (!stat(complete_path_of_file, &file_stat)) {
-        printf((S_ISDIR(file_stat.st_mode))  ? "d" : "-");
-        printf((file_stat.st_mode & S_IRUSR) ? "r" : "-");
-        printf((file_stat.st_mode & S_IWUSR) ? "w" : "-");
-        printf((file_stat.st_mode & S_IXUSR) ? "x" : "-");
-        printf((file_stat.st_mode & S_IRGRP) ? "r" : "-");
-        printf((file_stat.st_mode & S_IWGRP) ? "w" : "-");
-        printf((file_stat.st_mode & S_IXGRP) ? "x" : "-");
-        printf((file_stat.st_mode & S_IROTH) ? "r" : "-");
-        printf((file_stat.st_mode & S_IWOTH) ? "w" : "-");
-        printf((file_stat.st_mode & S_IXOTH) ? "x" : "-");
+        bprintf(global_buffer, (S_ISDIR(file_stat.st_mode))  ? "d" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IRUSR) ? "r" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IWUSR) ? "w" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IXUSR) ? "x" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IRGRP) ? "r" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IWGRP) ? "w" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IXGRP) ? "x" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IROTH) ? "r" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IWOTH) ? "w" : "-");
+        bprintf(global_buffer, (file_stat.st_mode & S_IXOTH) ? "x" : "-");
     } else {
-        printf("\033[1;31mpeek: error in stat\033[1;0m\n");
+        if (ap == 0 && w == 0) {
+            bprintf(global_buffer, "\033[1;31mpeek: error in stat\033[1;0m\n");
+        } else {
+            bprintf(global_buffer, "peek: error in stat\n");
+        }
     }
 
     struct passwd *pw = getpwuid(file_stat.st_uid);
     struct group  *gr = getgrgid(file_stat.st_gid);
-    printf(" %ld %s %s %ld ", file_stat.st_nlink, pw->pw_name, gr->gr_name, file_stat.st_size);
+
+    char buff[MAX_LEN];
+    sprintf(buff, " %ld %s %s %ld ", file_stat.st_nlink, pw->pw_name, gr->gr_name, file_stat.st_size);
+    bprintf(global_buffer, buff);
 
     time_t modificationTime = file_stat.st_mtime;
 
@@ -217,16 +268,36 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
     }
     year[4] = '\0';
 
-    printf("%s %s %s %s ", month, date, hour, mins);
+    char buff2[MAX_LEN];
+    sprintf(buff2, "%s %s %s %s ", month, date, hour, mins);
+    bprintf(global_buffer, buff2);
 
     if (S_ISDIR(file_stat.st_mode)) { // checking if directory
         // color blue
-        printf("\033[1;34m%s\033[1;0m\n", files_list[idx]);
+        if (ap == 0 && w == 0) {
+            char buff[MAX_LEN];
+            sprintf(buff, "\033[1;34m%s\033[1;0m\n", files_list[idx]);
+            bprintf(global_buffer, buff);
+        } else {
+            char buff[MAX_LEN];
+            sprintf(buff, "%s\n", files_list[idx]);
+            bprintf(global_buffer, buff);
+        }
     } else if (file_stat.st_mode & S_IXUSR) { // checking if a file is executable
         // color green
-        printf("\033[1;32m%s\033[1;0m\n", files_list[idx]);
+        if (ap == 0 && w == 0) {
+            char buff[MAX_LEN];
+            sprintf(buff, "\033[1;32m%s\033[1;0m\n", files_list[idx]);
+            bprintf(global_buffer, buff);
+        } else {
+            char buff[MAX_LEN];
+            sprintf(buff, "%s\n", files_list[idx]);
+            bprintf(global_buffer, buff);
+        }
     } else { // else the file is regular
         // color white
-        printf("%s\n", files_list[idx]);
+        char buff[MAX_LEN];
+        sprintf(buff, "%s\n", files_list[idx]);
+        bprintf(global_buffer, buff);
     }
 }

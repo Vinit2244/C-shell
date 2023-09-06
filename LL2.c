@@ -53,17 +53,25 @@ void traverse_and_print(linked_list_head linked_list, int file, int dir, char* p
 
         if (S_ISDIR(dir_stat.st_mode) == 0 && file) {
             if (ap == 1 || w == 1) {
-                sprintf(global_buffer, "%s\n", p);
+                char buff[MAX_LEN] = {0};
+                sprintf(buff, "%s\n", p);
+                bprintf(global_buffer, buff);
             }
             else {
-                sprintf(global_buffer, "\033[1;32m%s\033[1;0m\n", p);
+                char buff[MAX_LEN] = {0};
+                sprintf(buff, "\033[1;32m%s\033[1;0m\n", p);
+                bprintf(global_buffer, buff);
             }
         } else if (S_ISDIR(dir_stat.st_mode) != 0 && dir) {
             if (ap == 1 || w == 1) {
-                sprintf(global_buffer, "%s\n", p);
+                char buff[MAX_LEN] = {0};
+                sprintf(buff, "%s\n", p);
+                bprintf(global_buffer, buff);
             }
             else {
-                sprintf(global_buffer, "\033[1;34m%s\033[1;0m\n", p);
+                char buff[MAX_LEN] = {0};
+                sprintf(buff, "\033[1;34m%s\033[1;0m\n", p);
+                bprintf(global_buffer, buff);
             }
         }
         trav = trav->next;

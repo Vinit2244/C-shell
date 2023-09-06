@@ -1,15 +1,3 @@
-exit
-seek programming
-seek programming >> temp.txt
-exit
-seek prog
-seek prog > temp.txt
-exit
-seek prog > test.txt
-exit
-seek prog > temp.txt
-exit
-seek prog > temp.txt
-exit
-seek prog > temp.txt
-exit
+cat seek.c > temp.txt
+warp ..
+warp test

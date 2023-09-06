@@ -1,6 +1,6 @@
 #include "headers.h"
 
-void proclore(char* pid) {
+void proclore(char* pid, int ap, int w) {
     char* path_stat = (char*) calloc(256, sizeof(char));
     sprintf(path_stat, "/proc/%d/stat", atoi(pid));
 
@@ -18,7 +18,15 @@ void proclore(char* pid) {
 
     FILE *fptr = fopen(path_stat, "r");
     if (fptr == NULL) {
-        printf("\033[1;31mNo such process with process id %s running\033[1;0m\n", pid);
+        if (ap == 0 && w == 0) {
+            char buff[MAX_LEN] = {0};
+            sprintf(buff, "\033[1;31mNo such process with process id %s running\033[1;0m\n", pid);
+            bprintf(global_buffer, buff);
+        } else {
+            char buff[MAX_LEN] = {0};
+            sprintf(buff, "No such process with process id %s running\n", pid);
+            bprintf(global_buffer, buff);
+        }
     } else {
         char data[100000];
         fscanf(fptr, " %[^\n]", data);
@@ -43,11 +51,20 @@ void proclore(char* pid) {
         sscanf(buffer, "%lx-%lx", &start, &end);
         virtual_address = start;
     } else {
-        printf("\033[1;31mproclore: cannot open /proc/pid/maps\033[1;0m\n");
+        if (ap == 0 && w == 0) {
+            bprintf(global_buffer, "\033[1;31mproclore: cannot open /proc/pid/maps\033[1;0m\n");
+        } else {
+            bprintf(global_buffer, "proclore: cannot open /proc/pid/maps\n");
+        }
     }
 
-    printf("pid : %s\n", pid);
-    printf("process status : %s", status);
+    char buff[MAX_LEN] = {0};
+    sprintf(buff, "pid : %s\n", pid);
+    bprintf(global_buffer, buff);
+
+    char buff2[MAX_LEN] = {0};
+    sprintf(buff2, "process status : %s", status);
+    bprintf(global_buffer, buff2);
 
     int background_process = 0;
     LL_Node trav = LL->first;
@@ -59,16 +76,24 @@ void proclore(char* pid) {
         trav = trav->next;
     }
     if (background_process == 1) {
-        printf("\n");
+        bprintf(global_buffer, "\n");
     } else {
-        printf("+\n");
+        bprintf(global_buffer, "+\n");
     }
-    printf("Process group : %s\n", process_group);
-    printf("Virtual memory : %lu\n", virtual_address);
+    char buff3[MAX_LEN] = {0};
+    sprintf(buff3, "Process group : %s\n", process_group);
+    bprintf(global_buffer, buff3);
+
+    char buff4[MAX_LEN] = {0};
+    sprintf(buff4, "Virtual memory : %lu\n", virtual_address);
+    bprintf(global_buffer, buff4);
     
     ssize_t length = readlink(path_exe, executable_path, sizeof(executable_path) - 1);
     executable_path[length] = '\0';
-    printf("executable path : %s\n", executable_path);
+
+    char buff5[MAX_LEN] = {0};
+    sprintf(buff5, "executable path : %s\n", executable_path);
+    bprintf(global_buffer, buff5);
 
     free(path_stat);
     free(path_maps);

@@ -287,3 +287,6 @@ void print_global_buffer_onto_terminal() {
 //     global_buffer_empty = 0;
 // }
 
+void bprintf(char* buffer, char* string) {
+    strcat(buffer, string);
+}
