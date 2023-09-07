@@ -290,3 +290,44 @@ void print_global_buffer_onto_terminal() {
 void bprintf(char* buffer, char* string) {
     strcat(buffer, string);
 }
+
+void convert_to_int(char* number, int* num, int* flag, int ap, int w) {
+    if (strcmp(number, "1") == 0) {
+        *num = 1;
+    } else if (strcmp(number, "2") == 0) {
+        *num = 2;
+    } else if (strcmp(number, "3") == 0) {
+        *num = 3;
+    } else if (strcmp(number, "4") == 0) {
+        *num = 4;
+    } else if (strcmp(number, "5") == 0) {
+        *num = 5;
+    } else if (strcmp(number, "6") == 0) {
+        *num = 6;
+    } else if (strcmp(number, "7") == 0) {
+        *num = 7;
+    } else if (strcmp(number, "8") == 0) {
+        *num = 8;
+    } else if (strcmp(number, "9") == 0) {
+        *num = 9;
+    } else if (strcmp(number, "10") == 0) {
+        *num = 10;
+    } else if (strcmp(number, "11") == 0) {
+        *num = 11;
+    } else if (strcmp(number, "12") == 0) {
+        *num = 12;
+    } else if (strcmp(number, "13") == 0) {
+        *num = 13;
+    } else if (strcmp(number, "14") == 0) {
+        *num = 14;
+    } else if (strcmp(number, "15") == 0) {
+        *num = 15;
+    } else {
+        *flag = 0;
+        if (ap == 0 && w == 0) {
+            bprintf(global_buffer, "\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
+        } else {
+            bprintf(global_buffer, "pastevents: argument value should a positive integer less than or equal to 15\n");
+        }
+    }
+}

@@ -4,7 +4,7 @@ int bg_process = 0; // Flag to mark if a process is background process or not
 int start = 0;      // Variable to hold the start time of command execution
 time_t tyme = 0;    // Variable to hold the time of execution
 
-void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, char* file_name_redirection) {
+void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* file_name_redirection) {
 
     tyme = time(NULL) - start;  // current time - start time
     *t = tyme;                  // global variable to hold the time of last executed command
@@ -61,7 +61,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     int idx = 0;        // index variable to hold the index of command to be executed
     char* curr_command = list_of_commands[idx];
     while (curr_command[0] != '\0') {
-
         // Checking if the command involves piping
         int pipe_flag = 0;
         for (int i = 0; i < strlen(curr_command); i++) {
@@ -116,7 +115,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
             int k = 0;
             while (sub_commands[k] != NULL) {
-                input(sub_commands[k], home_directory, cwd, prev_dir, store, last_command, t, 0, 0, NULL);
+                input(sub_commands[k], home_directory, cwd, prev_dir, store, last_command, t, 0, 0, 0, NULL);
                 k++;
             }
             free_tokens(sub_commands);
@@ -135,7 +134,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
             free_tokens(tokens);
 
-            input(app_cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 1, to_file);
+            input(app_cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 1, 0, to_file);
             free(app_cmd);
             free(to_file);
         } else if (write_flag == 1) {
@@ -156,19 +155,28 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             free_tokens(tokens);
 
             char* output_file = params[1];
-            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, output_file);
+            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 0, output_file);
             free_tokens(params);
         } else if (inp_flag == 1) {
             char** files = generate_tokens(curr_command, '<');
-            // int idd = 0;
-            // while (files[idd] != NULL) {
-            //     printf("%s\n", files[idd]);
-            //     printf("%d\n", strlen(files[idd]));
-            //     idd++;
-            // }
+            char* cmd = files[0];
+
+            remove_leading_and_trailing_spaces(cmd);
+            char** tokens = generate_tokens(cmd, ' ');
+            int k = 0;
+            while (tokens[k] != NULL) {
+                if (strcmp(tokens[k], "pastevents") == 0) {
+                    pastevents_present = 1;
+                    break;
+                }
+                k++;
+            }
+            free_tokens(tokens);
+
+            char* inp_file = files[1];
+            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 0, 1, inp_file);
 
             free_tokens(files);
-            // return;
         } else {
             // ================= Printing the commands =================
             // printf("Command %d: %s\n", idx + 1, curr_command);
@@ -294,15 +302,44 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             // checking if warp command is present
             else if (strcmp("warp", argument_tokens[0]) == 0) {
                 int success = 1;            // flag to keep track if warp exited successfully or not
-                if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
-                    char* c = "~";
-                    // returns 1 if successfull and returns 0 if some error occured
-                    int exit_code = warp(cwd, c, prev_dir, home_directory, ap, w);
-                    if (exit_code == 0) success = 0;
-                } else {                    // if multiple arguments are passed then warp to those arguments one by one (each argument treated as a separate command)
-                    for (int i = 1; i <= no_of_arguments; i++) {
-                        int exit_code = warp(cwd, argument_tokens[i], prev_dir, home_directory, ap, w);
+                if (ip == 1) {
+                    char inp_buff[999999] = {0};
+
+                    char file_path[MAX_LEN];
+                    strcpy(file_path, cwd);
+                    strcat(file_path, "/");
+                    strcat(file_path, file_name_redirection);
+
+                    int fd = open(file_path, O_RDONLY);
+                    if (fd < 0) {
+                        perror("Error in opeaning the input file");
+                        success = 0;
+                    } else {
+                        int bytes_read = read(fd, inp_buff, 999998);
+                        if (bytes_read < 0) {
+                            perror("Error in reading");
+                            close(fd);
+                            success = 0;
+                        } else {
+                            close(fd);
+                            if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                                inp_buff[strlen(inp_buff) - 1] = '\0';
+                            }
+                            int exit_code = warp(cwd, inp_buff, prev_dir, home_directory, ap, w);
+                            if (exit_code == 0) success = 0;
+                        }
+                    }
+                } else {
+                    if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
+                        char* c = "~";
+                        // returns 1 if successfull and returns 0 if some error occured
+                        int exit_code = warp(cwd, c, prev_dir, home_directory, ap, w);
                         if (exit_code == 0) success = 0;
+                    } else {                    // if multiple arguments are passed then warp to those arguments one by one (each argument treated as a separate command)
+                        for (int i = 1; i <= no_of_arguments; i++) {
+                            int exit_code = warp(cwd, argument_tokens[i], prev_dir, home_directory, ap, w);
+                            if (exit_code == 0) success = 0;
+                        }
                     }
                 }
 
@@ -318,13 +355,10 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
             // checking if peek command is present
             else if (strcmp("peek", argument_tokens[0]) == 0) {
-                char path[MAX_LEN]; // stores path of directory to peek into
+                char path[MAX_LEN] = {0}; // stores path of directory to peek into
                 
                 // copying cwd into path
-                for (int i = 0; i < strlen(cwd); i++) {
-                    path[i] = cwd[i];
-                }
-                path[strlen(cwd)] = '\0';
+                strcpy(path, cwd);
 
                 int a = 0;
                 int l = 0;
@@ -357,6 +391,34 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             path[strlen(argument_tokens[i])] = '\0';
                         }
                     }
+                } else {
+                    if (ip == 1) {
+                        char inp_buff[999999] = {0};
+
+                        char file_path[MAX_LEN];
+                        strcpy(file_path, cwd);
+                        strcat(file_path, "/");
+                        strcat(file_path, file_name_redirection);
+
+                        int fd = open(file_path, O_RDONLY);
+                        if (fd < 0) {
+                            perror("Error in opeaning the input file");
+                            overall_success = 0;
+                        } else {
+                            int bytes_read = read(fd, inp_buff, 999998);
+                            if (bytes_read < 0) {
+                                perror("Error in reading");
+                                close(fd);
+                                overall_success = 0;
+                            } else {
+                                close(fd);
+                                if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                                    inp_buff[strlen(inp_buff) - 1] = '\0';
+                                }
+                                strcpy(path, inp_buff);
+                            }
+                        }
+                    }
                 }
                 // returns 1 if peeked successfully else returns 0
                 int exit_code = peek(path, a, l, cwd, home_directory, prev_dir, ap, w);
@@ -377,10 +439,19 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     pastevents(home_directory);
                 } else {                    // if some argument is present
                     if (strcmp(argument_tokens[1], "purge") == 0) {
-                        // clears the stored list
-                        purge(ap, w, home_directory);
+                        if (no_of_arguments > 1) {
+                            overall_success = 0;
+                            if (ap == 1 || w == 1) {
+                                bprintf(global_buffer, "pastevents: ivalid arguments\n");
+                            } else {
+                                bprintf(global_buffer, "\033[1;31mpastevents: ivalid arguments\033[1;0m\n");
+                            }
+                        } else {
+                            // clears the stored list
+                            purge(ap, w, home_directory);
+                        }
                     } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
-                        if (no_of_arguments == 1) {
+                        if (no_of_arguments == 1 && ip == 0) {
                             // if no index is given which command to execute then show error
                             if (ap == 0 && w == 0) {
                                 char buff[MAX_LEN] = {0};
@@ -391,6 +462,44 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                 sprintf(buff, "pastevents: missing argument in \"%s\"\n", curr_command);
                                 bprintf(global_buffer, buff);
                             }
+                        } else if (no_of_arguments == 1 && ip == 1) {
+                            char number[MAX_LEN] = {0};
+                            int num = 0;    // variable to store the index of command to execute
+                            int flag = 1;   // valid index is passed between 1 and 15 (both inclusive)
+
+                            char inp_buff[999999] = {0};
+
+                            char file_path[MAX_LEN];
+                            strcpy(file_path, cwd);
+                            strcat(file_path, "/");
+                            strcat(file_path, file_name_redirection);
+
+                            int fd = open(file_path, O_RDONLY);
+                            if (fd < 0) {
+                                perror("Error in opeaning the input file");
+                                overall_success = 0;
+                            } else {
+                                int bytes_read = read(fd, inp_buff, 999998);
+                                if (bytes_read < 0) {
+                                    perror("Error in reading");
+                                    close(fd);
+                                    overall_success = 0;
+                                } else {
+                                    close(fd);
+                                    if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                                        inp_buff[strlen(inp_buff) - 1] = '\0';
+                                    }
+                                    strcpy(number, inp_buff);
+                                }
+                            }
+                            // converting char to int
+                            // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
+                            convert_to_int(number, &num, &flag, ap, w);
+                            if (flag) {
+                                // executing the command at the given index
+                                int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t, ap, w);
+                                if (exit_code == 0) overall_success = 0;
+                            }
                         } else if (no_of_arguments == 2) {
                             char* number = argument_tokens[2];
                             int num = 0;    // variable to store the index of command to execute
@@ -398,44 +507,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             
                             // converting char to int
                             // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
-                            if (strcmp(number, "1") == 0) {
-                                num = 1;
-                            } else if (strcmp(number, "2") == 0) {
-                                num = 2;
-                            } else if (strcmp(number, "3") == 0) {
-                                num = 3;
-                            } else if (strcmp(number, "4") == 0) {
-                                num = 4;
-                            } else if (strcmp(number, "5") == 0) {
-                                num = 5;
-                            } else if (strcmp(number, "6") == 0) {
-                                num = 6;
-                            } else if (strcmp(number, "7") == 0) {
-                                num = 7;
-                            } else if (strcmp(number, "8") == 0) {
-                                num = 8;
-                            } else if (strcmp(number, "9") == 0) {
-                                num = 9;
-                            } else if (strcmp(number, "10") == 0) {
-                                num = 10;
-                            } else if (strcmp(number, "11") == 0) {
-                                num = 11;
-                            } else if (strcmp(number, "12") == 0) {
-                                num = 12;
-                            } else if (strcmp(number, "13") == 0) {
-                                num = 13;
-                            } else if (strcmp(number, "14") == 0) {
-                                num = 14;
-                            } else if (strcmp(number, "15") == 0) {
-                                num = 15;
-                            } else {
-                                flag = 0;
-                                if (ap == 0 && w == 0) {
-                                    bprintf(global_buffer, "\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
-                                } else {
-                                    bprintf(global_buffer, "pastevents: argument value should a positive integer less than or equal to 15\n");
-                                }
-                            }
+                            convert_to_int(number, &num, &flag, ap, w);
                             if (flag) {
                                 // executing the command at the given index
                                 int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t, ap, w);
@@ -477,9 +549,35 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             // checking if proclore command is present
             else if (strcmp("proclore", argument_tokens[0]) == 0) {
                 char* pid = (char*) calloc(50, sizeof(char));
-                if (no_of_arguments == 0) {         // if no arguments are passed than print the details of the termianl process
+                if (no_of_arguments == 0 && ip == 0) {         // if no arguments are passed than print the details of the termianl process
                     int curr_pid = getpid();        // getting the pid of the current running process
                     sprintf(pid, "%d", curr_pid);   // writing the pid in the form of a string to pass
+                } else if (no_of_arguments == 0 && ip == 1) {
+                    char inp_buff[999999] = {0};
+
+                    char file_path[MAX_LEN];
+                    strcpy(file_path, cwd);
+                    strcat(file_path, "/");
+                    strcat(file_path, file_name_redirection);
+
+                    int fd = open(file_path, O_RDONLY);
+                    if (fd < 0) {
+                        perror("Error in opeaning the input file");
+                        overall_success = 0;
+                    } else {
+                        int bytes_read = read(fd, inp_buff, 999998);
+                        if (bytes_read < 0) {
+                            perror("Error in reading");
+                            close(fd);
+                            overall_success = 0;
+                        } else {
+                            close(fd);
+                            if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                                inp_buff[strlen(inp_buff) - 1] = '\0';
+                            }
+                            strcpy(pid, inp_buff);
+                        }
+                    }
                 } else { // if pid of the process is provided
                     strcpy(pid, argument_tokens[1]);
                 }
@@ -502,6 +600,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             */
 
             // checking if seek command is present
+            // '<' (input redirection) implementation remaining
             else if (strcmp("seek", argument_tokens[0]) == 0) {
                 char* base_dir = (char*) calloc(MAX_LEN, sizeof(char));
                 char* file_name = (char*) calloc(MAX_LEN, sizeof(char));
@@ -729,6 +828,24 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             else {
                 bg_process = 0;
 
+                if (strcmp(argument_tokens[0], "echo") == 0) {
+                    for (int i = 1; i <= no_of_arguments; i++) {
+                        if (argument_tokens[i] != NULL) {
+                            if (argument_tokens[i][0] == '"') {
+                                for (int j = 0; j < strlen(argument_tokens[i]) - 1; j++) {
+                                    argument_tokens[i][j] = argument_tokens[i][j + 1];
+                                }
+                                argument_tokens[i][strlen(argument_tokens[i]) - 1] = '\0';
+                            } 
+                            if (argument_tokens[i][strlen(argument_tokens[i]) - 1] == '"') {
+                                argument_tokens[i][strlen(argument_tokens[i]) - 1] = '\0';
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
                 if (curr_command[strlen(curr_command) - 1] == '&') {
                     bg_process = 1;
                     argument_tokens[no_of_arguments][strlen(argument_tokens[no_of_arguments]) - 1] = '\0';
@@ -750,6 +867,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(STDOUT_FILENO);
                         open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                         execvp(argument_tokens[0], argument_tokens);
+                        perror(argument_tokens[0]);
+                        kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
                         char file_path[MAX_LEN];
                         strcpy(file_path, cwd);
@@ -759,10 +878,35 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(STDOUT_FILENO);
                         open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
                         execvp(argument_tokens[0], argument_tokens);
+                        perror(argument_tokens[0]);
+                        kill(getpid(), SIGTERM);
+
+                    } else if (ip == 1) {
+                        char file_path[MAX_LEN];
+                        strcpy(file_path, cwd);
+                        strcat(file_path, "/");
+                        strcat(file_path, file_name_redirection);
+
+                        int inp_fd = open(file_path, O_RDONLY);
+                        if (inp_fd < 0) {
+                            perror("Failed to open input file");
+                            kill(getpid(), SIGTERM);
+                        } else {
+                            if (dup2(inp_fd, STDIN_FILENO) == -1) {
+                                perror("Failed to redirect standard input");
+                                close(inp_fd);
+                                kill(getpid(), SIGTERM);
+                            } else {
+                                close(inp_fd);
+                                execvp(argument_tokens[0],  argument_tokens);
+                                perror("execvp");
+                                kill(getpid(), SIGTERM);
+                            }
+                        }
                     } else {
                         execvp(argument_tokens[0], argument_tokens);
                         perror(argument_tokens[0]);
-                        
+                        kill(getpid(), SIGTERM);
                     }
                 } else if (pid > 0) {
                     if (bg_process == 0) {
@@ -772,7 +916,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         insert_in_LL(pid, -1);
                     }
                 } else {
-                    printf("\033[1;31mfork: could not fork\033[1;0m\n");
+                    if (w == 1 || ap == 1) {
+                        bprintf(global_buffer, "fork: could not fork\n");
+                    } else {
+                        bprintf(global_buffer, "\033[1;31mfork: could not fork\033[1;0m\n");
+                    }
+                    overall_success = 0;
                 }
             }
     // ===================================================================================

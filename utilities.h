@@ -17,6 +17,7 @@ char* remove_extension(char* file_name);
 char* relative_path(char* complete_path, char* base_dir_path);
 void print_global_buffer_onto_terminal();
 void bprintf(char* buffer, char* string);
+void convert_to_int(char* number, int* num, int* flag, int ap, int w);
 // void write_in_global_buffer(char* string_to_be_written);
 
 #endif

@@ -1,3 +1,15 @@
-cat seek.c > temp.txt
-warp ..
-warp test
+exit
+clear
+echo "hello world" > temp.txt
+exit
+echo "hello world" > temp.txt
+exit
+echo "hello hi" > temp.txt
+exit
+echo "hello hi" > temp.txt
+exit
+echo "hello hi" > temp.txt
+exit
+echo "hello hi" > temp.txt
+exit
+echo "hell ho" > temp.txt

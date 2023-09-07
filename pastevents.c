@@ -136,7 +136,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
                 bprintf(global_buffer, "Invalid Argument\n");
             }
         } else {
-            input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, NULL);
+            input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, 0, NULL);
         }
 
         for (int i = 0; i < 15; i++) {
