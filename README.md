@@ -28,3 +28,6 @@
 ## IO Redirection
 - In input output redirection the errors which are printed in color on terminal is not printed in color in the text file it is just written normally without color coding
 - I/O and piping are not provided as background process
+
+## Ping
+- Assuming the process can only be blocked by SIGSTOP = 19 signal through ping command and can be resumed only through SIGCONT = 18 and killed only using SIGKILL = 9

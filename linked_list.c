@@ -8,16 +8,26 @@ LL_Head create_LL() {
     return LL;
 }
 
-LL_Node create_node(int pid, int flag) {
+LL_Node create_node(int pid, int flag, char** argument_tokens) {
     LL_Node N = (LL_Node) malloc(sizeof(LL_Node_struct));
+
+    char* command = (char*) calloc(MAX_LEN, sizeof(char));
+    int idx = 0;
+    while (argument_tokens[idx] != NULL) {
+        strcat(command, " ");
+        strcat(command, argument_tokens[idx]);
+        idx++;
+    }
+    remove_leading_and_trailing_spaces(command);
+    N->cmd = command;
     N->pid = pid;
     N->flag = flag;
     N->next = NULL;
     return N;
 }
 
-void insert_in_LL(int pid, int flag) {
-    LL_Node N = create_node(pid, flag);
+void insert_in_LL(int pid, int flag, char** argument_tokens) {
+    LL_Node N = create_node(pid, flag, argument_tokens);
     if (LL->no_of_nodes == 0) {
         LL->first = N;
         LL->last = N;
@@ -41,6 +51,7 @@ void free_node(LL_Node node) {
         if (trav->pid == pid_to_free) {
             if (prev != NULL) {
                 prev->next = trav->next;
+                free(trav->cmd);
                 free(trav);
                 LL->no_of_nodes--;
                 if (LL->no_of_nodes == 0) {
@@ -50,6 +61,7 @@ void free_node(LL_Node node) {
                 break;
             } else {
                 LL->first = trav->next;
+                free(trav->cmd);
                 free(trav);
                 LL->no_of_nodes--;
                 if (LL->no_of_nodes == 0) {

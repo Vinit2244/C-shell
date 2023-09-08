@@ -823,11 +823,151 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 }
             }
     // ===================================================================================
+            // activities
+
+            // checking if activities command is present
+            else if (strcmp("activities", argument_tokens[0]) == 0) {
+                LL_Node trav = LL->first;
+                int n = LL->no_of_nodes;
+                int* pids = (int*) calloc(n, sizeof(int));
+                char** process_names = (char**) calloc(n, sizeof(char*));
+                char* process_states = (char*) calloc(n, sizeof(char));
+
+                int idx = 0;
+
+                while (trav != NULL) {
+                    // uncomment this code if needed not sure if it is needed or not now
+                    // int cstatus;
+                    // if (waitpid(trav->pid, &cstatus, WNOHANG) == trav->pid) {
+                    //     LL_Node temp = trav;
+                    //     trav = trav->next;
+                    //     free_node(temp);
+                    //     continue;
+                    // }
+
+                    int curr_pid = trav->pid;
+                    char* curr_process_name = trav->cmd;
+                    int curr_process_flag = trav->flag;
+
+                    pids[idx] = curr_pid;
+                    process_names[idx] = curr_process_name;
+
+                    if (curr_process_flag == -1) {
+                        process_states[idx++] = 'R';
+                    } else if (curr_process_flag == -2) {
+                        process_states[idx++] = 'S';
+                    }
+
+                    trav = trav->next;
+                }
+
+                // bubble sort for lexicographically sorting the pids
+                for (int i = n - 2; i >= 0; i--) {
+                    for (int j = 0; j <= i; j++) {
+                        if (pids[j] > pids[j + 1]) {
+                            // swap
+                            int temp_pid = pids[j + 1];
+                            char* temp_process_name = process_names[j + 1];
+                            char temp_process_state = process_states[j + 1];
+
+                            pids[j + 1] = pids[j];
+                            process_names[j + 1] = process_names[j];
+                            process_states[j + 1] = process_states[j];
+
+                            pids[j] = temp_pid;
+                            process_names[j] = temp_process_name;
+                            process_states[j] = temp_process_state;
+                        }
+                    }
+                }
+                for (int k = 0; k < n; k++) {
+                    char buff[MAX_LEN] = {0};
+                    sprintf(buff, "%d : %s - ", pids[k], process_names[k]);
+                    bprintf(global_buffer, buff);
+                    if (process_states[k] == 'R') {
+                        bprintf(global_buffer, "Running\n");
+                    } else if (process_states[k] == 'S') {
+                        bprintf(global_buffer, "Stopped\n");
+                    }
+                }
+
+                io_redirection(ap, w, cwd, file_name_redirection);
+            }
+    // ===================================================================================
+            // ping
+
+            // checking if ping command is present
+            else if (strcmp("ping", argument_tokens[0]) == 0) {
+                if (no_of_arguments < 2) {
+                    if (ap == 1 || w == 1) {
+                        bprintf(global_buffer, "ping: Invalid Arguments\n");
+                    } else {
+                        bprintf(global_buffer, "\033[1;31mping: Invalid Arguments\033[1;0m\n");
+                    }
+                } else {
+                    int pid = atoi(argument_tokens[1]);
+                    int sig = atoi(argument_tokens[2]);
+                    // checking if the process exists
+                    int result = kill(pid, 0);
+
+                    if (result == 0) {
+                        // process exists
+                        int response = kill(pid, sig);
+                        if (response == 0) {
+                            char buff[MAX_LEN] = {0};
+                            sprintf(buff, "Sent signal %d to process with pid %d\n", sig, pid);
+                            bprintf(global_buffer, buff);
+                            if (sig == 19) {
+                                LL_Node trav = LL->first;
+                                while (trav != NULL) {
+                                    if (trav->pid == pid) {
+                                        trav->flag = -2;
+                                        break;
+                                    }
+                                    trav = trav->next;
+                                }
+                            } else if (sig == 18) {
+                                LL_Node trav = LL->first;
+                                while (trav != NULL) {
+                                    if (trav->pid == pid) {
+                                        trav->flag = -1;
+                                        break;
+                                    }
+                                    trav = trav->next;
+                                }
+                            } else if (sig == 9) {
+                                LL_Node trav = LL->first;
+                                while (trav != NULL) {
+                                    if (trav->pid == pid) {
+                                        free_node(trav);
+                                        break;
+                                    }
+                                    trav = trav->next;
+                                }
+                            }
+                        } else {
+                            if (ap == 1 || w == 1) {
+                                bprintf(global_buffer, "kill: could not send signal\n");
+                            } else {
+                                bprintf(global_buffer, "\033[1;31mkill: could not send signal\033[1;0m\n");
+                            }
+                        }
+                    } else {
+                        // process does not exist
+                        if (ap == 1 || w == 1) {
+                            bprintf(global_buffer, "No such process exists\n");
+                        } else {
+                            bprintf(global_buffer, "\033[1;31mNo such process exists\033[1;0m\n");
+                        }
+                    }
+                }
+
+                io_redirection(ap, w, cwd, file_name_redirection);
+            }
+    // ===================================================================================
             // system commands
             
             else {
-                bg_process = 0;
-
                 if (strcmp(argument_tokens[0], "echo") == 0) {
                     for (int i = 1; i <= no_of_arguments; i++) {
                         if (argument_tokens[i] != NULL) {
@@ -846,6 +986,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 }
 
+                bg_process = 0;
+
                 if (curr_command[strlen(curr_command) - 1] == '&') {
                     bg_process = 1;
                     argument_tokens[no_of_arguments][strlen(argument_tokens[no_of_arguments]) - 1] = '\0';
@@ -859,6 +1001,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (pid == 0) {
                     setpgid(0, 0);
                     if (w == 1) {
+                        // creating absolute path to the file
                         char file_path[MAX_LEN];
                         strcpy(file_path, cwd);
                         strcat(file_path, "/");
@@ -870,6 +1013,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         perror(argument_tokens[0]);
                         kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
+                        // creating absolute path to the file
                         char file_path[MAX_LEN];
                         strcpy(file_path, cwd);
                         strcat(file_path, "/");
@@ -882,6 +1026,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         kill(getpid(), SIGTERM);
 
                     } else if (ip == 1) {
+                        // creating absolute path to the file
                         char file_path[MAX_LEN];
                         strcpy(file_path, cwd);
                         strcat(file_path, "/");
@@ -889,23 +1034,32 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                         int inp_fd = open(file_path, O_RDONLY);
                         if (inp_fd < 0) {
+                            // open failed
                             perror("Failed to open input file");
+                            // killing child process
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
+                                // dup2 failed
                                 perror("Failed to redirect standard input");
+                                // closing the opened file
                                 close(inp_fd);
+                                // killing child process
                                 kill(getpid(), SIGTERM);
                             } else {
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
+                                // execvp failed
                                 perror("execvp");
+                                // killing child process
                                 kill(getpid(), SIGTERM);
                             }
                         }
                     } else {
                         execvp(argument_tokens[0], argument_tokens);
+                        // execvp failed
                         perror(argument_tokens[0]);
+                        // killing child process
                         kill(getpid(), SIGTERM);
                     }
                 } else if (pid > 0) {
@@ -913,7 +1067,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         wait(NULL);
                     } else {
                         printf("%d\n", pid);
-                        insert_in_LL(pid, -1);
+                        // flag -1 represents the process is running and -2 represents if the process has been stopped by wither ctrl + Z 
+                        insert_in_LL(pid, -1, argument_tokens);
                     }
                 } else {
                     if (w == 1 || ap == 1) {
