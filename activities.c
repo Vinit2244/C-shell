@@ -1,0 +1,74 @@
+#include "headers.h"
+
+void print_active_processes_spawned_by_my_shell() {
+    LL_Node trav = LL->first;
+    int n = LL->no_of_nodes;
+
+    int* pids = (int*) calloc(n, sizeof(int));
+    char** process_names = (char**) calloc(n, sizeof(char*));
+    char* process_states = (char*) calloc(n, sizeof(char));
+
+    int idx = 0;
+
+    while (trav != NULL) {
+        // uncomment this code if needed not sure if it is needed or not now
+        // int cstatus;
+        // if (waitpid(trav->pid, &cstatus, WNOHANG) == trav->pid) {
+        //     LL_Node temp = trav;
+        //     trav = trav->next;
+        //     free_node(temp);
+        //     continue;
+        // }
+
+        int curr_pid = trav->pid;
+        char* curr_process_name = trav->cmd;
+        int curr_process_flag = trav->flag;
+
+        pids[idx] = curr_pid;
+        process_names[idx] = curr_process_name;
+
+        if (curr_process_flag == -1) {
+            process_states[idx++] = 'R';
+        } else if (curr_process_flag == -2) {
+            process_states[idx++] = 'S';
+        }
+
+        trav = trav->next;
+    }
+
+    // bubble sort for lexicographically sorting the pids
+    bubble_sort_processes(pids, process_names, process_states, n);
+
+    for (int k = 0; k < n; k++) {
+        char buff[MAX_LEN] = {0};
+        sprintf(buff, "%d : %s - ", pids[k], process_names[k]);
+        bprintf(global_buffer, buff);
+        if (process_states[k] == 'R') {
+            bprintf(global_buffer, "Running\n");
+        } else if (process_states[k] == 'S') {
+            bprintf(global_buffer, "Stopped\n");
+        }
+    }
+}
+
+void bubble_sort_processes(int* pids, char** process_names, char* process_states, int n) {
+    for (int i = n - 2; i >= 0; i--) {
+        for (int j = 0; j <= i; j++) {
+            if (pids[j] > pids[j + 1]) {
+                // swap
+                int temp_pid = pids[j + 1];
+                char* temp_process_name = process_names[j + 1];
+                char temp_process_state = process_states[j + 1];
+
+                pids[j + 1] = pids[j];
+                process_names[j + 1] = process_names[j];
+                process_states[j + 1] = process_states[j];
+
+                pids[j] = temp_pid;
+                process_names[j] = temp_process_name;
+                process_states[j] = temp_process_state;
+            }
+        }
+    }
+}
+

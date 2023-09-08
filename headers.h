@@ -32,5 +32,8 @@
 #include "LL2.h"
 #include "proclore.h"
 #include "redirection.h"
+#include "ping.h"
+#include "activities.h"
+#include "signal_handlers.h"
 
 #endif
