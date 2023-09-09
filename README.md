@@ -48,3 +48,4 @@
 - [x] Implement fg for vim and gedit
 - [ ] Implement piping
 - [ ] Ctrl C, Z, D implementation remaining
+- [ ] Add const infront of all the variables that aren't gonna change

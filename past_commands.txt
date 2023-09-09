@@ -1,3 +1,5 @@
+gedit
+sleep 50
 wc temp.txt
 cat text.txt
 wc < temp.txt > text.txt
@@ -11,5 +13,3 @@ ping 95875 19
 gedit &
 gedit
 cat temp.txt
-exit
-activities

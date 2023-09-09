@@ -3,12 +3,7 @@
 
 extern char* global_buffer;
 extern int global_buffer_empty;
-
-// extern char* home_directory;
-// extern char* cwd;
-// extern char* prev_dir;
-// extern char* last_command;
-// extern int t;
+extern int global_fg_pid;
 
 void free_tokens(char** tokens);
 char** generate_tokens(char* str, char c);

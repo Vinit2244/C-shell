@@ -4,7 +4,11 @@ int bg_process = 0; // Flag to mark if a process is background process or not
 int start = 0;      // Variable to hold the start time of command execution
 time_t tyme = 0;    // Variable to hold the time of execution
 
+int global_fg_pid;
+
 void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection) {
+
+    global_fg_pid = -1; // -1 represents no foreground process is initiated by my terminal
 
     tyme = time(NULL) - start;  // current time - start time
     *t = tyme;                  // global variable to hold the time of last executed command
@@ -1089,7 +1093,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 } else if (pid > 0) {
                     if (bg_process == 0) {
+                        global_fg_pid = pid;
                         wait(NULL);
+                        global_fg_pid = -1;
                     } else {
                         printf("%d\n", pid);
                         // flag -1 represents the process is running and -2 represents if the process has been stopped by wither ctrl + Z 
