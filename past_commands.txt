@@ -1,15 +1,15 @@
+wc temp.txt
+cat text.txt
+wc < temp.txt > text.txt
+cat temp.txt
 exit
+fg 95875
 activities
-bg 74080
+ping 95875 18
 activities
-ping 74080 19
-activities
-vim &
-sleep 300 &
-sleep 200 &
+ping 95875 19
+gedit &
+gedit
+cat temp.txt
 exit
-activities
-bg 73922
-activities
-ping 73922 19
 activities

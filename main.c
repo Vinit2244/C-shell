@@ -56,7 +56,7 @@ int main()
     // Keep accepting commands
     while (1)
     {
-        input(NULL, home_directory, cwd, prev_dir, 1, last_command, &t, 0, 0, 0, NULL);
+        input(NULL, home_directory, cwd, prev_dir, 1, last_command, &t, 0, 0, 0, NULL, NULL);
     }
 
     // free(home_directory);

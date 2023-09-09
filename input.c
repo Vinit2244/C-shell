@@ -4,7 +4,7 @@ int bg_process = 0; // Flag to mark if a process is background process or not
 int start = 0;      // Variable to hold the start time of command execution
 time_t tyme = 0;    // Variable to hold the time of execution
 
-void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* file_name_redirection) {
+void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection) {
 
     tyme = time(NULL) - start;  // current time - start time
     *t = tyme;                  // global variable to hold the time of last executed command
@@ -70,7 +70,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
         }
 
-        int append_flag = 0;
+        int append_flag = 0; // output redirection '>>'
         char* app_cmd = (char*) calloc(MAX_LEN, sizeof(char));
         char* to_file = (char*) calloc(MAX_LEN, sizeof(char));
         for (int i = 0; i < strlen(curr_command) - 1; i++) {
@@ -88,7 +88,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
         }
 
-        int write_flag = 0;
+        int write_flag = 0; // output redirection '>'
         for (int i = 0; i < strlen(curr_command); i++) {
             if (curr_command[i] == '>') {
                 write_flag = 1;
@@ -106,37 +106,60 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
         if (pipe_flag == 1) {
             char** sub_commands = generate_tokens(curr_command, '|');
-            // int idd = 0;
-            // while (sub_commands[idd] != NULL) {
-            //     printf("%s\n", sub_commands[idd]);
-            //     printf("%d\n", strlen(sub_commands[idd]));
-            //     idd++;
-            // }
 
-            int k = 0;
+            char temp_file_for_piping[MAX_LEN] = {0};
+            strcpy(temp_file_for_piping, home_directory);
+            strcat(temp_file_for_piping, "/a_a.txt");
+
+            input(sub_commands[0], home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 0, temp_file_for_piping, NULL);
+
+            int k = 1;
             while (sub_commands[k] != NULL) {
-                input(sub_commands[k], home_directory, cwd, prev_dir, store, last_command, t, 0, 0, 0, NULL);
+                input(sub_commands[k], home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 1, temp_file_for_piping, temp_file_for_piping);
                 k++;
             }
+
             free_tokens(sub_commands);
             // return;
-        } else if (append_flag == 1) {
-            // Checking for the presence of pastevents command
-            remove_leading_and_trailing_spaces(app_cmd);
-            char** tokens = generate_tokens(app_cmd, ' ');
-            int k = 0;
-            while (tokens[k] != NULL) {
-                if (strcmp(tokens[k], "pastevents") == 0) {
-                    pastevents_present = 1;
-                    break;
-                }
-                k++;
-            }
-            free_tokens(tokens);
+        } else if (inp_flag == 1) {
+            if (write_flag == 0 && append_flag == 0) {
+                char** files = generate_tokens(curr_command, '<');
+                char* cmd = files[0];
 
-            input(app_cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 1, 0, to_file);
-            free(app_cmd);
-            free(to_file);
+                remove_leading_and_trailing_spaces(cmd);
+                char** tokens = generate_tokens(cmd, ' ');
+                int k = 0;
+                while (tokens[k] != NULL) {
+                    if (strcmp(tokens[k], "pastevents") == 0) {
+                        pastevents_present = 1;
+                        break;
+                    }
+                    k++;
+                }
+                free_tokens(tokens);
+
+                char* inp_file = files[1];
+                input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 0, 1, NULL, inp_file);
+
+                free_tokens(files);
+            } else {
+                if (write_flag == 1) {
+                    // assuming of the form cmd < input_file > output_file
+                    char** tkns = generate_tokens(curr_command, '<');
+                    char* cmd = tkns[0];
+
+                    char** tkns2 = generate_tokens(tkns[1], '>');
+                    char* input_file = tkns2[0];
+                    char* output_file = tkns2[1];
+
+                    input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 1, output_file, input_file);
+
+                    free_tokens(tkns2);
+                    free_tokens(tkns);
+                } else if (append_flag == 1) {
+
+                }
+            }
         } else if (write_flag == 1) {
             char** params = generate_tokens(curr_command, '>');
             char* cmd = params[0];
@@ -155,14 +178,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             free_tokens(tokens);
 
             char* output_file = params[1];
-            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 0, output_file);
+            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 0, output_file, NULL);
             free_tokens(params);
-        } else if (inp_flag == 1) {
-            char** files = generate_tokens(curr_command, '<');
-            char* cmd = files[0];
-
-            remove_leading_and_trailing_spaces(cmd);
-            char** tokens = generate_tokens(cmd, ' ');
+        } else if (append_flag == 1) {
+            // Checking for the presence of pastevents command
+            remove_leading_and_trailing_spaces(app_cmd);
+            char** tokens = generate_tokens(app_cmd, ' ');
             int k = 0;
             while (tokens[k] != NULL) {
                 if (strcmp(tokens[k], "pastevents") == 0) {
@@ -173,10 +194,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
             free_tokens(tokens);
 
-            char* inp_file = files[1];
-            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 0, 1, inp_file);
-
-            free_tokens(files);
+            input(app_cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 1, 0, to_file, NULL);
+            free(app_cmd);
+            free(to_file);
         } else {
             // ================= Printing the commands =================
             // printf("Command %d: %s\n", idx + 1, curr_command);
@@ -303,32 +323,10 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             else if (strcmp("warp", argument_tokens[0]) == 0) {
                 int success = 1;            // flag to keep track if warp exited successfully or not
                 if (ip == 1) {
-                    char inp_buff[999999] = {0};
-
-                    char file_path[MAX_LEN];
-                    strcpy(file_path, cwd);
-                    strcat(file_path, "/");
-                    strcat(file_path, file_name_redirection);
-
-                    int fd = open(file_path, O_RDONLY);
-                    if (fd < 0) {
-                        perror("Error in opeaning the input file");
-                        success = 0;
-                    } else {
-                        int bytes_read = read(fd, inp_buff, 999998);
-                        if (bytes_read < 0) {
-                            perror("Error in reading");
-                            close(fd);
-                            success = 0;
-                        } else {
-                            close(fd);
-                            if (inp_buff[strlen(inp_buff) - 1] == '\n') {
-                                inp_buff[strlen(inp_buff) - 1] = '\0';
-                            }
-                            int exit_code = warp(cwd, inp_buff, prev_dir, home_directory, ap, w);
-                            if (exit_code == 0) success = 0;
-                        }
-                    }
+                    // if input redirection is provided to warp it just goes back to home directory
+                    // warp does not accept input redirection
+                    int exit_code = warp(cwd, "~", prev_dir, home_directory, ap, w);
+                    if (exit_code == 0) success = 0;
                 } else {
                     if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
                         char* c = "~";
@@ -343,7 +341,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 }
 
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
 
                 if (success == 0) overall_success = 0;
             }
@@ -358,6 +356,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 char path[MAX_LEN] = {0}; // stores path of directory to peek into
                 
                 // copying cwd into path
+                // if no argument is provided or input redirection is provided then just print the contents of the cwd
+                // peek does not accept input redirection
                 strcpy(path, cwd);
 
                 int a = 0;
@@ -391,40 +391,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             path[strlen(argument_tokens[i])] = '\0';
                         }
                     }
-                } else {
-                    if (ip == 1) {
-                        char inp_buff[999999] = {0};
-
-                        char file_path[MAX_LEN];
-                        strcpy(file_path, cwd);
-                        strcat(file_path, "/");
-                        strcat(file_path, file_name_redirection);
-
-                        int fd = open(file_path, O_RDONLY);
-                        if (fd < 0) {
-                            perror("Error in opeaning the input file");
-                            overall_success = 0;
-                        } else {
-                            int bytes_read = read(fd, inp_buff, 999998);
-                            if (bytes_read < 0) {
-                                perror("Error in reading");
-                                close(fd);
-                                overall_success = 0;
-                            } else {
-                                close(fd);
-                                if (inp_buff[strlen(inp_buff) - 1] == '\n') {
-                                    inp_buff[strlen(inp_buff) - 1] = '\0';
-                                }
-                                strcpy(path, inp_buff);
-                            }
-                        }
-                    }
                 }
                 // returns 1 if peeked successfully else returns 0
                 int exit_code = peek(path, a, l, cwd, home_directory, prev_dir, ap, w);
                 if (exit_code == 0) overall_success = 0;
 
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // pastevents
@@ -472,7 +444,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             char file_path[MAX_LEN];
                             strcpy(file_path, cwd);
                             strcat(file_path, "/");
-                            strcat(file_path, file_name_redirection);
+                            strcat(file_path, input_file_name_redirection);
 
                             int fd = open(file_path, O_RDONLY);
                             if (fd < 0) {
@@ -538,7 +510,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         }
                     }
                 }
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // proclore
@@ -556,9 +528,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     char inp_buff[999999] = {0};
 
                     char file_path[MAX_LEN];
-                    strcpy(file_path, cwd);
-                    strcat(file_path, "/");
-                    strcat(file_path, file_name_redirection);
+                    if (input_file_name_redirection[0] != '/') {
+                        strcpy(file_path, cwd);
+                        strcat(file_path, "/");
+                        strcat(file_path, input_file_name_redirection);
+                    } else if (input_file_name_redirection[0] == '/') {
+                        strcpy(file_path, input_file_name_redirection);
+                    }
 
                     int fd = open(file_path, O_RDONLY);
                     if (fd < 0) {
@@ -583,7 +559,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 }
                 proclore(pid, ap, w);
 
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
 
                 free(pid);
             }
@@ -600,7 +576,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             */
 
             // checking if seek command is present
-            // '<' (input redirection) implementation remaining
             else if (strcmp("seek", argument_tokens[0]) == 0) {
                 char* base_dir = (char*) calloc(MAX_LEN, sizeof(char));
                 char* file_name = (char*) calloc(MAX_LEN, sizeof(char));
@@ -646,8 +621,14 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                     f = 1;
                                 } else if (strcmp(curr_argument, "-e") == 0) {
                                     e = 1;
+                                } else if (strcmp(curr_argument, "-de") == 0 || strcmp(curr_argument, "-ed") == 0) {
+                                    d = 1;
+                                    e = 1;
+                                } else if (strcmp(curr_argument, "-fe") == 0 || strcmp(curr_argument, "-ef") == 0) {
+                                    f = 1;
+                                    e = 1;
                                 } else {
-                                    // if any other flag is provided other than the three mentioned
+                                    // if any other flag is provided other than the seven mentioned
                                     if (ap == 1 || w == 1) {
                                         bprintf(global_buffer, "seek: Invalid Flag\n");
                                     }
@@ -660,7 +641,39 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             }
                         } else if (curr_argument[0] == '.') { // if path relative to current directory is provided
                             base_dir_flag = 1;
-                            strcpy(base_dir, curr_argument);
+                            if (ip == 0) {
+                                strcpy(base_dir, curr_argument);
+                            } else if (ip == 1) {
+                                char inp_buff[999999] = {0};
+
+                                char file_path[MAX_LEN];
+                                if (input_file_name_redirection[0] != '/') {
+                                    strcpy(file_path, cwd);
+                                    strcat(file_path, "/");
+                                    strcat(file_path, input_file_name_redirection);
+                                } else if (input_file_name_redirection[0] == '/') {
+                                    strcpy(file_path, input_file_name_redirection);
+                                }
+
+                                int fd = open(file_path, O_RDONLY);
+                                if (fd < 0) {
+                                    perror("Error in opeaning the input file");
+                                    overall_success = 0;
+                                } else {
+                                    int bytes_read = read(fd, inp_buff, 999998);
+                                    if (bytes_read < 0) {
+                                        perror("Error in reading");
+                                        close(fd);
+                                        overall_success = 0;
+                                    } else {
+                                        close(fd);
+                                        if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                                            inp_buff[strlen(inp_buff) - 1] = '\0';
+                                        }
+                                        strcpy(base_dir, inp_buff);
+                                    }
+                                }
+                            }
                         } else {
                             if (file_name_flag == 1) {
                                 if (ap == 1 || w == 1) {
@@ -801,7 +814,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 free(base_dir);
                 free(file_name);
 
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
                 
                 if (success == 0) overall_success = 0;
             }
@@ -829,7 +842,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             else if (strcmp("activities", argument_tokens[0]) == 0) {
                 print_active_processes_spawned_by_my_shell();
 
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // ping
@@ -850,7 +863,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     if (exit_status == 0) overall_success = 0;
                 }
 
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // bg
@@ -877,9 +890,46 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (flag == 0) {
                     bprintf(global_buffer, "No such process found!\n");
                 }
-                io_redirection(ap, w, cwd, file_name_redirection);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
-    
+    // ===================================================================================
+            // fg
+
+            // checking if fg command is present
+            else if (strcmp("fg", argument_tokens[0]) == 0) {
+                int pid = atoi(argument_tokens[1]);
+
+                int flag = 0;
+                LL_Node trav = LL->first;
+                while (trav != NULL) {
+                    if (trav->pid == pid) {
+                        flag = 1;
+                        if (trav->flag == -1) { // process is already running in background
+                            int status;
+                            waitpid(pid, &status, 0);
+
+                            free_node(trav);
+                            break;
+                        } else if (trav->flag == -2) { // process is stopped in background
+                            kill(pid, 18); // SIGCONT
+                            trav->flag = -1;
+
+                            while(1) {
+                                int status;
+                                waitpid(pid, &status, 0);
+
+                                free_node(trav);
+                                break;
+                            }
+                        }
+                    }
+                    trav = trav->next;
+                }
+                if (flag == 0) {
+                    bprintf(global_buffer, "No such process exists\n");
+                }
+                io_redirection(ap, w, cwd, output_file_name_redirection);
+            }
     // ===================================================================================
             // system commands
 
@@ -916,12 +966,63 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                 if (pid == 0) {
                     setpgid(0, 0);
-                    if (w == 1) {
+                    if (w == 1 && ip == 1) {
+                        // creating absolute path to the file (input)
+                        char inp_file_path[MAX_LEN];
+                        if (input_file_name_redirection[0] != '/') {
+                            strcpy(inp_file_path, cwd);
+                            strcat(inp_file_path, "/");
+                            strcat(inp_file_path, input_file_name_redirection);
+                        } else if (input_file_name_redirection[0] == '/') {
+                            strcpy(inp_file_path, input_file_name_redirection);
+                        }
+
+                        // creating absolute path to the file (output)
+                        char out_file_path[MAX_LEN];
+                        if (output_file_name_redirection[0] != '/') {
+                            strcpy(out_file_path, cwd);
+                            strcat(out_file_path, "/");
+                            strcat(out_file_path, output_file_name_redirection);
+                        } else if (output_file_name_redirection[0] == '/') {
+                            strcpy(out_file_path, output_file_name_redirection);
+                        }
+
+                        close(STDOUT_FILENO);
+                        open(out_file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+
+                        int inp_fd = open(inp_file_path, O_RDONLY);
+                        if (inp_fd < 0) {
+                            // open failed
+                            perror("Failed to open input file");
+                            // killing child process
+                            kill(getpid(), SIGTERM);
+                        } else {
+                            if (dup2(inp_fd, STDIN_FILENO) == -1) {
+                                // dup2 failed
+                                perror("Failed to redirect standard input");
+                                // closing the opened file
+                                close(inp_fd);
+                                // killing child process
+                                kill(getpid(), SIGTERM);
+                            } else {
+                                close(inp_fd);
+                                execvp(argument_tokens[0],  argument_tokens);
+                                // execvp failed
+                                perror("execvp");
+                                // killing child process
+                                kill(getpid(), SIGTERM);
+                            }
+                        }
+                    } if (w == 1) {
                         // creating absolute path to the file
                         char file_path[MAX_LEN];
-                        strcpy(file_path, cwd);
-                        strcat(file_path, "/");
-                        strcat(file_path, file_name_redirection);
+                        if (output_file_name_redirection[0] != '/') {
+                            strcpy(file_path, cwd);
+                            strcat(file_path, "/");
+                            strcat(file_path, output_file_name_redirection);
+                        } else if (output_file_name_redirection[0] == '/') {
+                            strcpy(file_path, output_file_name_redirection);
+                        }
 
                         close(STDOUT_FILENO);
                         open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
@@ -931,9 +1032,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     } else if (ap == 1) {
                         // creating absolute path to the file
                         char file_path[MAX_LEN];
-                        strcpy(file_path, cwd);
-                        strcat(file_path, "/");
-                        strcat(file_path, file_name_redirection);
+                        if (output_file_name_redirection[0] != '/') {
+                            strcpy(file_path, cwd);
+                            strcat(file_path, "/");
+                            strcat(file_path, output_file_name_redirection);
+                        } else if (output_file_name_redirection[0] == '/') {
+                            strcpy(file_path, output_file_name_redirection);
+                        }
                         
                         close(STDOUT_FILENO);
                         open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
@@ -944,9 +1049,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     } else if (ip == 1) {
                         // creating absolute path to the file
                         char file_path[MAX_LEN];
-                        strcpy(file_path, cwd);
-                        strcat(file_path, "/");
-                        strcat(file_path, file_name_redirection);
+                        if (input_file_name_redirection[0] != '/') {
+                            strcpy(file_path, cwd);
+                            strcat(file_path, "/");
+                            strcat(file_path, input_file_name_redirection);
+                        } else if (input_file_name_redirection[0] == '/') {
+                            strcpy(file_path, input_file_name_redirection);
+                        }
 
                         int inp_fd = open(file_path, O_RDONLY);
                         if (inp_fd < 0) {

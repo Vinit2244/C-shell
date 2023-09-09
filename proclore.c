@@ -99,3 +99,4 @@ void proclore(char* pid, int ap, int w) {
     free(path_maps);
     free(path_exe);
 }
+
