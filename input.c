@@ -853,8 +853,36 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 io_redirection(ap, w, cwd, file_name_redirection);
             }
     // ===================================================================================
+            // bg
+
+            // checking if bg command is present
+            else if (strcmp("bg", argument_tokens[0]) == 0) {
+                int pid = atoi(argument_tokens[1]);
+
+                LL_Node trav = LL->first;
+                int flag = 0;
+                while (trav != NULL) {
+                    if (trav->pid == pid) {
+                        flag = 1;
+                        if (trav->flag == -1) {
+                            // do nothing
+                        } else if (trav->flag == -2) {
+                            kill(pid, 18); // SIGCONT
+                            trav->flag = -1;
+                        }
+                    }
+                    trav = trav->next;
+                }
+
+                if (flag == 0) {
+                    bprintf(global_buffer, "No such process found!\n");
+                }
+                io_redirection(ap, w, cwd, file_name_redirection);
+            }
+    
+    // ===================================================================================
             // system commands
-            
+
             else {
                 if (strcmp(argument_tokens[0], "echo") == 0) {
                     for (int i = 1; i <= no_of_arguments; i++) {

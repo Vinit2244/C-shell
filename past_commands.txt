@@ -1,15 +1,15 @@
 exit
 activities
-ping 61681 9
-ping 61639 9
-ping 61650 9
+bg 74080
 activities
-sleep 200&
+ping 74080 19
 activities
-vim &; sleep 200&
-sleep 100 &
-activities
+vim &
+sleep 300 &
+sleep 200 &
 exit
-warp test
-exit
-seek prog
+activities
+bg 73922
+activities
+ping 73922 19
+activities

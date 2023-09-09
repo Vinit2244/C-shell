@@ -31,3 +31,6 @@
 
 ## Ping
 - Assuming the process can only be blocked by SIGSTOP = 19 signal through ping command and can be resumed only through SIGCONT = 18 and killed only using SIGKILL = 9
+
+## System Commands
+- If some invalid command is passed to be run as background process then it's pid will get stored and it would print the error but won't execute
