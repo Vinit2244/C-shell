@@ -1,15 +1,15 @@
+rm temp.txt
+rm temp.tx
+rm tess.txt
+cat tess.txt
+wc < temp.txt > tess.txt
+wc < temp.txt
+cat past_commands.txt > temp.txt
 exit
-geddit
-proclore 23364
-activities
-vi &
-sleep 10000 &
+cat past_commands.txt
 exit
-activities
-vi &
-vim &
-proclore 22819
-activities
-sleep 1000 &
-activities
-warp test
+cat past_commands.txt
+exit
+cat past_commands.txt
+exit
+cat past_commands.txt

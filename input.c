@@ -970,27 +970,32 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                 if (pid == 0) {
                     setpgid(0, 0);
+
+                    // creating absolute path to the file (input)
+                    char inp_file_path[MAX_LEN];
+                    if (input_file_name_redirection == NULL) {
+                        // do nothing
+                    } else if (input_file_name_redirection[0] != '/') {
+                        strcpy(inp_file_path, cwd);
+                        strcat(inp_file_path, "/");
+                        strcat(inp_file_path, input_file_name_redirection);
+                    } else if (input_file_name_redirection[0] == '/') {
+                        strcpy(inp_file_path, input_file_name_redirection);
+                    }
+
+                    // creating absolute path to the file (output)
+                    char out_file_path[MAX_LEN];
+                    if (output_file_name_redirection == NULL) {
+                        // do nothing
+                    } else if (output_file_name_redirection[0] != '/') {
+                        strcpy(out_file_path, cwd);
+                        strcat(out_file_path, "/");
+                        strcat(out_file_path, output_file_name_redirection);
+                    } else if (output_file_name_redirection[0] == '/') {
+                        strcpy(out_file_path, output_file_name_redirection);
+                    }
+
                     if (w == 1 && ip == 1) {
-                        // creating absolute path to the file (input)
-                        char inp_file_path[MAX_LEN];
-                        if (input_file_name_redirection[0] != '/') {
-                            strcpy(inp_file_path, cwd);
-                            strcat(inp_file_path, "/");
-                            strcat(inp_file_path, input_file_name_redirection);
-                        } else if (input_file_name_redirection[0] == '/') {
-                            strcpy(inp_file_path, input_file_name_redirection);
-                        }
-
-                        // creating absolute path to the file (output)
-                        char out_file_path[MAX_LEN];
-                        if (output_file_name_redirection[0] != '/') {
-                            strcpy(out_file_path, cwd);
-                            strcat(out_file_path, "/");
-                            strcat(out_file_path, output_file_name_redirection);
-                        } else if (output_file_name_redirection[0] == '/') {
-                            strcpy(out_file_path, output_file_name_redirection);
-                        }
-
                         close(STDOUT_FILENO);
                         open(out_file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 
@@ -998,14 +1003,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         if (inp_fd < 0) {
                             // open failed
                             printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                            // perror("Failed to open input file");
                             // killing child process
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
                                 printf("\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
-                                // perror("Failed to redirect standard input");
                                 // closing the opened file
                                 close(inp_fd);
                                 // killing child process
@@ -1015,80 +1018,42 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
                                 printf("\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
-                                // perror("execvp");
-                                // killing child process
                                 kill(getpid(), SIGTERM);
                             }
                         }
                     } if (w == 1) {
-                        // creating absolute path to the file
-                        char file_path[MAX_LEN];
-                        if (output_file_name_redirection[0] != '/') {
-                            strcpy(file_path, cwd);
-                            strcat(file_path, "/");
-                            strcat(file_path, output_file_name_redirection);
-                        } else if (output_file_name_redirection[0] == '/') {
-                            strcpy(file_path, output_file_name_redirection);
-                        }
-
                         close(STDOUT_FILENO);
-                        open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                        open(out_file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                         execvp(argument_tokens[0], argument_tokens);
+                        // error
                         printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                        // perror(argument_tokens[0]);
                         kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
-                        // creating absolute path to the file
-                        char file_path[MAX_LEN];
-                        if (output_file_name_redirection[0] != '/') {
-                            strcpy(file_path, cwd);
-                            strcat(file_path, "/");
-                            strcat(file_path, output_file_name_redirection);
-                        } else if (output_file_name_redirection[0] == '/') {
-                            strcpy(file_path, output_file_name_redirection);
-                        }
                         
                         close(STDOUT_FILENO);
-                        open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
+                        open(out_file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
                         execvp(argument_tokens[0], argument_tokens);
+                        // error
                         printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                        // perror(argument_tokens[0]);
                         kill(getpid(), SIGTERM);
 
                     } else if (ip == 1) {
-                        // creating absolute path to the file
-                        char file_path[MAX_LEN];
-                        if (input_file_name_redirection[0] != '/') {
-                            strcpy(file_path, cwd);
-                            strcat(file_path, "/");
-                            strcat(file_path, input_file_name_redirection);
-                        } else if (input_file_name_redirection[0] == '/') {
-                            strcpy(file_path, input_file_name_redirection);
-                        }
-
-                        int inp_fd = open(file_path, O_RDONLY);
+                        int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
                             printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
-                            // perror("Failed to open input file");
-                            // killing child process
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
                                 printf("\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
-                                // perror("Failed to redirect standard input");
-                                // closing the opened file
                                 close(inp_fd);
-                                // killing child process
                                 kill(getpid(), SIGTERM);
                             } else {
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
                                 printf("\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
-                                // perror("execvp");
-                                // killing child process
                                 kill(getpid(), SIGTERM);
                             }
                         }
@@ -1096,8 +1061,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         execvp(argument_tokens[0], argument_tokens);
                         // execvp failed
                         printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                        // perror(argument_tokens[0]);
-                        // killing child process
                         kill(getpid(), SIGTERM);
                     }
                 } else if (pid > 0) {
@@ -1107,12 +1070,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         global_fg_pid = -1;
                     } else {
                         printf("%d\n", pid);
-                        // flag -1 represents the process is running and -2 represents if the process has been stopped by wither ctrl + Z 
                         insert_in_LL(pid, -1, argument_tokens);
                     }
-                    // if (strcmp(argument_tokens[0], "clear") == 0) {
-                    //     prompt(home_directory, cwd, t, last_command);
-                    // }
                 } else {
                     if (w == 1 || ap == 1) {
                         bprintf(global_buffer, "fork: could not fork\n");
