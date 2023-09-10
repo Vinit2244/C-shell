@@ -1,15 +1,15 @@
+gedit
+clear
 exit
-rm tess.txt
-rm temp.txt
-iMan < temp.txt > tess.txt
-iMan < temp.txt
-exit
-iMan < temp.txt
-exit
-iMan < temp.txt
-exit
-iMan < temp.txt
-exit
-iMan sleep > temp.txt
-iMan ls
-iMan invalid_command
+gedit &
+clear
+activities
+vi temp.txt &
+vi temp.txt
+vi
+vi temp.txt
+touch temp.txt
+clear
+activities
+vi &
+vi temp.txt

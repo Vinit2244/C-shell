@@ -1,5 +1,6 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/76mHqLr5)
 # Description
+I branched the Part A first half submission in 'final' branch and then continued pushing Part B and C on main branch itself.
 
 # Assumptions
 ### General:
@@ -42,6 +43,8 @@
 ### Errors:
 - If some error occurs in redirection then the error is just printed on the terminal and not redirected (just as the terminal on mac)
 
+### Activities:
+- I have considered processes with status 'R' and 'S' as running and with 'T', 'D' and 'Z' as stopped. (Status read from /proc/pid/stat)
 
 # To-do:
 - [ ] Replace all perror with normal bprintf using color coding

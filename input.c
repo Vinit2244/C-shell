@@ -868,30 +868,40 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             else if (strcmp("fg", argument_tokens[0]) == 0) {
                 int pid = atoi(argument_tokens[1]);
 
+                int result = kill(pid, 0);
+
+                if (result == 0) {
+                    int cstatus;
+                    kill(pid, SIGCONT);
+                    waitpid(pid, &cstatus, 0);
+                } else {
+                    printf("error\n");
+                }
+
                 int flag = 0;
                 LL_Node trav = LL->first;
                 while (trav != NULL) {
-                    if (trav->pid == pid) {
-                        flag = 1;
-                        if (trav->flag == -1) { // process is already running in background
-                            int status;
-                            waitpid(pid, &status, 0);
+                    // if (trav->pid == pid) {
+                    //     flag = 1;
+                    //     if (trav->flag == -1) { // process is already running in background
+                    //         int status;
+                    //         waitpid(pid, &status, 0);
 
-                            free_node(trav);
-                            break;
-                        } else if (trav->flag == -2) { // process is stopped in background
-                            kill(pid, 18); // SIGCONT
-                            trav->flag = -1;
+                    //         free_node(trav);
+                    //         break;
+                    //     } else if (trav->flag == -2) { // process is stopped in background
+                    //         kill(pid, 18); // SIGCONT
+                    //         trav->flag = -1;
 
-                            while(1) {
-                                int status;
-                                waitpid(pid, &status, 0);
+                    //         while(1) {
+                    //             int status;
+                    //             waitpid(pid, &status, 0);
 
-                                free_node(trav);
-                                break;
-                            }
-                        }
-                    }
+                    //             free_node(trav);
+                    //             break;
+                    //         }
+                    //     }
+                    // }
                     trav = trav->next;
                 }
                 if (flag == 0) {
@@ -934,8 +944,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 int pid = fork();
 
                 if (pid == 0) {
-                    setpgid(0, 0);
-
+                    if (bg_process == 1) {
+                        setpgid(0, 0);
+                    }
                     // creating absolute path to the file (input)
                     char inp_file_path[MAX_LEN];
                     if (input_file_name_redirection == NULL) {
