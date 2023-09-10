@@ -39,6 +39,9 @@
 ### Pipe:
 - When piping '|' is used then the program creates a new temp file to store the output of the pipe 1st command temporarily names "a_a.txt" so it is assumed that the user never creates a custom file names "a_a.txt".
 
+### Errors:
+- If some error occurs in redirection then the error is just printed on the terminal and not redirected (just as the terminal on mac)
+
 
 # To-do:
 - [ ] Replace all perror with normal bprintf using color coding
@@ -51,3 +54,4 @@
 - [ ] Add const infront of all the variables that aren't gonna change
 - [ ] Keep checking Q226 and Q227 in doubts doc
 - [ ] pipe '|' and '<' should work together
+- [ ] Don't redirect error to output file

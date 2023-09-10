@@ -231,91 +231,56 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             */
 
             // checking if iMan command is present
-
-            // IO redirection remaining
             if (strcmp("iMan", argument_tokens[0]) == 0) {
-                // DNS resolution
-                char hostname[] = "man.he.net";
-                struct addrinfo specs;
+                int exit_status = 0;
+                if (no_of_arguments == 0) {
+                    // Can read the name of the command from input redirection
+                    if (ip == 1) {
+                        char input_file_path[MAX_LEN];
 
-                memset(&specs, 0, sizeof(specs)); // initializing to 0
-
-                specs.ai_family = AF_UNSPEC;     // Address family unspecified (return both IPv4 and IPv6 addresses)
-                specs.ai_socktype = SOCK_STREAM; // TCP
-
-                struct addrinfo *LL_of_addresses;
-                // resolving DNS
-                int status = getaddrinfo(hostname, NULL, &specs, &LL_of_addresses); // returns a linked list of struct addrinfo stored at position LL_of_addresses
-                if (status != 0) {
-                    perror(gai_strerror(status)); // gai_strerror() converts the error code returned by the getaddrinfo() function in string form
-                    overall_success = 0;
-                } else {
-                    void *addr; // stores binary IP address
-                    char ip[MAX_LEN];
-
-                    // Iterating through all the addresses returned
-                    struct addrinfo *trav = LL_of_addresses;
-                    while (trav != NULL) {
-                        // trav->ai_addr is a generic structure that can hold information about both ipv4 and ipv6 address so first we need to check which address are we talking about and then accordingly resolve the sockaddr_in struct
-                        if (trav->ai_family == AF_INET) { // IPv4
-                            struct sockaddr_in *ipv4 = (struct sockaddr_in *) trav->ai_addr;
-                            addr = &(ipv4->sin_addr);
-                        } else { // IPv6 (not using IPv6 only using IPv4)
-                            trav = trav->ai_next;
-                            continue;
+                        if (input_file_name_redirection[0] != '/') {
+                            strcpy(input_file_path, cwd);
+                            strcat(input_file_path, "/");
+                            strcat(input_file_path, input_file_name_redirection);
+                        } else if (output_file_name_redirection[0] == '/') {
+                            strcpy(input_file_path, input_file_name_redirection);
                         }
-                        // Converting IP address to string
-                        inet_ntop(trav->ai_family, addr, ip, MAX_LEN);
-                        trav = trav->ai_next;
-                    }
-                    freeaddrinfo(LL_of_addresses);
 
-                    // Opeaning a TCP socket
-                    int port = 80; // HTTP
-                    int sock;
-                    struct sockaddr_in address;
-                    socklen_t address_size;
+                        char inp_buff[MAX_LEN] = {0};
+                        int inp_fd = open(input_file_path, O_RDONLY);
 
-                    sock = socket(AF_INET, SOCK_STREAM, 0);
-                    if (sock < 0) {
-                        perror("Socket error");
-                        overall_success = 0;
-                    } else {
-                        memset(&address, 0, sizeof(address));
-                        address.sin_family = AF_INET;
-                        address.sin_port = port;
-                        address.sin_addr.s_addr = inet_addr(ip);
-
-                        // Connecting
-                        int status = connect(sock, (struct sockaddr*) &address, sizeof(address));
-                        if (status == -1) {
-                            perror("Failed connecting");
-                            overall_success = 0;
+                        if (inp_fd < 0) {
+                            // open failed
+                            printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
+                            exit_status = 0;
                         } else {
-                            // Sending Get request
-                            char GET_request[MAX_LEN];
-                            sprintf(GET_request, "GET %s/%s HTTP/1.1\r\nHost: %s\r\n\r\n", "/man1", argument_tokens[1], hostname);
-                            
-                            // if sending GET request fails
-                            if (send(sock, GET_request, strlen(GET_request), 0) == -1) {
-                                perror("Request failed");
-                                overall_success = 0;
-                                close(sock);
+                            int bytes_read = read(inp_fd, inp_buff, MAX_LEN - 1);
+                            if (bytes_read < 0) {
+                                // read fails
+                                printf("\033[1;31mread : cannot read from the file\033[1;0m\n");
+                                exit_status = 0;
                             } else {
-                                char buffer[999999];
-                                ssize_t bytes_received;
-
-                                while ((bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0) {
-                                    buffer[bytes_received] = '\0';
-                                    printf("%s", buffer);
+                                for (int r = 0; r < strlen(inp_buff); r++) {
+                                    if (inp_buff[r] == '\n') {
+                                        inp_buff[r] = '\0';
+                                    }
                                 }
-
-                                // closing the socket
-                                close(sock);
+                                exit_status = get_webpage(inp_buff);
                             }
                         }
+                    } else {
+                        // invalid arguments command name has to be provided
+                        printf("\033[1;31miMan: no argument provided (command name required)\033[1;0m\n");
                     }
+                } else if (no_of_arguments == 1) {
+                    exit_status = get_webpage(argument_tokens[1]);
+                } else {
+                    printf("\033[1;31miMan: excess number of arguments provided\033[1;0m\n");
+                    exit_status = 0;
                 }
+                
+                io_redirection(ap, w, cwd, output_file_name_redirection);
+                if (exit_status == 0) overall_success = 0;
             }
     // ===================================================================================
             // warp
@@ -1002,7 +967,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
-                            printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                            printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
                             // killing child process
                             kill(getpid(), SIGTERM);
                         } else {

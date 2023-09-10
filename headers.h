@@ -20,6 +20,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <sys/time.h>
 
 // User defined header files
 #include "prompt.h"
@@ -36,5 +38,6 @@
 #include "ping.h"
 #include "activities.h"
 #include "signal_handlers.h"
+#include "iMan.h"
 
 #endif

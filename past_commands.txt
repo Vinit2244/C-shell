@@ -1,15 +1,15 @@
-rm temp.txt
-rm temp.tx
+exit
 rm tess.txt
-cat tess.txt
-wc < temp.txt > tess.txt
-wc < temp.txt
-cat past_commands.txt > temp.txt
+rm temp.txt
+iMan < temp.txt > tess.txt
+iMan < temp.txt
 exit
-cat past_commands.txt
+iMan < temp.txt
 exit
-cat past_commands.txt
+iMan < temp.txt
 exit
-cat past_commands.txt
+iMan < temp.txt
 exit
-cat past_commands.txt
+iMan sleep > temp.txt
+iMan ls
+iMan invalid_command

@@ -15,8 +15,6 @@ void io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
                 strcpy(file_path, file_name_redirection);
             }
 
-            // printf("%s\n", file_path);
-
             int fd = open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
             if (fd < 0) {
                 // printf("hi\n");
