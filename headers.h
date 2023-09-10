@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 // User defined header files
 #include "prompt.h"

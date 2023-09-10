@@ -1,13 +1,16 @@
 #include "headers.h"
 
 void proclore(char* pid, int ap, int w) {
-    char* path_stat = (char*) calloc(256, sizeof(char));
+    char path_stat[256] = {0};
+    // char* path_stat = (char*) calloc(256, sizeof(char));
     sprintf(path_stat, "/proc/%d/stat", atoi(pid));
 
-    char* path_maps = (char*) calloc(256, sizeof(char));
+    char path_maps[256] = {0};
+    // char* path_maps = (char*) calloc(256, sizeof(char));
     sprintf(path_maps, "/proc/%d/maps", atoi(pid));
 
-    char* path_exe = (char*) calloc(256, sizeof(char));
+    char path_exe[256] = {0};
+    // char* path_exe = (char*) calloc(256, sizeof(char));
     sprintf(path_exe, "/proc/%d/exe", atoi(pid));
 
     char* status;
@@ -91,12 +94,12 @@ void proclore(char* pid, int ap, int w) {
     ssize_t length = readlink(path_exe, executable_path, sizeof(executable_path) - 1);
     executable_path[length] = '\0';
 
-    char buff5[MAX_LEN] = {0};
+    char buff5[MAX_LEN + 100] = {0};
     sprintf(buff5, "executable path : %s\n", executable_path);
     bprintf(global_buffer, buff5);
 
-    free(path_stat);
-    free(path_maps);
-    free(path_exe);
+    // free(path_stat);
+    // free(path_maps);
+    // free(path_exe);
 }
 

@@ -1,15 +1,15 @@
-gedit
-sleep 50
-wc temp.txt
-cat text.txt
-wc < temp.txt > text.txt
-cat temp.txt
 exit
-fg 95875
+geddit
+proclore 23364
 activities
-ping 95875 18
+vi &
+sleep 10000 &
+exit
 activities
-ping 95875 19
-gedit &
-gedit
-cat temp.txt
+vi &
+vim &
+proclore 22819
+activities
+sleep 1000 &
+activities
+warp test

@@ -230,7 +230,7 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
     struct group  *gr = getgrgid(file_stat.st_gid);
 
     char buff[MAX_LEN];
-    sprintf(buff, " %hu %s %s %lld ", file_stat.st_nlink, pw->pw_name, gr->gr_name, file_stat.st_size);
+    sprintf(buff, " %lu %s %s %ld ", file_stat.st_nlink, pw->pw_name, gr->gr_name, file_stat.st_size);
     bprintf(global_buffer, buff);
 
     time_t modificationTime = file_stat.st_mtime;

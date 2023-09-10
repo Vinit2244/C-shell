@@ -49,3 +49,5 @@
 - [ ] Implement piping
 - [ ] Ctrl C, Z, D implementation remaining
 - [ ] Add const infront of all the variables that aren't gonna change
+- [ ] Keep checking Q226 and Q227 in doubts doc
+- [ ] pipe '|' and '<' should work together

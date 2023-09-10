@@ -11,14 +11,6 @@ void print_active_processes_spawned_by_my_shell() {
     int idx = 0;
 
     while (trav != NULL) {
-        // uncomment this code if needed not sure if it is needed or not now
-        // int cstatus;
-        // if (waitpid(trav->pid, &cstatus, WNOHANG) == trav->pid) {
-        //     LL_Node temp = trav;
-        //     trav = trav->next;
-        //     free_node(temp);
-        //     continue;
-        // }
 
         int curr_pid = trav->pid;
         char* curr_process_name = trav->cmd;
@@ -27,14 +19,37 @@ void print_active_processes_spawned_by_my_shell() {
         pids[idx] = curr_pid;
         process_names[idx] = curr_process_name;
 
-        if (curr_process_flag == -1) {
+        // if (curr_process_flag == -1) {
+        //     process_states[idx++] = 'R';
+        // } else if (curr_process_flag == -2) {
+        //     process_states[idx++] = 'S';
+        // }
+
+        char path_stat[256] = {0};
+        sprintf(path_stat, "/proc/%d/stat", curr_pid);
+        char* status;
+
+        FILE *fptr = fopen(path_stat, "r");
+        if (fptr == NULL) {
+            perror("open");
+        }
+
+        char data[100000];
+        fscanf(fptr, " %[^\n]", data);
+        char** data_array = generate_tokens(data, ' ');
+        status = data_array[2];
+
+        if (strcmp(status, "R") == 0 || strcmp(status, "S") == 0) {
             process_states[idx++] = 'R';
-        } else if (curr_process_flag == -2) {
+        } else if (strcmp(status, "D") == 0 || strcmp(status, "T") == 0) {
             process_states[idx++] = 'S';
         }
 
+        fclose(fptr);
+        free_tokens(data_array);
+
         trav = trav->next;
-    }
+}
 
     // bubble sort for lexicographically sorting the pids
     bubble_sort_processes(pids, process_names, process_states, n);

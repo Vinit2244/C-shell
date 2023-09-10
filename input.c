@@ -783,7 +783,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                                     FILE* fptr = fopen(trav->path, "r");
                                                     fgets(buffer, 100000, fptr);
                                                     fclose(fptr);
-                                                    char buff[MAX_LEN] = {0};
+                                                    char buff[100001] = {0};
                                                     sprintf(buff, "%s\n", buffer);
                                                     bprintf(global_buffer, buff);
                                                 } else {
@@ -997,13 +997,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
-                            perror("Failed to open input file");
+                            printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                            // perror("Failed to open input file");
                             // killing child process
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
-                                perror("Failed to redirect standard input");
+                                printf("\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
+                                // perror("Failed to redirect standard input");
                                 // closing the opened file
                                 close(inp_fd);
                                 // killing child process
@@ -1012,7 +1014,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
-                                perror("execvp");
+                                printf("\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
+                                // perror("execvp");
                                 // killing child process
                                 kill(getpid(), SIGTERM);
                             }
@@ -1031,7 +1034,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(STDOUT_FILENO);
                         open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                         execvp(argument_tokens[0], argument_tokens);
-                        perror(argument_tokens[0]);
+                        printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        // perror(argument_tokens[0]);
                         kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
                         // creating absolute path to the file
@@ -1047,7 +1051,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(STDOUT_FILENO);
                         open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
                         execvp(argument_tokens[0], argument_tokens);
-                        perror(argument_tokens[0]);
+                        printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        // perror(argument_tokens[0]);
                         kill(getpid(), SIGTERM);
 
                     } else if (ip == 1) {
@@ -1064,13 +1069,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         int inp_fd = open(file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
-                            perror("Failed to open input file");
+                            printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
+                            // perror("Failed to open input file");
                             // killing child process
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
-                                perror("Failed to redirect standard input");
+                                printf("\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
+                                // perror("Failed to redirect standard input");
                                 // closing the opened file
                                 close(inp_fd);
                                 // killing child process
@@ -1079,7 +1086,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
-                                perror("execvp");
+                                printf("\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
+                                // perror("execvp");
                                 // killing child process
                                 kill(getpid(), SIGTERM);
                             }
@@ -1087,7 +1095,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     } else {
                         execvp(argument_tokens[0], argument_tokens);
                         // execvp failed
-                        perror(argument_tokens[0]);
+                        printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        // perror(argument_tokens[0]);
                         // killing child process
                         kill(getpid(), SIGTERM);
                     }
@@ -1101,6 +1110,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         // flag -1 represents the process is running and -2 represents if the process has been stopped by wither ctrl + Z 
                         insert_in_LL(pid, -1, argument_tokens);
                     }
+                    // if (strcmp(argument_tokens[0], "clear") == 0) {
+                    //     prompt(home_directory, cwd, t, last_command);
+                    // }
                 } else {
                     if (w == 1 || ap == 1) {
                         bprintf(global_buffer, "fork: could not fork\n");
