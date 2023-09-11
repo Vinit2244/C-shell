@@ -841,23 +841,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             else if (strcmp("bg", argument_tokens[0]) == 0) {
                 int pid = atoi(argument_tokens[1]);
 
-                LL_Node trav = LL->first;
-                int flag = 0;
-                while (trav != NULL) {
-                    if (trav->pid == pid) {
-                        flag = 1;
-                        if (trav->flag == -1) {
-                            // do nothing
-                        } else if (trav->flag == -2) {
-                            kill(pid, 18); // SIGCONT
-                            trav->flag = -1;
-                        }
-                    }
-                    trav = trav->next;
-                }
-
-                if (flag == 0) {
-                    bprintf(global_buffer, "No such process found!\n");
+                int result = kill(pid, 0);
+                if (result == 0) {
+                    kill(pid, SIGCONT);
+                } else {
+                    printf("\033[1;31mNo such process exists\033[1;0m\n");
+                    overall_success = 0;
                 }
                 io_redirection(ap, w, cwd, output_file_name_redirection);
             }
@@ -873,40 +862,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (result == 0) {
                     int cstatus;
                     kill(pid, SIGCONT);
-                    waitpid(pid, &cstatus, 0);
+                    waitpid(pid, &cstatus, WUNTRACED);
                 } else {
-                    printf("error\n");
+                    printf("\033[1;31mNo such process exists\033[1;0m\n");
+                    overall_success = 0;
                 }
 
-                int flag = 0;
-                LL_Node trav = LL->first;
-                while (trav != NULL) {
-                    // if (trav->pid == pid) {
-                    //     flag = 1;
-                    //     if (trav->flag == -1) { // process is already running in background
-                    //         int status;
-                    //         waitpid(pid, &status, 0);
-
-                    //         free_node(trav);
-                    //         break;
-                    //     } else if (trav->flag == -2) { // process is stopped in background
-                    //         kill(pid, 18); // SIGCONT
-                    //         trav->flag = -1;
-
-                    //         while(1) {
-                    //             int status;
-                    //             waitpid(pid, &status, 0);
-
-                    //             free_node(trav);
-                    //             break;
-                    //         }
-                    //     }
-                    // }
-                    trav = trav->next;
-                }
-                if (flag == 0) {
-                    bprintf(global_buffer, "No such process exists\n");
-                }
                 io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
@@ -1041,9 +1002,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 } else if (pid > 0) {
                     if (bg_process == 0) {
+                        int cstatus;
                         global_fg_pid = pid;
-                        wait(NULL);
+                        char* temp = (char*) calloc(MAX_LEN, sizeof(char));
+                        strcpy(temp, curr_command);
+                        fg_command_name = temp;
+                        waitpid(pid, &cstatus, WUNTRACED);
                         global_fg_pid = -1;
+                        free(fg_command_name);
+                        fg_command_name = NULL;
                     } else {
                         printf("%d\n", pid);
                         insert_in_LL(pid, -1, argument_tokens);

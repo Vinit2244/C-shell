@@ -5,6 +5,7 @@ char* bg_process_buffer;
 
 char* global_buffer;
 int global_buffer_empty;
+char* fg_command_name;
 
 // char* home_directory;
 // char* cwd;
@@ -14,10 +15,17 @@ int global_buffer_empty;
 
 int main()
 {
+    fg_command_name = NULL;
+
     struct sigaction sa;
     sa.sa_handler = &handle_sigtstp; // Ctrl + Z or Cmd + Z
     sa.sa_flags = SA_RESTART;
     sigaction(SIGTSTP, &sa, NULL);
+
+    // Register the signal handler for SIGTSTP
+    // if (signal(SIGTSTP, &handle_sigtstp) == SIG_ERR) {
+    //     printf("signal\n");
+    // }
 
     struct sigaction sa2;
     sa2.sa_handler = &handle_sigint; // Ctrl + C or Cmd + C
@@ -53,6 +61,7 @@ int main()
 
     char* last_command = (char*) calloc(MAX_LEN, sizeof(char));
     int t = 0;
+
     // Keep accepting commands
     while (1)
     {

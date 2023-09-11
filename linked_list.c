@@ -95,3 +95,29 @@ void check_and_print() {
     }
 }
 
+void insert_node_in_LL(int pid, int flag, char* command) {
+    LL_Node N = (LL_Node) malloc(sizeof(LL_Node_struct));
+    N->cmd = command;
+    N->flag = flag;
+    N->pid = pid;
+    N->next = NULL;
+
+    if (LL->first == NULL) {
+        LL->first = N;
+        LL->last = N;
+        LL->no_of_nodes++;
+        return;
+    } else {
+        LL_Node trav = LL->first;
+        LL_Node prev = NULL;
+        while (trav != NULL) {
+            prev = trav;
+            trav = trav->next;
+        }
+        prev->next = N;
+        LL->no_of_nodes++;
+        LL->last = N;
+        return;
+    }
+}
+

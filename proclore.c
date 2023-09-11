@@ -2,15 +2,12 @@
 
 void proclore(char* pid, int ap, int w) {
     char path_stat[256] = {0};
-    // char* path_stat = (char*) calloc(256, sizeof(char));
     sprintf(path_stat, "/proc/%d/stat", atoi(pid));
 
     char path_maps[256] = {0};
-    // char* path_maps = (char*) calloc(256, sizeof(char));
     sprintf(path_maps, "/proc/%d/maps", atoi(pid));
 
     char path_exe[256] = {0};
-    // char* path_exe = (char*) calloc(256, sizeof(char));
     sprintf(path_exe, "/proc/%d/exe", atoi(pid));
 
     char* status;
@@ -21,15 +18,8 @@ void proclore(char* pid, int ap, int w) {
 
     FILE *fptr = fopen(path_stat, "r");
     if (fptr == NULL) {
-        if (ap == 0 && w == 0) {
-            char buff[MAX_LEN] = {0};
-            sprintf(buff, "\033[1;31mNo such process with process id %s running\033[1;0m\n", pid);
-            bprintf(global_buffer, buff);
-        } else {
-            char buff[MAX_LEN] = {0};
-            sprintf(buff, "No such process with process id %s running\n", pid);
-            bprintf(global_buffer, buff);
-        }
+        printf("\033[1;31mNo such process with process id %s running\033[1;0m\n", pid);
+        return;
     } else {
         char data[100000];
         fscanf(fptr, " %[^\n]", data);
@@ -54,11 +44,8 @@ void proclore(char* pid, int ap, int w) {
         sscanf(buffer, "%lx-%lx", &start, &end);
         virtual_address = start;
     } else {
-        if (ap == 0 && w == 0) {
-            bprintf(global_buffer, "\033[1;31mproclore: cannot open /proc/pid/maps\033[1;0m\n");
-        } else {
-            bprintf(global_buffer, "proclore: cannot open /proc/pid/maps\n");
-        }
+        printf("\033[1;31mproclore: cannot open /proc/pid/maps\033[1;0m\n");
+        return;
     }
 
     char buff[MAX_LEN] = {0};
@@ -66,7 +53,7 @@ void proclore(char* pid, int ap, int w) {
     bprintf(global_buffer, buff);
 
     char buff2[MAX_LEN] = {0};
-    sprintf(buff2, "process status : %s", status);
+    sprintf(buff2, "Process status : %s", status);
     bprintf(global_buffer, buff2);
 
     int background_process = 0;
@@ -95,11 +82,7 @@ void proclore(char* pid, int ap, int w) {
     executable_path[length] = '\0';
 
     char buff5[MAX_LEN + 100] = {0};
-    sprintf(buff5, "executable path : %s\n", executable_path);
+    sprintf(buff5, "Executable path : %s\n", executable_path);
     bprintf(global_buffer, buff5);
-
-    // free(path_stat);
-    // free(path_maps);
-    // free(path_exe);
 }
 

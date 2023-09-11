@@ -4,6 +4,7 @@
 extern char* global_buffer;
 extern int global_buffer_empty;
 extern int global_fg_pid;
+extern char* fg_command_name;
 
 void free_tokens(char** tokens);
 char** generate_tokens(char* str, char c);

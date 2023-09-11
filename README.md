@@ -9,6 +9,7 @@ I branched the Part A first half submission in 'final' branch and then continued
 - In the warp command if multiple commands are given separated by space ex: "warp .. test" then the complete command is saved in pastevents.
 - assuming both the <filename/path> along with input redirection won't be provided to warp and peek.
 - Multiple output redirections are not given in the same command same for multiple input redirections
+- NOTE: handling ctrl + z does not work when we compile using Makefile. So we can just copy paste the gcc command on terminal and it will work
 
 ### Warp:
 - File path does not contain any spaces.
@@ -47,14 +48,14 @@ I branched the Part A first half submission in 'final' branch and then continued
 - I have considered processes with status 'R' and 'S' as running and with 'T', 'D' and 'Z' as stopped. (Status read from /proc/pid/stat)
 
 # To-do:
-- [ ] Replace all perror with normal bprintf using color coding
-- [ ] Implement IO for iMan
-- [ ] iMan not working
-- [x] Implement input and output redirection when provided both concurrently
-- [x] Implement fg for vim and gedit
+- [ ] Replace all perror with normal printf using color coding
+- [ ] Implement piping for iMan
 - [ ] Implement piping
-- [ ] Ctrl C, Z, D implementation remaining
+- [ ] Ctrl Z, D implementation remaining
 - [ ] Add const infront of all the variables that aren't gonna change
 - [ ] Keep checking Q226 and Q227 in doubts doc
 - [ ] pipe '|' and '<' should work together
 - [ ] Don't redirect error to output file
+- [ ] Vim/Vi not working properly in foreground and background. Gedit working fine
+- [ ] pastevents execute should work with piping
+- [ ] input output redirection in background

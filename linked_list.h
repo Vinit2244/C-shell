@@ -25,5 +25,6 @@ LL_Node create_node(int pid, int flag, char** argument_tokens);
 void insert_in_LL(int pid, int flag, char** argument_tokens);
 void free_node(LL_Node node);
 void check_and_print();
+void insert_node_in_LL(int pid, int flag, char* command);
 
 #endif
