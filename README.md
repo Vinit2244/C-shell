@@ -55,7 +55,8 @@ I branched the Part A first half submission in 'final' branch and then continued
 # To-do:
 - [ ] Implement piping for iMan
 - [ ] Remove all error from redirection to output file
-- [ ] Implement piping
+- [ ] Implement piping along with input output
+- [ ] Implement piping for user defined commands
 - [ ] Add const infront of all the variables that aren't gonna change
 - [ ] Keep checking Q226 and Q227 in doubts doc
 - [ ] pipe '|' and '<' should work together

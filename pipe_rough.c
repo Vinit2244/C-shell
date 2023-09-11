@@ -127,82 +127,76 @@ int main() {
         }
     }
 
-    int pid1 = fork();
-    if (pid1 < 0) {
-        printf("error while fork\n");
-        return 1;
-    } else if (pid1 == 0) {
-        char** argument_tokens = generate_tokens(list_of_commands[0], ' ');
-
-        for (int j = 1; j < num_pipes; j++) {
-            close(pipe_fd[j][0]);
-            close(pipe_fd[j][1]);
-        }
-
-        close(pipe_fd[0][0]);
-        dup2(pipe_fd[0][1], STDOUT_FILENO);
-        close(pipe_fd[0][1]);
-
-        execvp(argument_tokens[0], argument_tokens);
-        printf("error: execvp\n");
-        kill(getpid(), SIGTERM);
-    }
-
-    for (int i = 1; i < num_of_commands - 1; i++) {
+    for (int i = 0; i < num_of_commands; i++) {
         // running each sub command
         int pid_i = fork();
         if (pid_i < 0) {
             printf("error while fork\n");
             return 1;
         } else if (pid_i == 0) {
-            char** argument_tokens = generate_tokens(list_of_commands[i], ' ');
+            if (i == 0) {
+                char** argument_tokens = generate_tokens(list_of_commands[0], ' ');
 
-            for (int j = 0; j < num_pipes; j++) {
-                if (j == i - 1 || j == i) continue;
-                close(pipe_fd[j][0]);
-                close(pipe_fd[j][1]);
+                for (int j = 1; j < num_pipes; j++) {
+                    close(pipe_fd[j][0]);
+                    close(pipe_fd[j][1]);
+                }
+
+                close(pipe_fd[0][0]);
+                dup2(pipe_fd[0][1], STDOUT_FILENO);
+                close(pipe_fd[0][1]);
+
+                execvp(argument_tokens[0], argument_tokens);
+                printf("error: execvp\n");
+                kill(getpid(), SIGTERM);
+            } else if (i > 0 && i < num_of_commands - 1) {
+                char** argument_tokens = generate_tokens(list_of_commands[i], ' ');
+
+                for (int j = 0; j < num_pipes; j++) {
+                    if (j == i - 1 || j == i) continue;
+                    close(pipe_fd[j][0]);
+                    close(pipe_fd[j][1]);
+                }
+
+                // pipe number to take input = i - 1
+                close(pipe_fd[i - 1][1]); // closing the write end of pipe i - 1
+                // pipe number to write output = i
+                close(pipe_fd[i][0]); // closing the read end of pipe i
+
+                dup2(pipe_fd[i - 1][0], STDIN_FILENO);
+                dup2(pipe_fd[i][1], STDOUT_FILENO);
+
+                close(pipe_fd[i - 1][0]);
+                close(pipe_fd[i][1]);
+
+                execvp(argument_tokens[0], argument_tokens);
+                printf("error: execvp\n");
+                kill(getpid(), SIGTERM);
+            } else if (i == num_of_commands - 1) {
+                char** argument_tokens = generate_tokens(list_of_commands[num_of_commands - 1], ' ');
+
+                for (int j = 0; j < num_pipes - 1; j++) {
+                    close(pipe_fd[j][0]);
+                    close(pipe_fd[j][1]);
+                }
+
+                close(pipe_fd[num_pipes - 1][1]);
+                dup2(pipe_fd[num_pipes - 1][0], STDIN_FILENO);
+                close(pipe_fd[num_pipes - 1][0]);
+
+                execvp(argument_tokens[0], argument_tokens);
+                printf("error: execvp\n");
+                kill(getpid(), SIGTERM);
             }
-
-            // pipe number to take input = i - 1
-            close(pipe_fd[i - 1][1]); // closing the write end of pipe i - 1
-            // pipe number to write output = i
-            close(pipe_fd[i][0]); // closing the read end of pipe i
-
-            dup2(pipe_fd[i - 1][0], STDIN_FILENO);
-            dup2(pipe_fd[i][1], STDOUT_FILENO);
-
-            close(pipe_fd[i - 1][0]);
-            close(pipe_fd[i][1]);
         }
     }
 
-    int pidk_1 = fork();
-    if (pidk_1 < 0) {
-        printf("error while fork\n");
-        return 1;
-    } else if (pidk_1 == 0) {
-        char** argument_tokens = generate_tokens(list_of_commands[num_of_commands - 1], ' ');
-
-        for (int j = 0; j < num_pipes - 1; j++) {
-            close(pipe_fd[j][0]);
-            close(pipe_fd[j][1]);
-        }
-
-        close(pipe_fd[num_pipes - 1][1]);
-        dup2(pipe_fd[num_pipes - 1][0], STDIN_FILENO);
-        close(pipe_fd[num_pipes - 1][0]);
-
-        execvp(argument_tokens[0], argument_tokens);
-        printf("error: execvp\n");
-        kill(getpid(), SIGTERM);
-    }
-
-    // closing all pipes in parent execept the read of last pipe
     for (int i = 0; i < num_pipes; i++) {
         close(pipe_fd[i][0]);
         close(pipe_fd[i][1]);
     }
     for (int i = 0; i < num_of_commands; i++) {
+        // closing all pipes in parent execept the read of last pipe
         wait(NULL);
     }
 

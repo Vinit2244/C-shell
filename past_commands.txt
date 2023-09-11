@@ -1,15 +1,15 @@
+exit
+cat past_commands.txt | wc
+echo "ahfioehf afhehiae" | wc
+echo "ahogfheoh afofheoa
+echo "roooobahdoahf ahoifh" | wc | wc | cat
+rm temm.txt
+cat temm.txt
+echo "hello world" > temm.txt
+exit
+cat past_commands.txt | grep warp | wc
+exit
 warp ..
 warp test ; sleep 4
 exit
 sleep 3
-exit
-seek -fe abcd
-exit
-seek -fe abcd
-warp ~
-seek -e -d abcd
-warp ~
-seek -d -e abcd
-warp ~
-seek -ed abcd
-warp ~

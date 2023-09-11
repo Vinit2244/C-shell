@@ -341,3 +341,46 @@ void convert_to_int(char* number, int* num, int* flag, int ap, int w) {
     }
 }
 
+int is_pipe_present(char* string) {
+    for (int i = 0; i < strlen(string); i++) {
+        if (string[i] == '|') {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_write_present(char* string) {
+    for (int i = 0; i < strlen(string); i++) {
+        if (string[i] == '>') {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_append_present(char* string, char* app_cmd, char* to_file) {
+    for (int i = 0; i < strlen(string) - 1; i++) {
+        if (string[i] == '>' && string[i + 1] == '>') {
+            for (int j = 0; j < i; j++) {
+                app_cmd[j] = string[j];
+            }
+            remove_leading_and_trailing_spaces(app_cmd);
+            for (int j = i + 2; j < strlen(string); j++) {
+                to_file[j - i - 2] = string[j];
+            }
+            remove_leading_and_trailing_spaces(to_file);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_input_present(char* string) {
+    for (int i = 0; i < strlen(string); i++) {
+        if (string[i] == '<')
+            return 1;
+    }
+    return 0;
+}
+
