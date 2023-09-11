@@ -18,7 +18,7 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, in
     } else {
         new_path = generate_new_path(cwd, path, prev_dir, home_dir);
         if (new_path == NULL) {
-            printf("\033[1;31mpeek: no such file or directory\033[1;0m\n");
+            printf("\033[1;31mpeek: no such file or directory %s\033[1;0m\n", path);
             return 0;
         }
     }

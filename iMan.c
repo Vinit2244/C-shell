@@ -27,7 +27,7 @@ int get_webpage(char* command_name) {
     int status = getaddrinfo(hostname, NULL, &specs, &LL_of_addresses); // returns a linked list of struct addrinfo stored at position LL_of_addresses
     if (status != 0) {
         printf("getaddrinfo: %s\n", gai_strerror(status)); // gai_strerror() converts the error code returned by the getaddrinfo() function in string form
-        return 1;
+        return 0;
     }
 
     // obtaining the ip address of the input hostname
@@ -121,6 +121,7 @@ int get_webpage(char* command_name) {
     if (overall_flag == 0) { // if nothing is printed then we know that page not found is returned
         printf("\033[1;31mERROR\033[1;0m\n");
         printf("\t\033[1;31mNo such Command\033[1;0m\n");
+        return 0;
     }
 
     // closing the socket

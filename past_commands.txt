@@ -1,15 +1,15 @@
-[I]10;rgb:cccc/cccc/cccc\[?12;2$yq
-vim &
-sleep 1000&
-exit
-wart ..
-wart test
 warp ..
-warp test
-sleep 100
+warp test ; sleep 4
 exit
-vim past_commands.txt
-ping 22598 9
-fg 22598
-vim &
-[3;3R]10;rgb:2828/fefe/1414:qqq::::qq:qqqqping 21966 9
+sleep 3
+exit
+seek -fe abcd
+exit
+seek -fe abcd
+warp ~
+seek -e -d abcd
+warp ~
+seek -d -e abcd
+warp ~
+seek -ed abcd
+warp ~

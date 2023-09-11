@@ -10,6 +10,8 @@ I branched the Part A first half submission in 'final' branch and then continued
 - assuming both the <filename/path> along with input redirection won't be provided to warp and peek.
 - Multiple output redirections are not given in the same command same for multiple input redirections
 - NOTE: handling ctrl + z does not work when we compile using Makefile. So we can just copy paste the gcc command on terminal and it will work
+- ctrl + d works only when no foreground process is currently running (just like as in a real shell).
+- Vim & is not working properly but rest everything like gedit & and all works fine.
 
 ### Warp:
 - File path does not contain any spaces.

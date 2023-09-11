@@ -1,6 +1,6 @@
 #include "headers.h"
 
-void print_active_processes_spawned_by_my_shell() {
+int print_active_processes_spawned_by_my_shell() {
     LL_Node trav = LL->first;
     int n = LL->no_of_nodes;
 
@@ -26,7 +26,7 @@ void print_active_processes_spawned_by_my_shell() {
         FILE *fptr = fopen(path_stat, "r");
         if (fptr == NULL) {
             printf("\033[1;31mopen: Could not open file to read\033[1;0m\n");
-            return;
+            return 0;
         }
 
         char data[100000];
@@ -59,6 +59,7 @@ void print_active_processes_spawned_by_my_shell() {
             bprintf(global_buffer, "Stopped\n");
         }
     }
+    return 1;
 }
 
 void bubble_sort_processes(int* pids, char** process_names, char* process_states, int n) {

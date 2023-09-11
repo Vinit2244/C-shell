@@ -131,7 +131,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (pipe(pipe_fd[i]) < 0) {
                     printf("Error occured while piping\n");
                     overall_success = 0;
-                    // goto END;
                 }
             }
 
@@ -139,7 +138,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             if (pid1 < 0) {
                 printf("error while fork\n");
                 overall_success = 0;
-                // goto END;
             } else if (pid1 == 0) {
                 char** argument_tokens = generate_tokens(list_of_commands[0], ' ');
 
@@ -165,7 +163,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (pid_i < 0) {
                     printf("error while fork\n");
                     overall_success = 0;
-                    // goto END;
                 } else if (pid_i == 0) {
                     char** argument_tokens = generate_tokens(list_of_commands[i], ' ');
 
@@ -192,7 +189,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             if (pidk_1 < 0) {
                 printf("error while fork\n");
                 overall_success = 0;
-                // goto END;
             } else if (pidk_1 == 0) {
                 char** argument_tokens = generate_tokens(list_of_commands[num_of_commands - 1], ' ');
 
@@ -781,12 +777,20 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                                         bprintf(global_buffer, buff);
                                                     }
                                                     char buffer[100000];
-                                                    FILE* fptr = fopen(trav->path, "r");
-                                                    fgets(buffer, 100000, fptr);
-                                                    fclose(fptr);
-                                                    char buff[100001] = {0};
-                                                    sprintf(buff, "%s\n", buffer);
-                                                    bprintf(global_buffer, buff);
+                                                    int fd = open(trav->path, O_RDONLY);
+                                                    if (fd < 0) {
+                                                        printf("\033[1;31mopen: Could not open file for reading\033[1;0m\n");
+                                                    } else {
+                                                        if (read(fd, buffer, 100000 - 1) < 0) {
+                                                            printf("\033[1;31mread: could not read data\033[1;0m\n");
+                                                            close(fd);
+                                                        } else {
+                                                            char buff[100001] = {0};
+                                                            sprintf(buff, "%s\n", buffer);
+                                                            bprintf(global_buffer, buff);
+                                                            close(fd);
+                                                        }
+                                                    }
                                                 } else {
                                                     bprintf(global_buffer, "Missing permissions for task!\n");
                                                 }
@@ -845,7 +849,8 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
             // checking if activities command is present
             else if (strcmp("activities", argument_tokens[0]) == 0) {
-                print_active_processes_spawned_by_my_shell();
+                int exit_status = print_active_processes_spawned_by_my_shell();
+                if (exit_status == 0) overall_success = 0;
 
                 io_redirection(ap, w, cwd, output_file_name_redirection);
             }
@@ -937,9 +942,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 int pid = fork();
 
                 if (pid == 0) {
-                    // if (bg_process == 1) {
-                    //     setpgid(0, 0);
-                    // }
                     // creating absolute path to the file (input)
                     char inp_file_path[MAX_LEN];
                     if (input_file_name_redirection == NULL) {
@@ -998,14 +1000,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
                         kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
-                        
                         close(STDOUT_FILENO);
                         open(out_file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
                         execvp(argument_tokens[0], argument_tokens);
                         // error
                         printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
                         kill(getpid(), SIGTERM);
-
                     } else if (ip == 1) {
                         int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
@@ -1034,12 +1034,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 } else if (pid > 0) {
                     if (bg_process == 0) {
-                        int cstatus;
                         global_fg_pid = pid;
+
                         char* temp = (char*) calloc(MAX_LEN, sizeof(char));
                         strcpy(temp, curr_command);
                         fg_command_name = temp;
+
+                        int cstatus;
                         waitpid(pid, &cstatus, WUNTRACED);
+
                         global_fg_pid = -1;
                         free(fg_command_name);
                         fg_command_name = NULL;
@@ -1056,15 +1059,18 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             if (overall_success == 1) {
                 // storing the name of commands in the last command array
                 if (strlen(last_command) == 0) {
-                    strcpy(last_command, argument_tokens[0]);
+                    if (strcmp(argument_tokens[0], "pastevents") != 0) {
+                        strcpy(last_command, argument_tokens[0]);
+                    }
                 } else {
-                    strcat(last_command, ", ");
-                    strcat(last_command, argument_tokens[0]);
+                    if (strcmp(argument_tokens[0], "pastevents") != 0) {
+                        strcat(last_command, ", ");
+                        strcat(last_command, argument_tokens[0]);
+                    }
                 }
             }
             free_tokens(argument_tokens);
         }
-    // END:
         idx++;
         curr_command = list_of_commands[idx];
     }
