@@ -53,14 +53,11 @@ I branched the Part A first half submission in 'final' branch and then continued
 - Assuming that the html will have the format where it first starts with "NAME" and after "DESCRIPTION" it contains "AUTHOR" heading (Just as shown in the example given in mini-project-1 document).
 
 # To-do:
-- [ ] Implement piping for iMan
-- [ ] Remove all error from redirection to output file
 - [ ] Implement piping along with input output
 - [ ] Implement piping for user defined commands
 - [ ] Add const infront of all the variables that aren't gonna change
 - [ ] Keep checking Q226 and Q227 in doubts doc
 - [ ] pipe '|' and '<' should work together
-- [ ] Don't redirect error to output file
 - [ ] Vim/Vi not working properly in foreground and background. Gedit working fine
 - [ ] pastevents execute should work with piping
-- [ ] input output redirection in background
+- [ ] ctrl + c not working after bring the process to foreground (ctrl + c/z/d not working for fg)

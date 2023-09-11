@@ -87,9 +87,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         int inp_flag = is_input_present(curr_command);
 
         if (pipe_flag == 1) {
-            char** list_of_commands = generate_tokens(input_string, '|');
+            // int res = is_pastevents_execute_present(curr_command);
+
+            char** list_of_commands_pipe = generate_tokens(curr_command, '|');
             int num_of_commands = 0;
-            while (list_of_commands[num_of_commands] != NULL) {
+            while (list_of_commands_pipe[num_of_commands] != NULL) {
                 num_of_commands++;
             }
 
@@ -113,7 +115,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     return;
                 } else if (pid_i == 0) {
                     if (i == 0) {
-                        char** argument_tokens = generate_tokens(list_of_commands[0], ' ');
+                        char** argument_tokens = generate_tokens(list_of_commands_pipe[0], ' ');
 
                         for (int j = 1; j < num_pipes; j++) {
                             close(pipe_fd[j][0]);
@@ -128,7 +130,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         printf("033[1;31merror: execvp\033[1;0m\n");
                         kill(getpid(), SIGTERM);
                     } else if (i > 0 && i < num_of_commands - 1) {
-                        char** argument_tokens = generate_tokens(list_of_commands[i], ' ');
+                        char** argument_tokens = generate_tokens(list_of_commands_pipe[i], ' ');
 
                         for (int j = 0; j < num_pipes; j++) {
                             if (j == i - 1 || j == i) continue;
@@ -139,7 +141,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         // pipe number to take input = i - 1
                         close(pipe_fd[i - 1][1]); // closing the write end of pipe i - 1
                         // pipe number to write output = i
-                        close(pipe_fd[i][0]); // closing the read end of pipe i
+                        close(pipe_fd[i][0]);    // closing the read end of pipe i
 
                         dup2(pipe_fd[i - 1][0], STDIN_FILENO);
                         dup2(pipe_fd[i][1], STDOUT_FILENO);
@@ -151,7 +153,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         printf("033[1;31merror: execvp\033[1;0m\n");
                         kill(getpid(), SIGTERM);
                     } else if (i == num_of_commands - 1) {
-                        char** argument_tokens = generate_tokens(list_of_commands[num_of_commands - 1], ' ');
+                        char** argument_tokens = generate_tokens(list_of_commands_pipe[num_of_commands - 1], ' ');
 
                         for (int j = 0; j < num_pipes - 1; j++) {
                             close(pipe_fd[j][0]);
@@ -178,7 +180,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 wait(NULL);
             }
 
-            free_tokens(list_of_commands);
+            free_tokens(list_of_commands_pipe);
         } else if (inp_flag == 1) {
             if (write_flag == 0 && append_flag == 0) {
                 char** files = generate_tokens(curr_command, '<');

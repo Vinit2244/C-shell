@@ -24,5 +24,7 @@ int is_pipe_present(char* string);
 int is_write_present(char* string);
 int is_append_present(char* string, char* app_cmd, char* to_file);
 int is_input_present(char* string);
+int is_pastevents_execute_present(char* curr_command);
+// int replace_pastevents_execute(char* curr_command);
 
 #endif
