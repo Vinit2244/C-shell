@@ -10,12 +10,19 @@ void free_tokens(char** tokens) {
 }
 
 char** generate_tokens(char* str, char c) {
+    // NOTE: Don't tokenise at quotes (single or double)
     int no_of_characters = 0;
     int idx = 0;
+    int q_flag = 0;
     while (str[idx] != '\0') {
-        if (str[idx] == c) no_of_characters++;
+        if (str[idx] == '\'' || str[idx] == '"') {
+            if (q_flag == 1) q_flag = 0;
+            else q_flag = 1;
+        }
+        if (str[idx] == c && q_flag == 0) no_of_characters++;
         idx++;
     }
+
     int no_of_partitions = no_of_characters + 1;
     char** tokens_array = (char**) calloc(no_of_partitions + 1, sizeof(char*));
     for (int i = 0; i < no_of_partitions; i++) {
@@ -25,8 +32,13 @@ char** generate_tokens(char* str, char c) {
     int str_idx = 0;
     int tokens_array_idx = 0;
     int token_idx = 0;
+    int quotes_flag = 0;
     while (str[str_idx] != '\0') {
-        if (str[str_idx] == c) {
+        if (str[str_idx] == '\'' || str[str_idx] == '"') {
+            if (quotes_flag == 1) quotes_flag = 0;
+            else quotes_flag = 1;
+        }
+        if (str[str_idx] == c && quotes_flag == 0) {
             tokens_array[tokens_array_idx][token_idx] = '\0';
             token_idx = 0;
             tokens_array_idx++;
@@ -324,11 +336,8 @@ void convert_to_int(char* number, int* num, int* flag, int ap, int w) {
         *num = 15;
     } else {
         *flag = 0;
-        if (ap == 0 && w == 0) {
-            bprintf(global_buffer, "\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
-        } else {
-            bprintf(global_buffer, "pastevents: argument value should a positive integer less than or equal to 15\n");
-        }
+        printf("\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
+        return;
     }
 }
 

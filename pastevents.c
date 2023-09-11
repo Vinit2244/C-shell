@@ -93,7 +93,7 @@ void pastevents(char* home_dir) {
     }
 }
 
-void purge(int ap, int w, char* home_dir) {
+int purge(int ap, int w, char* home_dir) {
     FILE *fptr;
     char past_commands_path[MAX_LEN] = {0};
     strcpy(past_commands_path, home_dir);
@@ -101,13 +101,11 @@ void purge(int ap, int w, char* home_dir) {
 
     fptr = fopen(past_commands_path, "w");
     if (fptr == NULL) {
-        if (ap == 0 && w == 0) {
-            bprintf(global_buffer, "\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
-        } else {
-            bprintf(global_buffer, "pastevents: error opening file for writing\n");
-        }
+        printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+        return 0;
     }
     fclose(fptr);
+    return 1;
 }
 
 int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char* last_command, int* t, int ap, int w) {
@@ -119,6 +117,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
     fptr = fopen(past_commands_path, "r");
 
     if (fptr == NULL) {
+        printf("\033[1;31mFile Not Found\033[1;0m\n");
         return 0;
     } else {
         char** past_commands = (char**) calloc(15, sizeof(char*));
@@ -130,11 +129,8 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
         fclose(fptr);
 
         if (past_commands[num - 1][0] == '\0') {
-            if (ap == 0 && w == 0) {
-                bprintf(global_buffer, "\033[1;31mInvalid Argument\033[1;0m\n");
-            } else {
-                bprintf(global_buffer, "Invalid Argument\n");
-            }
+            printf("\033[1;31mInvalid Argument\033[1;0m\n");
+            return 0;
         } else {
             input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, 0, NULL, NULL);
         }

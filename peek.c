@@ -3,11 +3,7 @@
 int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, int ap, int w) {
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
     if (path[0] == '-') {
-        if (ap == 0 && w == 0) {
-            bprintf(global_buffer, "\033[1;31mpeek: Invalid Flags\033[1;0m\n");
-        } else {
-            bprintf(global_buffer, "peek: Invalid Flags\n");
-        }
+        printf("\033[1;31mpeek: Invalid Flags\033[1;0m\n");
         return 0;
     } else if (path[0] == '\0') {
         for (int i = 0; i < strlen(cwd); i++) {
@@ -22,11 +18,7 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, in
     } else {
         new_path = generate_new_path(cwd, path, prev_dir, home_dir);
         if (new_path == NULL) {
-            if (ap == 0 && w == 0) {
-                bprintf(global_buffer, "\033[1;31mpeek: no such file or directory\033[1;0m\n");
-            } else {
-                bprintf(global_buffer, "peek: no such file or directory\n");
-            }
+            printf("\033[1;31mpeek: no such file or directory\033[1;0m\n");
             return 0;
         }
     }
@@ -46,7 +38,8 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, in
                 complete_path_of_file[j] = files_list[idx][j - start];
             }
             complete_path_of_file[start + strlen(files_list[idx])] = '\0';
-            print_extra_details(complete_path_of_file, files_list, idx, ap, w);
+            int exit_status = print_extra_details(complete_path_of_file, files_list, idx, ap, w);
+            if (exit_status == 0) return 0;
             idx++;
         }
     } else if (a) {
@@ -107,7 +100,8 @@ int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, in
                 complete_path_of_file[j] = files_list[idx][j - start];
                 }
                 complete_path_of_file[start + strlen(files_list[idx])] = '\0';
-                print_extra_details(complete_path_of_file, files_list, idx, ap, w);
+                int exit_status = print_extra_details(complete_path_of_file, files_list, idx, ap, w);
+                if (exit_status == 0) return 0;
             }
             idx++;
         }
@@ -204,7 +198,7 @@ char** generate_sorted_file_list(char* path) {
     return files_list;
 }
 
-void print_extra_details(char* complete_path_of_file, char** files_list, int idx, int ap, int w) {
+int print_extra_details(char* complete_path_of_file, char** files_list, int idx, int ap, int w) {
     struct stat file_stat;
 
     if (!stat(complete_path_of_file, &file_stat)) {
@@ -219,11 +213,8 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
         bprintf(global_buffer, (file_stat.st_mode & S_IWOTH) ? "w" : "-");
         bprintf(global_buffer, (file_stat.st_mode & S_IXOTH) ? "x" : "-");
     } else {
-        if (ap == 0 && w == 0) {
-            bprintf(global_buffer, "\033[1;31mpeek: error in stat\033[1;0m\n");
-        } else {
-            bprintf(global_buffer, "peek: error in stat\n");
-        }
+        printf("\033[1;31mpeek: error in stat\033[1;0m\n");
+        return 0;
     }
 
     struct passwd *pw = getpwuid(file_stat.st_uid);
@@ -300,5 +291,6 @@ void print_extra_details(char* complete_path_of_file, char** files_list, int idx
         sprintf(buff, "%s\n", files_list[idx]);
         bprintf(global_buffer, buff);
     }
+    return 1;
 }
 

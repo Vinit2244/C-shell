@@ -19,9 +19,12 @@ void io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
             if (fd < 0) {
                 // printf("hi\n");
                 printf("\033[1;31mopen: Error in opening file\033[1;0m\n");
+                return;
             } else {
                 if (write(fd, global_buffer, strlen(global_buffer)) < 0) {
                     printf("\033[1;31mwrite: Error in writing\033[1;0m\n");
+                    close(fd);
+                    return;
                 }
                 memset(global_buffer, 0, strlen(global_buffer));
                 close(fd);
@@ -40,9 +43,12 @@ void io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
             int fd = open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
             if (fd < 0) {
                 printf("\033[1;31mopen: Error in opening file\033[1;0m\n");
+                return;
             } else {
                 if (write(fd, global_buffer, strlen(global_buffer)) < 0) {
                     printf("\033[1;31mwrite: Error in writing\033[1;0m\n");
+                    close(fd);
+                    return;
                 }
                 memset(global_buffer, 0, strlen(global_buffer));
                 close(fd);

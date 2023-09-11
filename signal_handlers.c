@@ -21,6 +21,10 @@ void handle_sigint(int sig) {
 
 // ctrl + d
 void handle_ctrl_d() {
-    printf("received ctrl d\n");
+    LL_Node trav = LL->first;
+    while (trav != NULL) {
+        kill(trav->pid, SIGKILL);
+        trav = trav->next;
+    }
+    exit(0);
 }
-

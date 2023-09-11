@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #define MAX_LEN 100000
 
@@ -34,12 +35,19 @@ void remove_leading_and_trailing_spaces(char* str) {
 }
 
 char** generate_tokens(char* str, char c) {
+    // NOTE: Don't tokenise at quotes (single or double)
     int no_of_characters = 0;
     int idx = 0;
+    int q_flag = 0;
     while (str[idx] != '\0') {
-        if (str[idx] == c) no_of_characters++;
+        if (str[idx] == '\'' || str[idx] == '"') {
+            if (q_flag == 1) q_flag = 0;
+            else q_flag = 1;
+        }
+        if (str[idx] == c && q_flag == 0) no_of_characters++;
         idx++;
     }
+
     int no_of_partitions = no_of_characters + 1;
     char** tokens_array = (char**) calloc(no_of_partitions + 1, sizeof(char*));
     for (int i = 0; i < no_of_partitions; i++) {
@@ -49,8 +57,13 @@ char** generate_tokens(char* str, char c) {
     int str_idx = 0;
     int tokens_array_idx = 0;
     int token_idx = 0;
+    int quotes_flag = 0;
     while (str[str_idx] != '\0') {
-        if (str[str_idx] == c) {
+        if (str[str_idx] == '\'' || str[str_idx] == '"') {
+            if (quotes_flag == 1) quotes_flag = 0;
+            else quotes_flag = 1;
+        }
+        if (str[str_idx] == c && quotes_flag == 0) {
             tokens_array[tokens_array_idx][token_idx] = '\0';
             token_idx = 0;
             tokens_array_idx++;
@@ -97,68 +110,77 @@ int main() {
     }
 
     char** list_of_commands = generate_tokens(input_string, '|');
-    int k = 0;
-    while (list_of_commands[k] != NULL) {
-        printf("%s\n", list_of_commands[k]);
-        k++;
+    int num_commands = 0;
+    while (list_of_commands[num_commands] != NULL) {
+        num_commands++;
     }
 
-    printf("Number of commands passed = %d\n", k);
+    int num_pipes = num_commands + 1;
 
     // 0 - read
     // 1 - write
-    int fd[k][2];
-    for (int i = 0; i < k; i++) {
-        if (pipe(fd[i]) < 0) {
+    int pipe_fd[num_pipes][2];
+    for (int i = 0; i < num_pipes; i++) {
+        if (pipe(pipe_fd[i]) < 0) {
             printf("Error occured while piping\n");
             return 1;
         }
     }
 
-    for (int i = 0; i < k; i++) {
-        char** argument_tokens = generate_tokens(list_of_commands[0], ' ');
+    for (int i = 0; i < num_commands; i++) {
+
         int pid = fork();
 
         if (pid < 0) {
-            printf("Error occured in fork\n");
+            printf("error while fork\n");
             return 1;
         } else if (pid == 0) {
-            for (int j = 0; j < k; j++) {
-                if (j == i) continue;
-                else {
-                    close(fd[j][0]);
-                    close(fd[j][1]);
-                }
-            }
-            if (i == 0) { // only writes to the pipe
-                close(fd[i][0]);
-                dup2(fd[i][1], STDOUT_FILENO);
-                close(fd[i][1]);
-            } else if (i > 0 && i < k - 1) { // both reads and writes to the pipe
-                close(fd[i - 1][1]); // Close write end of the previous pipe
-                dup2(fd[i - 1][0], STDIN_FILENO); // Redirect input from the previous pipe
-                close(fd[i - 1][0]); // Close read end of the previous pipe
+            char** argument_tokens = generate_tokens(list_of_commands[i], ' ');
 
-                close(fd[i][0]);
-                dup2(fd[i][1], STDOUT_FILENO);
-                close(fd[i][1]);
-            } else if (i == k - 1) { // only reads from the pipe
-                close(fd[i - 1][1]); // Close write end of the previous pipe
-                dup2(fd[i - 1][0], STDIN_FILENO); // Redirect input from the previous pipe
-                close(fd[i - 1][0]); // Close read end of the previous pipe
+            for (int j = 0; j < num_pipes; j++) {
+                if (j == i || j == i + 1) continue;
+                close(pipe_fd[j][0]);
+                close(pipe_fd[j][1]);
             }
+
+            close(pipe_fd[i][1]); // write end of input pipe
+            close(pipe_fd[i + 1][0]); // read end of output pipe
+
+            dup2(pipe_fd[i][0], STDIN_FILENO);
+            dup2(pipe_fd[i + 1][1], STDOUT_FILENO);
+            close(pipe_fd[i][0]);
+            close(pipe_fd[i + 1][1]);
+
             execvp(argument_tokens[0], argument_tokens);
+            printf("Error in execvp\n");
+            free_tokens(argument_tokens);
+            kill(getpid(), SIGTERM);
         }
-        
-        for (int j = 0; j < k; j++) {
-            close(fd[j][0]);
-            close(fd[j][1]);
-        }
-        waitpid(pid, NULL, 0);
-        free_tokens(argument_tokens);
     }
+
+    for (int i = 1; i < num_pipes - 1; i++) {
+        close(pipe_fd[i][0]);
+        close(pipe_fd[i][1]);
+    }
+
+    close(pipe_fd[0][0]);
+    close(pipe_fd[num_pipes - 1][1]);
+
+    dup2(pipe_fd[0][1], STDOUT_FILENO);
+    dup2(pipe_fd[num_pipes - 1][0], STDIN_FILENO);
+    close(pipe_fd[0][1]);
+    close(pipe_fd[num_pipes - 1][0]);
+
+    for (int i = 0; i < num_commands; i++) {
+        wait(NULL);
+    }
+
+    char* output = (char*) calloc(MAX_LEN, sizeof(char));
+    fgets(output, MAX_LEN - 1, stdin);
+    printf("%s\n", output);
 
     free(input_string);
     free_tokens(list_of_commands);
     return 0;
 }
+

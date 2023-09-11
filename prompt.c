@@ -1,6 +1,6 @@
 #include "headers.h"
 
-void prompt(char* home_directory, char* cwd, int* t, char* last_command) {
+int prompt(char* home_directory, char* cwd, int* t, char* last_command) {
     // Do not hardcode the prmopt
     // Getting the name of the current user
     register struct passwd *pw;
@@ -8,7 +8,8 @@ void prompt(char* home_directory, char* cwd, int* t, char* last_command) {
     char* username = pw->pw_name;
 
     if (username == NULL) { // if there is no username then show the error
-        perror("Error: ");
+        printf("\033[1;31musername: No username available\033[1;0m\n");
+        return 0;
     } else {
         // Extracting the hostname
         char* hostname = (char*) malloc(sizeof(char) * (MAX_LEN + 1));
@@ -69,6 +70,7 @@ void prompt(char* home_directory, char* cwd, int* t, char* last_command) {
         printf("> "); 
         free(hostname);
     }
+    return 1;
 }
 
 // Checks if we are currently inside home_directory or not

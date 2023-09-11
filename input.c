@@ -26,9 +26,16 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         store = 1;          // flag to reflect if the command inputted is to be stored or not
 
         // Print appropriate prompt with username, systemname and directory before accepting input
-        prompt(home_directory, cwd, t, last_command);
+        int exit_status = prompt(home_directory, cwd, t, last_command);
+        if (exit_status == 0) {
+            printf("\033[1;31mprompt: Could Not Print prompt\033[1;0m\n");
+            return;
+        }
         
-        fgets(input_string, 4096, stdin);
+        // when we press ctrl + d fgets returns NULL
+        if (fgets(input_string, 4096, stdin) == NULL) {
+            handle_ctrl_d();
+        }
         input_string[strlen(input_string)] = '\0';
 
         // removing endline character
@@ -109,22 +116,111 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         }
 
         if (pipe_flag == 1) {
-            char** sub_commands = generate_tokens(curr_command, '|');
-
-            char temp_file_for_piping[MAX_LEN] = {0};
-            strcpy(temp_file_for_piping, home_directory);
-            strcat(temp_file_for_piping, "/a_a.txt");
-
-            input(sub_commands[0], home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 0, temp_file_for_piping, NULL);
-
-            int k = 1;
-            while (sub_commands[k] != NULL) {
-                input(sub_commands[k], home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 1, temp_file_for_piping, temp_file_for_piping);
-                k++;
+            char** list_of_commands = generate_tokens(input_string, '|');
+            int num_of_commands = 0;
+            while (list_of_commands[num_of_commands] != NULL) {
+                num_of_commands++;
             }
 
-            free_tokens(sub_commands);
-            // return;
+            int num_pipes = num_of_commands - 1; // k = number of commands
+
+            // 0 - read end
+            // 1 - write end
+            int pipe_fd[num_pipes][2];
+            for (int i = 0; i < num_pipes; i++) {
+                if (pipe(pipe_fd[i]) < 0) {
+                    printf("Error occured while piping\n");
+                    overall_success = 0;
+                    // goto END;
+                }
+            }
+
+            int pid1 = fork(); // forking for the first command
+            if (pid1 < 0) {
+                printf("error while fork\n");
+                overall_success = 0;
+                // goto END;
+            } else if (pid1 == 0) {
+                char** argument_tokens = generate_tokens(list_of_commands[0], ' ');
+
+                for (int j = 1; j < num_pipes; j++) {
+                    close(pipe_fd[j][0]);
+                    close(pipe_fd[j][1]);
+                }
+
+                close(pipe_fd[0][0]);
+                dup2(pipe_fd[0][1], STDOUT_FILENO);
+                close(pipe_fd[0][1]);
+
+                execvp(argument_tokens[0], argument_tokens);
+                printf("error: execvp\n");
+                kill(getpid(), SIGTERM);
+            }
+
+            // forking for all commands except for the first and last one
+            // first and last commands are handled separately
+            for (int i = 1; i < num_of_commands - 1; i++) {
+                // running each sub command
+                int pid_i = fork();
+                if (pid_i < 0) {
+                    printf("error while fork\n");
+                    overall_success = 0;
+                    // goto END;
+                } else if (pid_i == 0) {
+                    char** argument_tokens = generate_tokens(list_of_commands[i], ' ');
+
+                    for (int j = 0; j < num_pipes; j++) {
+                        if (j == i - 1 || j == i) continue;
+                        close(pipe_fd[j][0]);
+                        close(pipe_fd[j][1]);
+                    }
+
+                    // pipe number to take input = i - 1
+                    close(pipe_fd[i - 1][1]); // closing the write end of pipe i - 1
+                    // pipe number to write output = i
+                    close(pipe_fd[i][0]); // closing the read end of pipe i
+
+                    dup2(pipe_fd[i - 1][0], STDIN_FILENO);
+                    dup2(pipe_fd[i][1], STDOUT_FILENO);
+
+                    close(pipe_fd[i - 1][0]);
+                    close(pipe_fd[i][1]);
+                }
+            }
+
+            int pidk_1 = fork(); // forking for the last command
+            if (pidk_1 < 0) {
+                printf("error while fork\n");
+                overall_success = 0;
+                // goto END;
+            } else if (pidk_1 == 0) {
+                char** argument_tokens = generate_tokens(list_of_commands[num_of_commands - 1], ' ');
+
+                for (int j = 0; j < num_pipes - 1; j++) {
+                    close(pipe_fd[j][0]);
+                    close(pipe_fd[j][1]);
+                }
+
+                close(pipe_fd[num_pipes - 1][1]);
+                dup2(pipe_fd[num_pipes - 1][0], STDIN_FILENO);
+                close(pipe_fd[num_pipes - 1][0]);
+
+                execvp(argument_tokens[0], argument_tokens);
+                printf("error: execvp\n");
+                kill(getpid(), SIGTERM);
+            }
+
+            // closing all pipes in parent execept the read of last pipe
+            for (int i = 0; i < num_pipes; i++) {
+                close(pipe_fd[i][0]);
+                close(pipe_fd[i][1]);
+            }
+
+            for (int i = 0; i < num_of_commands; i++) {
+                wait(NULL); // waiting for all child processes to end
+            }
+
+            free_tokens(list_of_commands);
         } else if (inp_flag == 1) {
             if (write_flag == 0 && append_flag == 0) {
                 char** files = generate_tokens(curr_command, '<');
@@ -214,14 +310,6 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 no_of_arguments++;
             }
             no_of_arguments--;
-
-            // storing the name of commands in the last command array
-            if (strlen(last_command) == 0) {
-                strcpy(last_command, argument_tokens[0]);
-            } else {
-                strcat(last_command, ", ");
-                strcat(last_command, argument_tokens[0]);
-            }
 
             // Different commands
     // ===================================================================================
@@ -382,27 +470,16 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     if (strcmp(argument_tokens[1], "purge") == 0) {
                         if (no_of_arguments > 1) {
                             overall_success = 0;
-                            if (ap == 1 || w == 1) {
-                                bprintf(global_buffer, "pastevents: ivalid arguments\n");
-                            } else {
-                                bprintf(global_buffer, "\033[1;31mpastevents: ivalid arguments\033[1;0m\n");
-                            }
+                            printf("\033[1;31mpastevents: invalid arguments\033[1;0m\n");
                         } else {
                             // clears the stored list
-                            purge(ap, w, home_directory);
+                            int exit_status = purge(ap, w, home_directory);
+                            if (exit_status == 0) overall_success = 0;
                         }
                     } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
                         if (no_of_arguments == 1 && ip == 0) {
                             // if no index is given which command to execute then show error
-                            if (ap == 0 && w == 0) {
-                                char buff[MAX_LEN] = {0};
-                                sprintf(buff, "\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
-                                bprintf(global_buffer, buff);
-                            } else {
-                                char buff[MAX_LEN] = {0};
-                                sprintf(buff, "pastevents: missing argument in \"%s\"\n", curr_command);
-                                bprintf(global_buffer, buff);
-                            }
+                            printf("\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
                         } else if (no_of_arguments == 1 && ip == 1) {
                             char number[MAX_LEN] = {0};
                             int num = 0;    // variable to store the index of command to execute
@@ -417,12 +494,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                             int fd = open(file_path, O_RDONLY);
                             if (fd < 0) {
-                                perror("Error in opeaning the input file");
+                                printf("\033[1;31mError in opeaning the input file\033[1;0m\n");
                                 overall_success = 0;
                             } else {
                                 int bytes_read = read(fd, inp_buff, 999998);
                                 if (bytes_read < 0) {
-                                    perror("Error in reading");
+                                    printf("\033[1;31mError in reading\033[1;0m\n");
                                     close(fd);
                                     overall_success = 0;
                                 } else {
@@ -456,27 +533,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             }
                         } else {
                             // excess of arguments are passed
-                            if (ap == 0 && w == 0) {
-                                char buff[MAX_LEN] = {0};
-                                sprintf(buff, "\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
-                                bprintf(global_buffer, buff);
-                            } else {
-                                char buff[MAX_LEN] = {0};
-                                sprintf(buff, "pastevents: excess arguments in \"%s\"\n", curr_command);
-                                bprintf(global_buffer, buff);
-                            }
+                            printf("\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
                         }
                     } else {
                         // invalid arguments are passed
-                        if (ap == 0 && w == 0) {
-                            char buff[MAX_LEN] = {0};
-                            sprintf(buff, "\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
-                            bprintf(global_buffer, buff);
-                        } else {
-                            char buff[MAX_LEN] = {0};
-                            sprintf(buff, "pastevents: invalid arguments in \"%s\"\n", curr_command);
-                            bprintf(global_buffer, buff);
-                        }
+                        printf("\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
                     }
                 }
                 io_redirection(ap, w, cwd, output_file_name_redirection);
@@ -507,12 +568,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                     int fd = open(file_path, O_RDONLY);
                     if (fd < 0) {
-                        perror("Error in opeaning the input file");
+                        printf("\033[1;31mError in opening input file\033[1;0m\n");
                         overall_success = 0;
                     } else {
                         int bytes_read = read(fd, inp_buff, 999998);
                         if (bytes_read < 0) {
-                            perror("Error in reading");
+                            printf("\033[1;31mError in reading\033[1;0m\n");
                             close(fd);
                             overall_success = 0;
                         } else {
@@ -561,12 +622,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                 if (no_of_arguments == 0) {
                     // file/directory name to be searched should be provided
-                    if (ap == 1 || w == 1) {
-                        bprintf(global_buffer, "seek: missing arguments\n");
-                    }
-                    else {
-                        bprintf(global_buffer, "\033[1;31mseek: missing arguments\033[1;0m\n");
-                    }
+                    printf("\033[1;31mseek: missing arguments\033[1;0m\n");
                     overall_success = 0;
                 } else {
                     for (int i = 1; i <= no_of_arguments; i++) {
@@ -575,12 +631,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         if (curr_argument[0] == '-') {
                             if (base_dir_flag == 1) {
                                 // flags should be provided before providing the path to the base directory
-                                if (ap == 1 || w == 1) {
-                                    bprintf(global_buffer, "seek: Invalid Arguments\n");
-                                }
-                                else {
-                                    bprintf(global_buffer, "\033[1;31mseek: Invalid Arguments\033[1;0m\n");
-                                }
+                                printf("\033[1;31mseek: Invalid Arguments\033[1;0m\n");
                                 overall_success = 0;
                             } else {
                                 // checking for flags present
@@ -598,12 +649,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                     e = 1;
                                 } else {
                                     // if any other flag is provided other than the seven mentioned
-                                    if (ap == 1 || w == 1) {
-                                        bprintf(global_buffer, "seek: Invalid Flag\n");
-                                    }
-                                    else {
-                                        bprintf(global_buffer, "\033[1;31mseek: Invalid Flag\033[1;0m\n");
-                                    }
+                                    printf("\033[1;31mseek: Invalid Flag\033[1;0m\n");
                                     overall_success = 0;
                                     valid_flags = 0;
                                 }
@@ -626,12 +672,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                                 int fd = open(file_path, O_RDONLY);
                                 if (fd < 0) {
-                                    perror("Error in opeaning the input file");
+                                    printf("\033[1;31mError in opening input file\033[1;0m\n");
                                     overall_success = 0;
                                 } else {
                                     int bytes_read = read(fd, inp_buff, 999998);
                                     if (bytes_read < 0) {
-                                        perror("Error in reading");
+                                        printf("\033[1;31mError in reading\033[1;0m\n");
                                         close(fd);
                                         overall_success = 0;
                                     } else {
@@ -645,12 +691,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             }
                         } else {
                             if (file_name_flag == 1) {
-                                if (ap == 1 || w == 1) {
-                                    bprintf(global_buffer, "seek: invalid arguments\n");
-                                }
-                                else {
-                                    bprintf(global_buffer, "\033[1;31mseek: invalid arguments\033[1;0m\n");
-                                }
+                                printf("\033[1;31mseek: invalid arguments\033[1;0m\n");
                                 overall_success = 0;
                             } else {
                                 file_name_flag = 1;
@@ -662,12 +703,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (valid_flags == 1 && file_name_flag == 1) {
                     if (d == 1 && f == 1) {
                         // both d and f flags cannot be provided simultaneously
-                        if (ap == 1 || w == 1) {
-                            bprintf(global_buffer, "Invalid flags\n");
-                        }
-                        else {
-                            bprintf(global_buffer, "\033[1;31mInvalid flags\033[1;0m\n");
-                        }
+                        printf("\033[1;31mInvalid flags\033[1;0m\n");
                         overall_success = 0;
                     } else {
                         // iterating through all the files in the path
@@ -722,7 +758,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                                     strcpy(prev_dir, cwd);
                                                     strcpy(cwd, trav->path);
                                                 } else {
-                                                    bprintf(global_buffer, "Missing permissions for task!\n");
+                                                    printf("\033[1;31mMissing permissions for task!\033[1;0m\n");
                                                 }
                                             }
                                             trav = trav->next;
@@ -819,11 +855,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             // checking if ping command is present
             else if (strcmp("ping", argument_tokens[0]) == 0) {
                 if (no_of_arguments < 2) {
-                    if (ap == 1 || w == 1) {
-                        bprintf(global_buffer, "ping: Invalid Arguments\n");
-                    } else {
-                        bprintf(global_buffer, "\033[1;31mping: Invalid Arguments\033[1;0m\n");
-                    }
+                    printf("\033[1;31mping: Invalid Arguments\033[1;0m\n");
                 } else {
                     int pid = atoi(argument_tokens[1]);
                     int sig = atoi(argument_tokens[2]);
@@ -905,9 +937,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 int pid = fork();
 
                 if (pid == 0) {
-                    if (bg_process == 1) {
-                        setpgid(0, 0);
-                    }
+                    // if (bg_process == 1) {
+                    //     setpgid(0, 0);
+                    // }
                     // creating absolute path to the file (input)
                     char inp_file_path[MAX_LEN];
                     if (input_file_name_redirection == NULL) {
@@ -1016,20 +1048,27 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         insert_in_LL(pid, -1, argument_tokens);
                     }
                 } else {
-                    if (w == 1 || ap == 1) {
-                        bprintf(global_buffer, "fork: could not fork\n");
-                    } else {
-                        bprintf(global_buffer, "\033[1;31mfork: could not fork\033[1;0m\n");
-                    }
+                    printf("\033[1;31mfork: could not fork\033[1;0m\n");
                     overall_success = 0;
                 }
             }
     // ===================================================================================
+            if (overall_success == 1) {
+                // storing the name of commands in the last command array
+                if (strlen(last_command) == 0) {
+                    strcpy(last_command, argument_tokens[0]);
+                } else {
+                    strcat(last_command, ", ");
+                    strcat(last_command, argument_tokens[0]);
+                }
+            }
             free_tokens(argument_tokens);
         }
+    // END:
         idx++;
         curr_command = list_of_commands[idx];
     }
+
     if (store == 1 && pastevents_present == 0 && overall_success == 1) {
         store_command(input_string, home_directory);
     }

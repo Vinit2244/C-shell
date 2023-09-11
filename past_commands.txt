@@ -1,15 +1,15 @@
+[I]10;rgb:cccc/cccc/cccc\[?12;2$yq
+vim &
+sleep 1000&
 exit
-proclore 87495
-sleep 1000
-proclore exit
-sleep 1000
+wart ..
+wart test
+warp ..
+warp test
+sleep 100
 exit
-sleep 1000
-exit
-activities
-sleep 1000
-exit
-sleep 1000
-exit
-activities
-sleep 1000
+vim past_commands.txt
+ping 22598 9
+fg 22598
+vim &
+[3;3R]10;rgb:2828/fefe/1414:qqq::::qq:qqqqping 21966 9

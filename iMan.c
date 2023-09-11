@@ -118,7 +118,7 @@ int get_webpage(char* command_name) {
         return 0;
     }
 
-    if (overall_flag == 0) {
+    if (overall_flag == 0) { // if nothing is printed then we know that page not found is returned
         printf("\033[1;31mERROR\033[1;0m\n");
         printf("\t\033[1;31mNo such Command\033[1;0m\n");
     }

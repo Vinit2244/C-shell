@@ -25,7 +25,7 @@ void print_active_processes_spawned_by_my_shell() {
 
         FILE *fptr = fopen(path_stat, "r");
         if (fptr == NULL) {
-            perror("open");
+            printf("\033[1;31mopen: Could not open file to read\033[1;0m\n");
             return;
         }
 
