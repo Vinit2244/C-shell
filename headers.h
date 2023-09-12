@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <termios.h>
 
 // User defined header files
 #include "prompt.h"
@@ -39,5 +40,6 @@
 #include "activities.h"
 #include "signal_handlers.h"
 #include "iMan.h"
+#include "neonate.h"
 
 #endif

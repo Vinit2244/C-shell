@@ -1,3 +1,9 @@
+neonate -n 2
+clear
+neonate -n 2
+clear
+neonate -n 5
+clear
 exit
 cat past_commands.txt | wc
 echo "ahfioehf afhehiae" | wc
@@ -7,9 +13,3 @@ rm temm.txt
 cat temm.txt
 echo "hello world" > temm.txt
 exit
-cat past_commands.txt | grep warp | wc
-exit
-warp ..
-warp test ; sleep 4
-exit
-sleep 3

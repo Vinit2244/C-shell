@@ -6,7 +6,7 @@ time_t tyme = 0;    // Variable to hold the time of execution
 
 int global_fg_pid;
 
-void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd) {
+void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection) {
 
     global_fg_pid = -1; // -1 represents no foreground process is initiated by my terminal
 
@@ -115,18 +115,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     return;
                 } else if (pid_i == 0) {
                     if (i == 0) {
-                        int i_flag = is_input_present(list_of_commands_pipe[0]);
-
-                        char* c = (char*) calloc(MAX_LEN, sizeof(char)); // command
-                        char* f = (char*) calloc(MAX_LEN, sizeof(char)); // file
-                        int a_flag = is_append_present(list_of_commands_pipe[0], c, f);
-                        int w_flag = is_write_present(list_of_commands_pipe[0]);
                         char** argument_tokens = generate_tokens(list_of_commands_pipe[0], ' ');
-
-                        int y = 0;
-                        while(argument_tokens[y] != 0) {
-                            y++;
-                        }
 
                         for (int j = 1; j < num_pipes; j++) {
                             close(pipe_fd[j][0]);
@@ -137,103 +126,9 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         dup2(pipe_fd[0][1], STDOUT_FILENO);
                         close(pipe_fd[0][1]);
 
-                        if (i_flag) {
-                            if (w_flag) {
-                                if (a_flag) {
-                                    printf("\033[1;31mInvalid Command\033[1;0m\n");
-                                    return;
-                                } else {
-                                    char* cmd = (char*) calloc(MAX_LEN, sizeof(char));
-                                    char* ip_file = (char*) calloc(MAX_LEN, sizeof(char));
-                                    char* op_file = (char*) calloc(MAX_LEN, sizeof(char));
-
-                                    int cmd_done = 0;
-                                    int ip_done = 0;
-                                    
-                                    int k = 0;
-                                    while (argument_tokens[k] != NULL) {
-                                        if (cmd_done == 0) {
-                                            if (strcmp(argument_tokens[k], "<") == 0) {
-                                                cmd_done = 1;
-                                                k++;
-                                                continue;
-                                            } else {
-                                                strcat(cmd, " ");
-                                                strcat(cmd, argument_tokens[k]);
-                                            }
-                                        } else if (ip_done == 0) {
-                                            if (strcmp(argument_tokens[k], ">") == 0) {
-                                                ip_done = 1;
-                                                k++;
-                                                continue;
-                                            } else {
-                                                strcat(ip_file, " ");
-                                                strcat(ip_file, argument_tokens[k]);
-                                            }
-                                        } else {
-                                            strcat(op_file, " ");
-                                            strcat(op_file, argument_tokens[k]);
-                                        }
-                                        k++;
-                                    }
-
-                                    input(cmd, home_directory, cwd, prev_dir, 0, last_command, t, 1, 0, 1, op_file, ip_file, 1, 0, 1, 1, read_fd, write_fd);
-
-                                    free(cmd);
-                                    free(ip_file);
-                                    free(op_file);
-                                }
-                            } else if (a_flag) {
-                                char** sub_tkns = generate_tokens(c, '<');
-                                char* cmd;
-                                char* ip_file;
-                                cmd = sub_tkns[0];
-                                ip_file = sub_tkns[1];
-                                input(cmd, home_directory, cwd, prev_dir, 0, last_command, t, 0, 1, 1, f, ip_file, 1, 0, 1, 1, read_fd, write_fd);
-                            } else {
-                                char* ip_file = (char*) calloc(MAX_LEN, sizeof(char));
-                                char* cmd = (char*) calloc(MAX_LEN, sizeof(char));
-                                int flag = 0;
-                                for (int h = 0; h < y; h++) {
-                                    if (flag == 1) {
-                                        strcat(ip_file, " ");
-                                        strcat(ip_file, argument_tokens[h]);
-                                    } else if (flag == 0) {
-                                        if (strcmp(argument_tokens[h], "<")) {
-                                            flag = 1;
-                                            continue;
-                                        } else {
-                                            strcat(cmd, " ");
-                                            strcat(cmd, argument_tokens[h]);
-                                        }
-                                    }
-                                }
-                                input(cmd, home_directory, cwd, prev_dir, 0, last_command, t, 0, 0, 1, NULL, ip_file, 1, 0, 0, 1, read_fd, write_fd);
-                                free(cmd);
-                                free(ip_file);
-                            }
-                        } else if (w_flag) {
-                            if (a_flag) {
-                                printf("\033[1;31mInvalid command\033[1;0m\n");
-                                return;
-                            } else {
-                                char** sub_tkns = generate_tokens(list_of_commands_pipe[0], '>');
-                                char* op_file = sub_tkns[1];
-                                char* cmd = sub_tkns[0];
-                                input(cmd, home_directory, cwd, prev_dir, 0, last_command, t, 1, 0, 0, op_file, NULL, 0, 1, 1, 1, read_fd, write_fd);
-                            }
-                        } else if (a_flag) {
-                            input(c, home_directory, cwd, prev_dir, 0, last_command, t, 0, 1, 0, f, NULL, 0, 1, 1, 1, read_fd, write_fd);
-                        } else {
-                            input(list_of_commands_pipe[0], home_directory, cwd, prev_dir, 0, last_command, t, 0, 0, 0, NULL, NULL, 0, 1, 0, 1, read_fd, write_fd);
-                        }
-
-                        // execvp(argument_tokens[0], argument_tokens);
-                        // printf("033[1;31merror: execvp\033[1;0m\n");
-                        // kill(getpid(), SIGTERM);
-
-                        free(c);
-                        free(f);
+                        execvp(argument_tokens[0], argument_tokens);
+                        printf("033[1;31merror: execvp\033[1;0m\n");
+                        kill(getpid(), SIGTERM);
                     } else if (i > 0 && i < num_of_commands - 1) {
                         char** argument_tokens = generate_tokens(list_of_commands_pipe[i], ' ');
 
@@ -255,7 +150,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(pipe_fd[i][1]);
 
                         execvp(argument_tokens[0], argument_tokens);
-                        printf("\033[1;31merror: execvp\033[1;0m\n");
+                        printf("033[1;31merror: execvp\033[1;0m\n");
                         kill(getpid(), SIGTERM);
                     } else if (i == num_of_commands - 1) {
                         char** argument_tokens = generate_tokens(list_of_commands_pipe[num_of_commands - 1], ' ');
@@ -270,7 +165,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(pipe_fd[num_pipes - 1][0]);
 
                         execvp(argument_tokens[0], argument_tokens);
-                        printf("\033[1;31merror: execvp\033[1;0m\n");
+                        printf("033[1;31merror: execvp\033[1;0m\n");
                         kill(getpid(), SIGTERM);
                     }
                 }
@@ -432,7 +327,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     exit_status = 0;
                 }
                 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
                 if (exit_status == 0) overall_success = 0;
             }
     // ===================================================================================
@@ -463,7 +358,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     }
                 }
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
 
                 if (success == 0) overall_success = 0;
             }
@@ -518,7 +413,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 int exit_code = peek(path, a, l, cwd, home_directory, prev_dir, ap, w);
                 if (exit_code == 0) overall_success = 0;
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // pastevents
@@ -605,7 +500,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         printf("\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
                     }
                 }
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // proclore
@@ -654,7 +549,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 }
                 proclore(pid, ap, w);
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
 
                 free(pid);
             }
@@ -892,7 +787,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 free(base_dir);
                 free(file_name);
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
                 
                 if (success == 0) overall_success = 0;
             }
@@ -921,7 +816,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 int exit_status = print_active_processes_spawned_by_my_shell();
                 if (exit_status == 0) overall_success = 0;
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // ping
@@ -938,7 +833,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     if (exit_status == 0) overall_success = 0;
                 }
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // bg
@@ -954,7 +849,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     printf("\033[1;31mNo such process exists\033[1;0m\n");
                     overall_success = 0;
                 }
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // fg
@@ -974,7 +869,32 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     overall_success = 0;
                 }
 
-                io_redirection(ap, w, cwd, output_file_name_redirection, int inp_from_file, int inp_from_pipe, int output_to_file, int output_to_pipe, int read_fd, int write_fd);
+                io_redirection(ap, w, cwd, output_file_name_redirection);
+            }
+    // ===================================================================================
+            // neonate
+
+            //checking if neonate is present
+            else if (strcmp("neonate", argument_tokens[0]) == 0) {
+                if (argument_tokens[1] == NULL) {
+                    printf("\033[1;31mneonate: Invalid argument\033[1;0m\n");
+                    overall_success = 0;
+                } else {
+                    if (strcmp(argument_tokens[1], "-n") != 0) {
+                        printf("\033[1;31mneonate: Invalid argument (-n missing)\033[1;0m\n");
+                        overall_success = 0;
+                    } else {
+                        if (argument_tokens[2] == NULL) {
+                            printf("\033[1;31mneonate: missing argument (time)\033[1;0m\n");
+                            overall_success = 0;
+                        } else {
+                            int t_sec = atoi(argument_tokens[2]);
+                            int exit_status = neonate(t_sec);
+                            if (exit_status == 0) overall_success = 0;
+                        }
+                    }
+                }
+                io_redirection(ap, w, cwd, output_file_name_redirection);
             }
     // ===================================================================================
             // system commands
