@@ -1,8 +1,8 @@
 #include "headers.h"
 
-void store_command(char* command, char* home_dir) {
+void store_command(char* command) {
     char past_commands_path[MAX_LEN];
-    strcpy(past_commands_path, home_dir);
+    strcpy(past_commands_path, home_directory);
     strcat(past_commands_path, "/");
     strcat(past_commands_path, "past_commands.txt");
     FILE *fptr;
@@ -60,9 +60,9 @@ void store_command(char* command, char* home_dir) {
     }
 }
 
-void pastevents(char* home_dir) {
+void pastevents() {
     char past_commands_path[MAX_LEN] = {0};
-    strcpy(past_commands_path, home_dir);
+    strcpy(past_commands_path, home_directory);
     strcat(past_commands_path, "/past_commands.txt");
 
     FILE *fptr;
@@ -93,10 +93,10 @@ void pastevents(char* home_dir) {
     }
 }
 
-int purge(int ap, int w, char* home_dir) {
+int purge(int ap, int w) {
     FILE *fptr;
     char past_commands_path[MAX_LEN] = {0};
-    strcpy(past_commands_path, home_dir);
+    strcpy(past_commands_path, home_directory);
     strcat(past_commands_path, "/past_commands.txt");
 
     fptr = fopen(past_commands_path, "w");
@@ -108,10 +108,10 @@ int purge(int ap, int w, char* home_dir) {
     return 1;
 }
 
-int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char* last_command, int* t, int ap, int w) {
+int execute(int num, int store, int ap, int w) {
     FILE *fptr;
     char past_commands_path[MAX_LEN] = {0};
-    strcpy(past_commands_path, home_dir);
+    strcpy(past_commands_path, home_directory);
     strcat(past_commands_path, "/past_commands.txt");
 
     fptr = fopen(past_commands_path, "r");
@@ -132,7 +132,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
             fprintf(stderr, "\033[1;31mInvalid Argument\033[1;0m\n");
             return 0;
         } else {
-            input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, 0, NULL, NULL);
+            input(past_commands[num - 1], store, 0, 0, 0, NULL, NULL);
         }
 
         for (int i = 0; i < 15; i++) {

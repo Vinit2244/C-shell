@@ -6,12 +6,12 @@ time_t tyme = 0;    // Variable to hold the time of execution
 
 int global_fg_pid;
 
-void input(char* command, char* home_directory, char* cwd, char* prev_dir, int store, char* last_command, int* t, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection) {
+void input(char* command, int store, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection) {
 
     global_fg_pid = -1; // -1 represents no foreground process is initiated by my terminal
 
     tyme = time(NULL) - start;  // current time - start time
-    *t = tyme;                  // global variable to hold the time of last executed command
+    t = tyme;                  // global variable to hold the time of last executed command
 
     start = 0;                  // reset start time to zero
     tyme = 0;                   // reset execution time to zero
@@ -26,7 +26,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         store = 1;          // flag to reflect if the command inputted is to be stored or not
 
         // Print appropriate prompt with username, systemname and directory before accepting input
-        int exit_status = prompt(home_directory, cwd, t, last_command);
+        int exit_status = prompt();
         if (exit_status == 0) {
             fprintf(stderr, "\033[1;31mprompt: Could Not Print prompt\033[1;0m\n");
             return;
@@ -102,7 +102,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             int pipe_fd[num_pipes][2];
             for (int i = 0; i < num_pipes; i++) {
                 if (pipe(pipe_fd[i]) < 0) {
-                    printf("033[1;31mError occured while piping\033[1;0m\n");
+                    fprintf(stderr, "033[1;31mError occured while piping\033[1;0m\n");
                     return;
                 }
             }
@@ -111,12 +111,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 // running each sub command
                 int pid_i = fork();
                 if (pid_i < 0) {
-                    printf("033[1;31merror while fork\033[1;0m\n");
+                    fprintf(stderr, "033[1;31merror while fork\033[1;0m\n");
                     return;
                 } else if (pid_i == 0) {
+                    char** argument_tokens = generate_tokens(list_of_commands_pipe[i], ' ');
                     if (i == 0) {
-                        char** argument_tokens = generate_tokens(list_of_commands_pipe[0], ' ');
-
                         for (int j = 1; j < num_pipes; j++) {
                             close(pipe_fd[j][0]);
                             close(pipe_fd[j][1]);
@@ -125,13 +124,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(pipe_fd[0][0]);
                         dup2(pipe_fd[0][1], STDOUT_FILENO);
                         close(pipe_fd[0][1]);
-
-                        execvp(argument_tokens[0], argument_tokens);
-                        printf("033[1;31merror: execvp\033[1;0m\n");
-                        kill(getpid(), SIGTERM);
                     } else if (i > 0 && i < num_of_commands - 1) {
-                        char** argument_tokens = generate_tokens(list_of_commands_pipe[i], ' ');
-
                         for (int j = 0; j < num_pipes; j++) {
                             if (j == i - 1 || j == i) continue;
                             close(pipe_fd[j][0]);
@@ -148,13 +141,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                         close(pipe_fd[i - 1][0]);
                         close(pipe_fd[i][1]);
-
-                        execvp(argument_tokens[0], argument_tokens);
-                        printf("033[1;31merror: execvp\033[1;0m\n");
-                        kill(getpid(), SIGTERM);
                     } else if (i == num_of_commands - 1) {
-                        char** argument_tokens = generate_tokens(list_of_commands_pipe[num_of_commands - 1], ' ');
-
                         for (int j = 0; j < num_pipes - 1; j++) {
                             close(pipe_fd[j][0]);
                             close(pipe_fd[j][1]);
@@ -163,11 +150,10 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         close(pipe_fd[num_pipes - 1][1]);
                         dup2(pipe_fd[num_pipes - 1][0], STDIN_FILENO);
                         close(pipe_fd[num_pipes - 1][0]);
-
-                        execvp(argument_tokens[0], argument_tokens);
-                        printf("033[1;31merror: execvp\033[1;0m\n");
-                        kill(getpid(), SIGTERM);
                     }
+                    execvp(argument_tokens[0], argument_tokens);
+                    fprintf(stderr, "033[1;31merror: execvp\033[1;0m\n");
+                    kill(getpid(), SIGTERM);
                 }
             }
 
@@ -199,7 +185,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 free_tokens(tokens);
 
                 char* inp_file = files[1];
-                input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 0, 1, NULL, inp_file);
+                input(cmd, store, 0, 0, 1, NULL, inp_file);
 
                 free_tokens(files);
             } else {
@@ -212,7 +198,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     char* input_file = tkns2[0];
                     char* output_file = tkns2[1];
 
-                    input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 1, output_file, input_file);
+                    input(cmd, store, 1, 0, 1, output_file, input_file);
 
                     free_tokens(tkns2);
                     free_tokens(tkns);
@@ -238,7 +224,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             free_tokens(tokens);
 
             char* output_file = params[1];
-            input(cmd, home_directory, cwd, prev_dir, store, last_command, t, 1, 0, 0, output_file, NULL);
+            input(cmd, store, 1, 0, 0, output_file, NULL);
             free_tokens(params);
         } else if (append_flag == 1) {
             // Checking for the presence of pastevents command
@@ -254,7 +240,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             }
             free_tokens(tokens);
 
-            input(app_cmd, home_directory, cwd, prev_dir, store, last_command, t, 0, 1, 0, to_file, NULL);
+            input(app_cmd, store, 0, 1, 0, to_file, NULL);
             free(app_cmd);
             free(to_file);
         } else {
@@ -280,52 +266,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
             // checking if iMan command is present
             if (strcmp("iMan", argument_tokens[0]) == 0) {
-                int exit_status = 0;
-                if (no_of_arguments == 0) {
-                    // Can read the name of the command from input redirection
-                    if (ip == 1) {
-                        char input_file_path[MAX_LEN];
-
-                        if (input_file_name_redirection[0] != '/') {
-                            strcpy(input_file_path, cwd);
-                            strcat(input_file_path, "/");
-                            strcat(input_file_path, input_file_name_redirection);
-                        } else if (output_file_name_redirection[0] == '/') {
-                            strcpy(input_file_path, input_file_name_redirection);
-                        }
-
-                        char inp_buff[MAX_LEN] = {0};
-                        int inp_fd = open(input_file_path, O_RDONLY);
-
-                        if (inp_fd < 0) {
-                            // open failed
-                            fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
-                            exit_status = 0;
-                        } else {
-                            int bytes_read = read(inp_fd, inp_buff, MAX_LEN - 1);
-                            if (bytes_read < 0) {
-                                // read fails
-                                fprintf(stderr, "\033[1;31mread : cannot read from the file\033[1;0m\n");
-                                exit_status = 0;
-                            } else {
-                                for (int r = 0; r < strlen(inp_buff); r++) {
-                                    if (inp_buff[r] == '\n') {
-                                        inp_buff[r] = '\0';
-                                    }
-                                }
-                                exit_status = get_webpage(inp_buff);
-                            }
-                        }
-                    } else {
-                        // invalid arguments command name has to be provided
-                        fprintf(stderr, "\033[1;31miMan: no argument provided (command name required)\033[1;0m\n");
-                    }
-                } else if (no_of_arguments == 1) {
-                    exit_status = get_webpage(argument_tokens[1]);
-                } else {
-                    fprintf(stderr, "\033[1;31miMan: excess number of arguments provided\033[1;0m\n");
-                    exit_status = 0;
-                }
+                int exit_status = iMan(argument_tokens, no_of_arguments, ip, input_file_name_redirection);
                 
                 io_redirection(ap, w, cwd, output_file_name_redirection);
                 if (exit_status == 0) overall_success = 0;
@@ -425,7 +366,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             else if (strcmp("pastevents", argument_tokens[0]) == 0) {
                 pastevents_present = 1;
                 if (no_of_arguments == 0) { // no arguments are passed than just print the pastevents
-                    pastevents(home_directory);
+                    pastevents();
                 } else {                    // if some argument is present
                     if (strcmp(argument_tokens[1], "purge") == 0) {
                         if (no_of_arguments > 1) {
@@ -433,7 +374,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             fprintf(stderr, "\033[1;31mpastevents: invalid arguments\033[1;0m\n");
                         } else {
                             // clears the stored list
-                            int exit_status = purge(ap, w, home_directory);
+                            int exit_status = purge(ap, w);
                             if (exit_status == 0) overall_success = 0;
                         }
                     } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
@@ -475,7 +416,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             convert_to_int(number, &num, &flag, ap, w);
                             if (flag) {
                                 // executing the command at the given index
-                                int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t, ap, w);
+                                int exit_code = execute(num, store, ap, w);
                                 if (exit_code == 0) overall_success = 0;
                             }
                         } else if (no_of_arguments == 2) {
@@ -488,7 +429,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             convert_to_int(number, &num, &flag, ap, w);
                             if (flag) {
                                 // executing the command at the given index
-                                int exit_code = execute(num, home_directory, cwd, prev_dir, store, last_command, t, ap, w);
+                                int exit_code = execute(num, store, ap, w);
                                 if (exit_code == 0) overall_success = 0;
                             }
                         } else {
@@ -804,7 +745,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         kill(trav->pid, SIGKILL);
                         trav = trav->next;
                     }
-                    store_command(curr_command, home_directory);
+                    store_command(curr_command);
                     exit(0);
                 }
             }
@@ -1065,7 +1006,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
     }
 
     if (store == 1 && pastevents_present == 0 && overall_success == 1) {
-        store_command(input_string, home_directory);
+        store_command(input_string);
     }
 
     free(input_string);

@@ -1,6 +1,6 @@
 #include "headers.h"
 
-int prompt(char* home_directory, char* cwd, int* t, char* last_command) {
+int prompt() {
     // Do not hardcode the prmopt
     // Getting the name of the current user
     register struct passwd *pw;
@@ -22,17 +22,17 @@ int prompt(char* home_directory, char* cwd, int* t, char* last_command) {
            the index from where the current directory path 
            starts to differ from our home directory
         */
-        int index_of_difference = is_inside_home_directory(cwd, home_directory);
+        int index_of_difference = is_inside_home_directory();
         
         if (index_of_difference != -1 && index_of_difference != -2) { // if currently we are inside the home directory only
             // print the relative path
             //========================= Method 1 =========================
             char* relative_path = &cwd[index_of_difference];
-            if (*t < 2 || *t > 1000000000) {
+            if (t < 2 || t > 1000000000) {
                 printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, relative_path);
             } else {
-                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, relative_path, last_command, *t);
-                *t = 0;
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, relative_path, last_command, t);
+                t = 0;
             }
 
             //========================= Method 2 =========================
@@ -50,20 +50,20 @@ int prompt(char* home_directory, char* cwd, int* t, char* last_command) {
             */
 
         } else if (index_of_difference == -2) { // cwd == home_directory
-            if (*t < 2 || *t > 1000000000) {
+            if (t < 2 || t > 1000000000) {
                 printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m", username, hostname);
             } else {
-                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, last_command, *t);
-                *t = 0;
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, last_command, t);
+                t = 0;
             }
 
         } else {                                // We are outside home_directory
             // print the absolute path
-            if (*t < 2 || *t > 1000000000) {
+            if (t < 2 || t > 1000000000) {
                 printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m", username, hostname, cwd);
             } else {
-                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, cwd, last_command, *t);
-                *t = 0;
+                printf("\033[1;34m%s\033[1;0m@\033[1;35m%s\033[1;0m:\033[1;36m~%s\033[1;0m \033[1;33m%s : %ds\033[1;0m", username, hostname, cwd, last_command, t);
+                t = 0;
             }
         }
 
@@ -74,7 +74,7 @@ int prompt(char* home_directory, char* cwd, int* t, char* last_command) {
 }
 
 // Checks if we are currently inside home_directory or not
-int is_inside_home_directory(char* cwd, char* home_directory) {
+int is_inside_home_directory() {
     /*
         returns -1 if we are outside the home directory, 
         returns -2 if cwd == home directory else returns 

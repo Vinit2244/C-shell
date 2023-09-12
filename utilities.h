@@ -6,6 +6,12 @@ extern int global_buffer_empty;
 extern int global_fg_pid;
 extern char* fg_command_name;
 
+extern char* home_directory;
+extern char* cwd;
+extern char* prev_dir;
+extern char* last_command;
+extern int t;
+
 void free_tokens(char** tokens);
 char** generate_tokens(char* str, char c);
 int check_if_dir(char* path, char* file_name);
@@ -25,6 +31,5 @@ int is_write_present(char* string);
 int is_append_present(char* string, char* app_cmd, char* to_file);
 int is_input_present(char* string);
 int is_pastevents_execute_present(char* curr_command);
-// int replace_pastevents_execute(char* curr_command);
 
 #endif

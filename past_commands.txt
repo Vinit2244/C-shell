@@ -1,15 +1,15 @@
 exit
-rm tess3.txt
-rm tess2.txt
+rm temp.txt
 rm tess.txt
-cat tess3.txt
-cat < past_commands.txt > tess3.txt
-cat < past_commands.txt | tess2.txt
-cat past_commands.txt > tess.txt
-cat past_commands.txt | wc
-neonate -n 2
-clear
-neonate -n 2
-clear
-neonate -n 5
-clear
+cat tess.txt
+iMan < temp.txt > tess.txt
+iMan < temp.txt
+rm test.txt
+cat test.txt
+iMan sleep > test.txt
+iMan ls
+iMan sleep
+iMan ls
+iMan sleep
+exit
+rm tess3.txt

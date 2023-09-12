@@ -1,44 +1,40 @@
 #include "headers.h"
 
-LL_Head LL;
-char* bg_process_buffer;
+LL_Head LL;                 // Linked List to store the pids and names of background processes spawned by my shell
+char* bg_process_buffer;    
 
-char* global_buffer;
-int global_buffer_empty;
-char* fg_command_name;
+char* global_buffer;        // Temporarily stores output for redirection
+int global_buffer_empty;    // 1 if globa_buffer is empty otherwise 0
+char* fg_command_name;      // Name of the command currently running in foreground
 
-// char* home_directory;
-// char* cwd;
-// char* prev_dir;
-// char* last_command;
-// int t;
+char* home_directory;       // Directory where the shell is first spawned
+char* cwd;                  // Current working directory
+char* prev_dir;             // Directory we were previously on
+char* last_command;         // Last executed command
+int t;                      // Time taken for executing a command
 
 int main()
 {
-    fg_command_name = NULL;
+    fg_command_name = NULL; // Initially no foreground process is running by my shell
 
     struct sigaction sa;
-    sa.sa_handler = &handle_sigtstp; // Ctrl + Z or Cmd + Z
+    sa.sa_handler = &handle_sigtstp; // Ctrl + Z (Windows/Linux) or Cmd + Z (Mac)
     sa.sa_flags = SA_RESTART;
-    sigaction(SIGTSTP, &sa, NULL);
+    sigaction(SIGTSTP, &sa, NULL);   // Ctrl + Z sends SIGTSTP signal (Signal Stop) - sends foreground process to background
 
     struct sigaction sa2;
-    sa2.sa_handler = &handle_sigint; // Ctrl + C or Cmd + C
+    sa2.sa_handler = &handle_sigint; // Ctrl + C (Windows/Linux) or Cmd + C (Mac)
     sa2.sa_flags = SA_RESTART;
-    sigaction(SIGINT, &sa2, NULL);
+    sigaction(SIGINT, &sa2, NULL);   // Ctrl + C sends SIGINT signal (Signal Interrupt) - terminates the currently running foreground process
 
 
     global_buffer_empty = 1;
     global_buffer = (char*) calloc(9999999, sizeof(char));
     bg_process_buffer = calloc(9999999, sizeof(char));
 
-    // char* home_directory = (char*) calloc(MAX_LEN + 1, sizeof(char));
-    // char* cwd = (char*) calloc(MAX_LEN + 1, sizeof(char));
-    // char* prev_dir = (char*) calloc(MAX_LEN + 1, sizeof(char));
-
-    char home_directory[MAX_LEN + 1]; // stores the absolute path to the home directory
-    char cwd[MAX_LEN + 1];            // stores the absolute path to the current working directory
-    char prev_dir[MAX_LEN + 1];       // stores the absolute path of the latest previous directory (used in warp -)
+    home_directory = (char*) calloc(MAX_LEN + 1, sizeof(char)); // stores the absolute path to the home directory
+    cwd = (char*) calloc(MAX_LEN + 1, sizeof(char));            // stores the absolute path to the current working directory
+    prev_dir = (char*) calloc(MAX_LEN + 1, sizeof(char));       // stores the absolute path of the latest previous directory (used in warp -)
 
     char* buff1 = home_directory;
     char* buff2 = cwd;
@@ -51,21 +47,18 @@ int main()
 
     LL = create_LL();
 
-    // last_command = (char*) calloc(MAX_LEN, sizeof(char));
-    // t = 0;
-
-    char* last_command = (char*) calloc(MAX_LEN, sizeof(char));
-    int t = 0;
+    last_command = (char*) calloc(MAX_LEN, sizeof(char));
+    t = 0;
 
     // Keep accepting commands
     while (1)
     {
-        input(NULL, home_directory, cwd, prev_dir, 1, last_command, &t, 0, 0, 0, NULL, NULL);
+        input(NULL, 1, 0, 0, 0, NULL, NULL);
     }
 
-    // free(home_directory);
-    // free(cwd);
-    // free(prev_dir);
+    free(home_directory);
+    free(cwd);
+    free(prev_dir);
 
     free(last_command);
     return 0;
