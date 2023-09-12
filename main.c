@@ -22,11 +22,6 @@ int main()
     sa.sa_flags = SA_RESTART;
     sigaction(SIGTSTP, &sa, NULL);
 
-    // Register the signal handler for SIGTSTP
-    // if (signal(SIGTSTP, &handle_sigtstp) == SIG_ERR) {
-    //     printf("signal\n");
-    // }
-
     struct sigaction sa2;
     sa2.sa_handler = &handle_sigint; // Ctrl + C or Cmd + C
     sa2.sa_flags = SA_RESTART;

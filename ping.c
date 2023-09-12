@@ -22,12 +22,12 @@ int ping_sig(int pid, int sig, int ap, int w) {
                 trav = trav->next;
             }
         } else {
-            printf("\033[1;31mkill: could not send signal\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mkill: could not send signal\033[1;0m\n");
             return 0;
         }
     } else {
         // process does not exist
-        printf("\033[1;31mNo such process exists\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mNo such process exists\033[1;0m\n");
         return 0;
     }
     return 1;

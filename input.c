@@ -28,7 +28,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
         // Print appropriate prompt with username, systemname and directory before accepting input
         int exit_status = prompt(home_directory, cwd, t, last_command);
         if (exit_status == 0) {
-            printf("\033[1;31mprompt: Could Not Print prompt\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mprompt: Could Not Print prompt\033[1;0m\n");
             return;
         }
         
@@ -299,13 +299,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                         if (inp_fd < 0) {
                             // open failed
-                            printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
+                            fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
                             exit_status = 0;
                         } else {
                             int bytes_read = read(inp_fd, inp_buff, MAX_LEN - 1);
                             if (bytes_read < 0) {
                                 // read fails
-                                printf("\033[1;31mread : cannot read from the file\033[1;0m\n");
+                                fprintf(stderr, "\033[1;31mread : cannot read from the file\033[1;0m\n");
                                 exit_status = 0;
                             } else {
                                 for (int r = 0; r < strlen(inp_buff); r++) {
@@ -318,12 +318,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         }
                     } else {
                         // invalid arguments command name has to be provided
-                        printf("\033[1;31miMan: no argument provided (command name required)\033[1;0m\n");
+                        fprintf(stderr, "\033[1;31miMan: no argument provided (command name required)\033[1;0m\n");
                     }
                 } else if (no_of_arguments == 1) {
                     exit_status = get_webpage(argument_tokens[1]);
                 } else {
-                    printf("\033[1;31miMan: excess number of arguments provided\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31miMan: excess number of arguments provided\033[1;0m\n");
                     exit_status = 0;
                 }
                 
@@ -430,7 +430,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     if (strcmp(argument_tokens[1], "purge") == 0) {
                         if (no_of_arguments > 1) {
                             overall_success = 0;
-                            printf("\033[1;31mpastevents: invalid arguments\033[1;0m\n");
+                            fprintf(stderr, "\033[1;31mpastevents: invalid arguments\033[1;0m\n");
                         } else {
                             // clears the stored list
                             int exit_status = purge(ap, w, home_directory);
@@ -439,7 +439,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
                         if (no_of_arguments == 1 && ip == 0) {
                             // if no index is given which command to execute then show error
-                            printf("\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
+                            fprintf(stderr, "\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
                         } else if (no_of_arguments == 1 && ip == 1) {
                             char number[MAX_LEN] = {0};
                             int num = 0;    // variable to store the index of command to execute
@@ -454,12 +454,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                             int fd = open(file_path, O_RDONLY);
                             if (fd < 0) {
-                                printf("\033[1;31mError in opeaning the input file\033[1;0m\n");
+                                fprintf(stderr, "\033[1;31mError in opeaning the input file\033[1;0m\n");
                                 overall_success = 0;
                             } else {
                                 int bytes_read = read(fd, inp_buff, 999998);
                                 if (bytes_read < 0) {
-                                    printf("\033[1;31mError in reading\033[1;0m\n");
+                                    fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
                                     close(fd);
                                     overall_success = 0;
                                 } else {
@@ -493,11 +493,11 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             }
                         } else {
                             // excess of arguments are passed
-                            printf("\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
+                            fprintf(stderr, "\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
                         }
                     } else {
                         // invalid arguments are passed
-                        printf("\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
+                        fprintf(stderr, "\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
                     }
                 }
                 io_redirection(ap, w, cwd, output_file_name_redirection);
@@ -528,12 +528,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                     int fd = open(file_path, O_RDONLY);
                     if (fd < 0) {
-                        printf("\033[1;31mError in opening input file\033[1;0m\n");
+                        fprintf(stderr, "\033[1;31mError in opening input file\033[1;0m\n");
                         overall_success = 0;
                     } else {
                         int bytes_read = read(fd, inp_buff, 999998);
                         if (bytes_read < 0) {
-                            printf("\033[1;31mError in reading\033[1;0m\n");
+                            fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
                             close(fd);
                             overall_success = 0;
                         } else {
@@ -582,7 +582,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                 if (no_of_arguments == 0) {
                     // file/directory name to be searched should be provided
-                    printf("\033[1;31mseek: missing arguments\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mseek: missing arguments\033[1;0m\n");
                     overall_success = 0;
                 } else {
                     for (int i = 1; i <= no_of_arguments; i++) {
@@ -591,7 +591,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         if (curr_argument[0] == '-') {
                             if (base_dir_flag == 1) {
                                 // flags should be provided before providing the path to the base directory
-                                printf("\033[1;31mseek: Invalid Arguments\033[1;0m\n");
+                                fprintf(stderr, "\033[1;31mseek: Invalid Arguments\033[1;0m\n");
                                 overall_success = 0;
                             } else {
                                 // checking for flags present
@@ -609,7 +609,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                     e = 1;
                                 } else {
                                     // if any other flag is provided other than the seven mentioned
-                                    printf("\033[1;31mseek: Invalid Flag\033[1;0m\n");
+                                    fprintf(stderr, "\033[1;31mseek: Invalid Flag\033[1;0m\n");
                                     overall_success = 0;
                                     valid_flags = 0;
                                 }
@@ -632,12 +632,12 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
 
                                 int fd = open(file_path, O_RDONLY);
                                 if (fd < 0) {
-                                    printf("\033[1;31mError in opening input file\033[1;0m\n");
+                                    fprintf(stderr, "\033[1;31mError in opening input file\033[1;0m\n");
                                     overall_success = 0;
                                 } else {
                                     int bytes_read = read(fd, inp_buff, 999998);
                                     if (bytes_read < 0) {
-                                        printf("\033[1;31mError in reading\033[1;0m\n");
+                                        fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
                                         close(fd);
                                         overall_success = 0;
                                     } else {
@@ -651,7 +651,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                             }
                         } else {
                             if (file_name_flag == 1) {
-                                printf("\033[1;31mseek: invalid arguments\033[1;0m\n");
+                                fprintf(stderr, "\033[1;31mseek: invalid arguments\033[1;0m\n");
                                 overall_success = 0;
                             } else {
                                 file_name_flag = 1;
@@ -663,7 +663,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (valid_flags == 1 && file_name_flag == 1) {
                     if (d == 1 && f == 1) {
                         // both d and f flags cannot be provided simultaneously
-                        printf("\033[1;31mInvalid flags\033[1;0m\n");
+                        fprintf(stderr, "\033[1;31mInvalid flags\033[1;0m\n");
                         overall_success = 0;
                     } else {
                         // iterating through all the files in the path
@@ -718,7 +718,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                                     strcpy(prev_dir, cwd);
                                                     strcpy(cwd, trav->path);
                                                 } else {
-                                                    printf("\033[1;31mMissing permissions for task!\033[1;0m\n");
+                                                    fprintf(stderr, "\033[1;31mMissing permissions for task!\033[1;0m\n");
                                                 }
                                             }
                                             trav = trav->next;
@@ -743,10 +743,10 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                                     char buffer[100000];
                                                     int fd = open(trav->path, O_RDONLY);
                                                     if (fd < 0) {
-                                                        printf("\033[1;31mopen: Could not open file for reading\033[1;0m\n");
+                                                        fprintf(stderr, "\033[1;31mopen: Could not open file for reading\033[1;0m\n");
                                                     } else {
                                                         if (read(fd, buffer, 100000 - 1) < 0) {
-                                                            printf("\033[1;31mread: could not read data\033[1;0m\n");
+                                                            fprintf(stderr, "\033[1;31mread: could not read data\033[1;0m\n");
                                                             close(fd);
                                                         } else {
                                                             char buff[100001] = {0};
@@ -797,7 +797,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             // checking if exit command is present
             else if (strcmp("exit", argument_tokens[0]) == 0) {
                 if (no_of_arguments > 1) {
-                    printf("\033[1;31mInvalid command\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mInvalid command\033[1;0m\n");
                 } else {
                     LL_Node trav = LL->first;
                     while (trav != NULL) {
@@ -824,7 +824,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             // checking if ping command is present
             else if (strcmp("ping", argument_tokens[0]) == 0) {
                 if (no_of_arguments < 2) {
-                    printf("\033[1;31mping: Invalid Arguments\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mping: Invalid Arguments\033[1;0m\n");
                 } else {
                     int pid = atoi(argument_tokens[1]);
                     int sig = atoi(argument_tokens[2]);
@@ -846,7 +846,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                 if (result == 0) {
                     kill(pid, SIGCONT);
                 } else {
-                    printf("\033[1;31mNo such process exists\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mNo such process exists\033[1;0m\n");
                     overall_success = 0;
                 }
                 io_redirection(ap, w, cwd, output_file_name_redirection);
@@ -865,7 +865,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                     kill(pid, SIGCONT);
                     waitpid(pid, &cstatus, WUNTRACED);
                 } else {
-                    printf("\033[1;31mNo such process exists\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mNo such process exists\033[1;0m\n");
                     overall_success = 0;
                 }
 
@@ -877,15 +877,15 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
             //checking if neonate is present
             else if (strcmp("neonate", argument_tokens[0]) == 0) {
                 if (argument_tokens[1] == NULL) {
-                    printf("\033[1;31mneonate: Invalid argument\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mneonate: Invalid argument\033[1;0m\n");
                     overall_success = 0;
                 } else {
                     if (strcmp(argument_tokens[1], "-n") != 0) {
-                        printf("\033[1;31mneonate: Invalid argument (-n missing)\033[1;0m\n");
+                        fprintf(stderr, "\033[1;31mneonate: Invalid argument (-n missing)\033[1;0m\n");
                         overall_success = 0;
                     } else {
                         if (argument_tokens[2] == NULL) {
-                            printf("\033[1;31mneonate: missing argument (time)\033[1;0m\n");
+                            fprintf(stderr, "\033[1;31mneonate: missing argument (time)\033[1;0m\n");
                             overall_success = 0;
                         } else {
                             int t_sec = atoi(argument_tokens[2]);
@@ -962,13 +962,13 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
-                            printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
+                            fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
                             // killing child process
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
-                                printf("\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
+                                fprintf(stderr, "\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
                                 // closing the opened file
                                 close(inp_fd);
                                 // killing child process
@@ -977,7 +977,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
-                                printf("\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
+                                fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
                                 kill(getpid(), SIGTERM);
                             }
                         }
@@ -986,39 +986,39 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         open(out_file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                         execvp(argument_tokens[0], argument_tokens);
                         // error
-                        printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
                         kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
                         close(STDOUT_FILENO);
                         open(out_file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
                         execvp(argument_tokens[0], argument_tokens);
                         // error
-                        printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
                         kill(getpid(), SIGTERM);
                     } else if (ip == 1) {
                         int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
-                            printf("\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
+                            fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
-                                printf("\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
+                                fprintf(stderr, "\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
                                 close(inp_fd);
                                 kill(getpid(), SIGTERM);
                             } else {
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
-                                printf("\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
+                                fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
                                 kill(getpid(), SIGTERM);
                             }
                         }
                     } else {
                         execvp(argument_tokens[0], argument_tokens);
                         // execvp failed
-                        printf("\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
                         kill(getpid(), SIGTERM);
                     }
                 } else if (pid > 0) {
@@ -1040,7 +1040,7 @@ void input(char* command, char* home_directory, char* cwd, char* prev_dir, int s
                         insert_in_LL(pid, -1, argument_tokens);
                     }
                 } else {
-                    printf("\033[1;31mfork: could not fork\033[1;0m\n");
+                    fprintf(stderr, "\033[1;31mfork: could not fork\033[1;0m\n");
                     overall_success = 0;
                 }
             }

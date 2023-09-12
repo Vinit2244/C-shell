@@ -293,12 +293,6 @@ void print_global_buffer_onto_terminal() {
     global_buffer_empty = 1;
 }
 
-// void write_in_global_buffer(char* string_to_be_written) {
-//     strcat(global_buffer, string_to_be_written);
-//     global_buffer[strlen(global_buffer)] = '\n';
-//     global_buffer_empty = 0;
-// }
-
 void bprintf(char* buffer, char* string) {
     strcat(buffer, string);
 }
@@ -336,7 +330,7 @@ void convert_to_int(char* number, int* num, int* flag, int ap, int w) {
         *num = 15;
     } else {
         *flag = 0;
-        printf("\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mpastevents: argument value should a positive integer less than or equal to 15\033[1;0m\n");
         return;
     }
 }
@@ -397,44 +391,4 @@ int is_pastevents_execute_present(char* curr_command) {
     free_tokens(tkns);
     return 0;
 }
-
-// int replace_pastevents_execute(char* curr_command, char* home_dir) {
-//     // assuming this function is only called after checking if pastevents execute is really present or not
-//     char** tkns = generate_tokens(curr_command, ' ');
-//     int k = 0;
-//     while ()
-
-//     FILE *fptr;
-//     char past_commands_path[MAX_LEN] = {0};
-//     strcpy(past_commands_path, home_dir);
-//     strcat(past_commands_path, "/past_commands.txt");
-
-//     fptr = fopen(past_commands_path, "r");
-
-//     if (fptr == NULL) {
-//         printf("\033[1;31mFile Not Found\033[1;0m\n");
-//         return 0;
-//     } else {
-//         char** past_commands = (char**) calloc(15, sizeof(char*));
-
-//         for (int i = 0; i < 15; i++) {
-//             past_commands[i] = (char*) calloc(MAX_LEN, sizeof(char));
-//             fscanf(fptr, " %[^\n]", past_commands[i]);
-//         }
-//         fclose(fptr);
-
-//         if (past_commands[num - 1][0] == '\0') {
-//             printf("\033[1;31mInvalid Argument\033[1;0m\n");
-//             return 0;
-//         } else {
-//             // past_commands[num - 1]
-//         }
-
-//         for (int i = 0; i < 15; i++) {
-//             free(past_commands[i]);
-//         }
-//         free(past_commands);
-//     }
-//     return 1;
-// }
 

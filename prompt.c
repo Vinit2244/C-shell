@@ -8,7 +8,7 @@ int prompt(char* home_directory, char* cwd, int* t, char* last_command) {
     char* username = pw->pw_name;
 
     if (username == NULL) { // if there is no username then show the error
-        printf("\033[1;31musername: No username available\033[1;0m\n");
+        fprintf(stderr, "\033[1;31musername: No username available\033[1;0m\n");
         return 0;
     } else {
         // Extracting the hostname

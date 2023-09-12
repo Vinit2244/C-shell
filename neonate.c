@@ -2,7 +2,7 @@
 
 void die(const char *s) {
     perror(s);
-    return 1;
+    return;
 }
 
 struct termios orig_termios;
@@ -27,7 +27,7 @@ void enableRawMode() {
 
 int neonate(int time_in_seconds) {
     if (time_in_seconds == 0) {
-        printf("\033[1;31mneonate: Invalid time in seconds - should be a positive integer\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mneonate: Invalid time in seconds - should be a positive integer\033[1;0m\n");
         return 0;
     }
 
@@ -40,12 +40,12 @@ int neonate(int time_in_seconds) {
 
         int fd = open(path_loadavg, O_RDONLY);
         if (fd < 0) {
-            printf("\033[1;31mopen: could not open file\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mopen: could not open file\033[1;0m\n");
             return 0;
         }
 
         if (read(fd, read_buff, MAX_LEN - 1) < 0) {
-            printf("\033[1;31mread: could not read from the file\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mread: could not read from the file\033[1;0m\n");
             close(fd);
             return 0;
         }

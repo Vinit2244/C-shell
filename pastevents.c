@@ -40,7 +40,7 @@ void store_command(char* command, char* home_dir) {
             fptr2 = fopen(past_commands_path, "w");
             if (fptr2 == NULL) {
 
-                printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+                fprintf(stderr, "\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
             } else {
                 fprintf(fptr2, "%s\n", command);
                 for (int i = 0; i < 14; i++) {
@@ -101,7 +101,7 @@ int purge(int ap, int w, char* home_dir) {
 
     fptr = fopen(past_commands_path, "w");
     if (fptr == NULL) {
-        printf("\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mpastevents: error opening file for writing\033[1;0m\n");
         return 0;
     }
     fclose(fptr);
@@ -117,7 +117,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
     fptr = fopen(past_commands_path, "r");
 
     if (fptr == NULL) {
-        printf("\033[1;31mFile Not Found\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mFile Not Found\033[1;0m\n");
         return 0;
     } else {
         char** past_commands = (char**) calloc(15, sizeof(char*));
@@ -129,7 +129,7 @@ int execute(int num, char* home_dir, char* cwd, char* prev_dir, int store, char*
         fclose(fptr);
 
         if (past_commands[num - 1][0] == '\0') {
-            printf("\033[1;31mInvalid Argument\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mInvalid Argument\033[1;0m\n");
             return 0;
         } else {
             input(past_commands[num - 1], home_dir, cwd, prev_dir, store, last_command, t, 0, 0, 0, NULL, NULL);

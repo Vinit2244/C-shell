@@ -18,7 +18,7 @@ void proclore(char* pid, int ap, int w) {
 
     FILE *fptr = fopen(path_stat, "r");
     if (fptr == NULL) {
-        printf("\033[1;31mNo such process with process id %s running\033[1;0m\n", pid);
+        fprintf(stderr, "\033[1;31mNo such process with process id %s running\033[1;0m\n", pid);
         return;
     } else {
         char data[100000];
@@ -44,7 +44,7 @@ void proclore(char* pid, int ap, int w) {
         sscanf(buffer, "%lx-%lx", &start, &end);
         virtual_address = start;
     } else {
-        printf("\033[1;31mproclore: cannot open /proc/pid/maps\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mproclore: cannot open /proc/pid/maps\033[1;0m\n");
         return;
     }
 

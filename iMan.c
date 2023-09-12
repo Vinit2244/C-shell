@@ -26,7 +26,7 @@ int get_webpage(char* command_name) {
     // resolving DNS
     int status = getaddrinfo(hostname, NULL, &specs, &LL_of_addresses); // returns a linked list of struct addrinfo stored at position LL_of_addresses
     if (status != 0) {
-        printf("getaddrinfo: %s\n", gai_strerror(status)); // gai_strerror() converts the error code returned by the getaddrinfo() function in string form
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status)); // gai_strerror() converts the error code returned by the getaddrinfo() function in string form
         return 0;
     }
 
@@ -53,7 +53,7 @@ int get_webpage(char* command_name) {
 
     // Address Family - Internet, STREAM socket, 0 == USE TCP
     if ((socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\033[1;31msocket: Error while creating socket\033[1;0m\n");
+        fprintf(stderr, "\033[1;31msocket: Error while creating socket\033[1;0m\n");
         return 0;
     }
 
@@ -63,13 +63,13 @@ int get_webpage(char* command_name) {
 
     // converting string ip to binary again (translation)
     if (inet_pton(AF_INET, ip, &server_addr.sin_addr) <= 0) {
-        printf("\033[1;31mError while converting string IP to binary\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mError while converting string IP to binary\033[1;0m\n");
         return 0;
     }
 
     // trying to connect to the server
     if (connect(socket_fd, (SA *) &server_addr, sizeof(server_addr)) < 0) {
-        printf("\033[1;31mconnection failed: Error while connecting to the server\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mconnection failed: Error while connecting to the server\033[1;0m\n");
         return 0;
     }
 
@@ -80,7 +80,7 @@ int get_webpage(char* command_name) {
     // write the request onto the socket file descriptor
     if (write(socket_fd, sendline, num_of_bytes_to_be_sent) != num_of_bytes_to_be_sent) {
         // if the number of bytes sent is not equal to the number of bytes we need to send then we know that there is an error in the request
-        printf("\033[1;31mGET: Request not sent properly\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mGET: Request not sent properly\033[1;0m\n");
         return 0;
     }
 
@@ -113,14 +113,14 @@ int get_webpage(char* command_name) {
         free_tokens(tkns);
     }
     if (n < 0) {
-        printf("\033[1;31mread error: could not read the received data\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mread error: could not read the received data\033[1;0m\n");
         close(socket_fd);
         return 0;
     }
 
     if (overall_flag == 0) { // if nothing is printed then we know that page not found is returned
-        printf("\033[1;31mERROR\033[1;0m\n");
-        printf("\t\033[1;31mNo such Command\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mERROR\033[1;0m\n");
+        fprintf(stderr, "\t\033[1;31mNo such Command\033[1;0m\n");
         return 0;
     }
 
