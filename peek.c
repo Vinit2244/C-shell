@@ -1,6 +1,47 @@
 #include "headers.h"
 
-int peek(char* path, int a, int l, char* cwd, char* home_dir, char* prev_dir, int ap, int w) {
+int look_into_file(char** argument_tokens, int no_of_arguments, int ap, int w) {
+    char path[MAX_LEN] = {0}; // stores path of directory to peek into
+                
+    // copying cwd into path
+    // if no argument is provided or input redirection is provided then just print the contents of the cwd
+    // peek does not accept input redirection
+    strcpy(path, cwd);
+
+    int a = 0;  // 1 if 'a' flag is present, 0 otherwise
+    int l = 0;  // 1 if 'l' flag is present, 0 otherwise
+
+    if (no_of_arguments != 0) {
+        // valid flags
+        char minus_a[3] = "-a";
+        char minus_l[3] = "-l";
+        char minus_al[4] = "-al";
+        char minus_la[4] = "-la";
+
+        int path_flag = 0; // 1 if path to some directory is provided, 0 otherwise
+        for (int i = 1; i <= no_of_arguments; i++) {
+            // checking which all flags are present
+            if (strcmp(argument_tokens[i], minus_a) == 0) {  // 'a' flag is present
+                a = 1;
+            } else if (strcmp(argument_tokens[i], minus_l) == 0) {  // 'l' flag is present
+                l = 1;
+            } else if (strcmp(argument_tokens[i], minus_la) == 0 || strcmp(argument_tokens[i], minus_al) == 0) {  // both 'a' and 'l' flags are passed
+                a = 1;
+                l = 1;
+            } else {
+                // any argument not starting with "-" is treated as some path given
+                path_flag = 1;
+
+                // copying the provided path into the path array replacing cwd
+                strcpy(path, argument_tokens[i]);
+            }
+        }
+    }
+    // returns 1 if peeked successfully else returns 0
+    return peek(path, a, l, ap, w);
+}
+
+int peek(char* path, int a, int l, int ap, int w) {
     char* new_path = (char*) calloc(MAX_LEN, sizeof(char));
     if (path[0] == '-') {
         fprintf(stderr, "\033[1;31mpeek: Invalid Flags\033[1;0m\n");

@@ -1,15 +1,15 @@
 exit
+peek ~
+peek ..
+peek -al ./test
+peek ./test -la
+peek ./test
+peek -la
+peek -a
+peek -l
+peek
+exit
+peek
+exit
 warp ~
 warp -
-warp .. ..
-warp ~
-warp ../prog
-warp .. programming
-warp prog
-warp test
-exit
-warp ~
-warp .. programming
-warp ./test/prog
-exit
-warp < temp.txt

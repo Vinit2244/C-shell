@@ -294,50 +294,11 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
 
             // checking if peek command is present
             else if (strcmp("peek", argument_tokens[0]) == 0) {
-                char path[MAX_LEN] = {0}; // stores path of directory to peek into
-                
-                // copying cwd into path
-                // if no argument is provided or input redirection is provided then just print the contents of the cwd
-                // peek does not accept input redirection
-                strcpy(path, cwd);
+                int exit_status = look_into_file(argument_tokens, no_of_arguments, ap, w);
 
-                int a = 0;
-                int l = 0;
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
 
-                if (no_of_arguments != 0) {
-                    // valid flags
-                    char minus_a[3] = "-a";
-                    char minus_l[3] = "-l";
-                    char minus_al[4] = "-al";
-                    char minus_la[4] = "-la";
-
-                    int path_flag = 0; // path to some directory is present or not
-                    for (int i = 1; i <= no_of_arguments; i++) {
-                        // checking which all flags are present
-                        if (strcmp(argument_tokens[i], minus_a) == 0) {
-                            a = 1;
-                        } else if (strcmp(argument_tokens[i], minus_l) == 0) {
-                            l = 1;
-                        } else if (strcmp(argument_tokens[i], minus_la) == 0 || strcmp(argument_tokens[i], minus_al) == 0) {
-                            a = 1;
-                            l = 1;
-                        } else {
-                            // any argument not starting with "-" is treated as some path given
-                            path_flag = 1;
-
-                            // copying the provided path into the path array replacing cwd
-                            for (int j = 0; j < strlen(argument_tokens[i]); j++) {
-                                path[j] = argument_tokens[i][j];
-                            }
-                            path[strlen(argument_tokens[i])] = '\0';
-                        }
-                    }
-                }
-                // returns 1 if peeked successfully else returns 0
-                int exit_code = peek(path, a, l, cwd, home_directory, prev_dir, ap, w);
-                if (exit_code == 0) overall_success = 0;
-
-                io_redirection(ap, w, cwd, output_file_name_redirection);
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // pastevents
