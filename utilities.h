@@ -18,7 +18,7 @@ int check_if_dir(char* path, char* file_name);
 int check_if_such_dir_exists(char* path, char* next_dir);
 void update_path(char* path, char* next_dir);
 void remove_leading_and_trailing_spaces(char* str);
-char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir);
+char* generate_new_path(char* path);
 void sort_strings(char** strings, int no_of_strings);
 int str_to_int(char* str);
 char* remove_extension(char* file_name);

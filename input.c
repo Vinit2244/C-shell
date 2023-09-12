@@ -268,8 +268,9 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             if (strcmp("iMan", argument_tokens[0]) == 0) {
                 int exit_status = iMan(argument_tokens, no_of_arguments, ip, input_file_name_redirection);
                 
-                io_redirection(ap, w, cwd, output_file_name_redirection);
-                if (exit_status == 0) overall_success = 0;
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
+
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // warp
@@ -279,29 +280,11 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
 
             // checking if warp command is present
             else if (strcmp("warp", argument_tokens[0]) == 0) {
-                int success = 1;            // flag to keep track if warp exited successfully or not
-                if (ip == 1) {
-                    // if input redirection is provided to warp it just goes back to home directory
-                    // warp does not accept input redirection
-                    int exit_code = warp(cwd, "~", prev_dir, home_directory, ap, w);
-                    if (exit_code == 0) success = 0;
-                } else {
-                    if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
-                        char* c = "~";
-                        // returns 1 if successfull and returns 0 if some error occured
-                        int exit_code = warp(cwd, c, prev_dir, home_directory, ap, w);
-                        if (exit_code == 0) success = 0;
-                    } else {                    // if multiple arguments are passed then warp to those arguments one by one (each argument treated as a separate command)
-                        for (int i = 1; i <= no_of_arguments; i++) {
-                            int exit_code = warp(cwd, argument_tokens[i], prev_dir, home_directory, ap, w);
-                            if (exit_code == 0) success = 0;
-                        }
-                    }
-                }
+                int exit_status = change_cwd(w, ap, ip, argument_tokens, no_of_arguments);
 
-                io_redirection(ap, w, cwd, output_file_name_redirection);
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
 
-                if (success == 0) overall_success = 0;
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // peek
@@ -611,7 +594,7 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                         linked_list_head paths = create_linked_list_head();
                         char* path_to_base_dir;
                         if (base_dir_flag) {
-                            path_to_base_dir = generate_new_path(cwd, base_dir, prev_dir, home_directory);
+                            path_to_base_dir = generate_new_path(base_dir);
                         } else {
                             path_to_base_dir = (char*) calloc(MAX_LEN, sizeof(char));
                             strcpy(path_to_base_dir, cwd);

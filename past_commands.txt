@@ -1,15 +1,15 @@
 exit
-rm temp.txt
-rm tess.txt
-cat tess.txt
-iMan < temp.txt > tess.txt
-iMan < temp.txt
-rm test.txt
-cat test.txt
-iMan sleep > test.txt
-iMan ls
-iMan sleep
-iMan ls
-iMan sleep
+warp ~
+warp -
+warp .. ..
+warp ~
+warp ../prog
+warp .. programming
+warp prog
+warp test
 exit
-rm tess3.txt
+warp ~
+warp .. programming
+warp ./test/prog
+exit
+warp < temp.txt

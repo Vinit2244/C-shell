@@ -130,7 +130,7 @@ void remove_leading_and_trailing_spaces(char* str) {
     free(final);
 }
 
-char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
+char* generate_new_path(char* path) {
     int success = 1;
 
     char tilde[2]       = "~";
@@ -149,7 +149,7 @@ char* generate_new_path(char* cwd, char* path, char* prev_dir, char* home_dir) {
         char* curr_token = dir_tokens[dir_tokens_idx];
         if (strcmp(curr_token, tilde) == 0) {
             // change cwd to home
-            strcpy(new_path, home_dir);
+            strcpy(new_path, home_directory);
         } else if (strcmp(curr_token, dash) == 0) {
             // change cwd to prev
             // checking if the warp - command is called just after the first initiation

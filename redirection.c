@@ -1,6 +1,6 @@
 #include "headers.h"
 
-void io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
+int io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
     if (ap == 0 && w == 0) {
         print_global_buffer_onto_terminal();
     } else {
@@ -15,17 +15,20 @@ void io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
                 strcpy(file_path, file_name_redirection);
             }
 
+            // opening file in append mode
             int fd = open(file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
             if (fd < 0) {
-                // printf("hi\n");
-                fprintf(stderr, "\033[1;31mopen: Error in opening file\033[1;0m\n");
-                return;
+                // open fails
+                fprintf(stderr, "\033[1;31mio_redirection : open: Error in opening file\033[1;0m\n");
+                return 0;
             } else {
                 if (write(fd, global_buffer, strlen(global_buffer)) < 0) {
-                    fprintf(stderr, "\033[1;31mwrite: Error in writing\033[1;0m\n");
+                    // write fails
+                    fprintf(stderr, "\033[1;31mio_redirection : write: Error in writing\033[1;0m\n");
                     close(fd);
-                    return;
+                    return 0;
                 }
+                // clearing global buffer
                 memset(global_buffer, 0, strlen(global_buffer));
                 close(fd);
             }
@@ -40,20 +43,25 @@ void io_redirection(int ap, int w, char* cwd, char* file_name_redirection) {
                 strcpy(file_path, file_name_redirection);
             }
 
+            // opening file in write mode
             int fd = open(file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
             if (fd < 0) {
-                fprintf(stderr, "\033[1;31mopen: Error in opening file\033[1;0m\n");
-                return;
+                // open fail
+                fprintf(stderr, "\033[1;31mio_redirection : open: Error in opening file\033[1;0m\n");
+                return 0;
             } else {
                 if (write(fd, global_buffer, strlen(global_buffer)) < 0) {
-                    fprintf(stderr, "\033[1;31mwrite: Error in writing\033[1;0m\n");
+                    // write fail
+                    fprintf(stderr, "\033[1;31mio_redirection : write: Error in writing\033[1;0m\n");
                     close(fd);
-                    return;
+                    return 0;
                 }
+                // clearing global buffer
                 memset(global_buffer, 0, strlen(global_buffer));
                 close(fd);
             }
         }
     }
+    return 1;
 }
 

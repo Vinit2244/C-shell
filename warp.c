@@ -1,14 +1,38 @@
 #include "headers.h"
 
-int warp(char* cwd, char* path, char* prev_dir, char* home_dir, int ap, int w) {
+int change_cwd(int w, int ap, int ip, char** argument_tokens, int no_of_arguments) {
+    if (ip == 1) {
+        // if input redirection is provided to warp it just goes back to home directory
+        // warp does not accept input redirection
+        return warp("~", ap, w);
+    } else {
+        if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
+            char* c = "~";
+            // returns 1 if successfull and returns 0 if some error occured
+            return warp(c, ap, w);
+        } else {                    // if multiple arguments are passed then warp to those arguments one by one (each argument treated as a separate command)
+            int status = 1;
+            for (int i = 1; i <= no_of_arguments; i++) {
+                int exit_status = warp(argument_tokens[i], ap, w);
+                status = status && exit_status;
+            }
+            return status;
+        }
+    }
+    return 1;
+}
+
+int warp(char* path, int ap, int w) {
     if (strlen(path) > 0) {
-        // checking if absolute path
+        // checking if absolute path - absolute path always starts with '/'
         if (path[0] == '/') {
             struct stat path_stat;
             if (stat(path, &path_stat) < 0) {
+                // directory does not exist
                 fprintf(stderr, "\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
                 return 0;
             } else {
+                // update current working directory
                 for (int i = 0; i < strlen(path); i++) {
                     cwd[i] = path[i];
                 }
@@ -17,7 +41,7 @@ int warp(char* cwd, char* path, char* prev_dir, char* home_dir, int ap, int w) {
         }
     }
 
-    char* new_path = generate_new_path(cwd, path, prev_dir, home_dir);
+    char* new_path = generate_new_path(path);
     if (new_path == NULL) {
         fprintf(stderr, "\033[1;31mwarp: no such directory exists: %s\033[1;0m\n", path);
         return 0;
