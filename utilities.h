@@ -26,7 +26,6 @@ void sort_strings(char** strings, int no_of_strings);
 int str_to_int(char* str);
 char* remove_extension(char* file_name);
 char* relative_path(char* complete_path, char* base_dir_path);
-void print_global_buffer_onto_terminal();
 void convert_to_int(char* number, int* num, int* flag);
 int is_pipe_present(char* string);
 int is_write_present(char* string);

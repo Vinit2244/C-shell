@@ -287,12 +287,6 @@ char* relative_path(char* complete_path, char* base_dir_path) {
     return rel_path;
 }
 
-void print_global_buffer_onto_terminal() {
-    printf("%s", global_buffer);
-    memset(global_buffer, 0, strlen(global_buffer));
-    global_buffer_empty = 1;
-}
-
 void convert_to_int(char* number, int* num, int* flag) {
     if (strcmp(number, "1") == 0) {
         *num = 1;

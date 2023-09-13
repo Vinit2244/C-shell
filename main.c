@@ -3,8 +3,6 @@
 LL_Head LL;                 // Linked List to store the pids and names of background processes spawned by my shell
 char* bg_process_buffer;    
 
-char* global_buffer;        // Temporarily stores output for redirection
-int global_buffer_empty;    // 1 if globa_buffer is empty otherwise 0
 char* fg_command_name;      // Name of the command currently running in foreground
 
 char* home_directory;       // Directory where the shell is first spawned
@@ -13,8 +11,8 @@ char* prev_dir;             // Directory we were previously on
 char* last_command;         // Last executed command
 int t;                      // Time taken for executing a command
 
-int shell_pid;
-int bg_gpid;
+int shell_pid;              // stores my shell pid used later in 'fg' command
+int bg_gpid;                // stores the group id of background processes
 
 int main()
 {
@@ -22,19 +20,18 @@ int main()
     bg_gpid = -1;
     fg_command_name = NULL; // Initially no foreground process is running by my shell
 
+    // Handling Ctrl + z (SIGTSTP) signal
     struct sigaction sa;
     sa.sa_handler = &handle_sigtstp; // Ctrl + Z (Windows/Linux) or Cmd + Z (Mac)
-    sa.sa_flags = SA_RESTART;
+    sa.sa_flags = SA_RESTART;        // Automatically restart the system call
     sigaction(SIGTSTP, &sa, NULL);   // Ctrl + Z sends SIGTSTP signal (Signal Stop) - sends foreground process to background
 
+    // Handling Ctrl + C (SIGINT) signal
     struct sigaction sa2;
     sa2.sa_handler = &handle_sigint; // Ctrl + C (Windows/Linux) or Cmd + C (Mac)
-    sa2.sa_flags = SA_RESTART;
+    sa2.sa_flags = SA_RESTART;       // Automatically restart the system call
     sigaction(SIGINT, &sa2, NULL);   // Ctrl + C sends SIGINT signal (Signal Interrupt) - terminates the currently running foreground process
 
-
-    global_buffer_empty = 1;
-    global_buffer = (char*) calloc(9999999, sizeof(char));
     bg_process_buffer = calloc(9999999, sizeof(char));
 
     home_directory = (char*) calloc(MAX_LEN + 1, sizeof(char)); // stores the absolute path to the home directory
