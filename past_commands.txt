@@ -1,15 +1,15 @@
 exit
-ping 58331 9
-gedit &
+cat < past_commands.txt
 warp test
-gedit &
-exit
-gedit &
-exit
-gedit &
-exit
-gedit &
-exit
-gedit &
-exit
-gedit &
+cat tess.txt
+iMan < temp.txt > tess.txt
+cat temp.txt
+echo "test" > temp.txt
+cat temp.txt
+cat tess.txt
+peek > tess.txt
+seek prog
+ls | wc | wc | wc
+ls -la | wc
+ls -a | wc
+ls | wc

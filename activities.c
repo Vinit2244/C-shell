@@ -48,15 +48,13 @@ int print_active_processes_spawned_by_my_shell() {
 
     // bubble sort for lexicographically sorting the pids
     bubble_sort_processes(pids, process_names, process_states, n);
-
+    
     for (int k = 0; k < n; k++) {
-        char buff[MAX_LEN] = {0};
-        sprintf(buff, "%d : %s - ", pids[k], process_names[k]);
-        bprintf(global_buffer, buff);
+        printf("%d : %s - ", pids[k], process_names[k]);
         if (process_states[k] == 'R') {
-            bprintf(global_buffer, "Running\n");
+            printf("Running\n");
         } else if (process_states[k] == 'S') {
-            bprintf(global_buffer, "Stopped\n");
+            printf("Stopped\n");
         }
     }
     return 1;

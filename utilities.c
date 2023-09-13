@@ -293,11 +293,7 @@ void print_global_buffer_onto_terminal() {
     global_buffer_empty = 1;
 }
 
-void bprintf(char* buffer, char* string) {
-    strcat(buffer, string);
-}
-
-void convert_to_int(char* number, int* num, int* flag, int ap, int w) {
+void convert_to_int(char* number, int* num, int* flag) {
     if (strcmp(number, "1") == 0) {
         *num = 1;
     } else if (strcmp(number, "2") == 0) {

@@ -29,9 +29,7 @@ int run_bg_process(char** argument_tokens, int no_of_arguments) {
         status = data_array[2];
 
         if (strcmp(status, "R") == 0 || strcmp(status, "S") == 0) {
-            char buff[MAX_LEN] = {0};
-            sprintf(buff, "Process with pid %d running in the background\n", pid);
-            bprintf(global_buffer, buff);
+            printf("Process with pid %d running in the background\n", pid);
         } else if (strcmp(status, "D") == 0 || strcmp(status, "T") == 0 || strcmp(status, "Z")) {
             fprintf(stderr, "\033[1;31mbg : Failed to run the background process\033[1;0m\n");
             return 0;

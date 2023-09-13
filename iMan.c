@@ -5,41 +5,24 @@
 
 #define SA struct sockaddr
 
-int iMan(char** argument_tokens, int no_of_arguments, int ip, char* input_file_name_redirection) {
+int iMan(char** argument_tokens, int no_of_arguments, int ip) {
     if (no_of_arguments == 0) {
         // Can read the name of the command from input redirection
         if (ip == 1) {
-            char input_file_path[MAX_LEN];
-
-            if (input_file_name_redirection[0] != '/') {
-                strcpy(input_file_path, cwd);
-                strcat(input_file_path, "/");
-                strcat(input_file_path, input_file_name_redirection);
-            } else if (input_file_name_redirection[0] == '/') {
-                strcpy(input_file_path, input_file_name_redirection);
-            }
-
             char inp_buff[MAX_LEN] = {0};
-            int inp_fd = open(input_file_path, O_RDONLY);
 
-            if (inp_fd < 0) {
-                // open failed
-                fprintf(stderr, "\033[1;31miMan : open : %s\033[1;0m\n", strerror(errno));
+            int bytes_read = read(STDIN_FILENO, inp_buff, MAX_LEN - 1);
+            if (bytes_read < 0) {
+                // read fails
+                fprintf(stderr, "\033[1;31miMan : read : cannot read from the file\033[1;0m\n");
                 return 0;
             } else {
-                int bytes_read = read(inp_fd, inp_buff, MAX_LEN - 1);
-                if (bytes_read < 0) {
-                    // read fails
-                    fprintf(stderr, "\033[1;31miMan : read : cannot read from the file\033[1;0m\n");
-                    return 0;
-                } else {
-                    for (int r = 0; r < strlen(inp_buff); r++) {
-                        if (inp_buff[r] == '\n') {
-                            inp_buff[r] = '\0';
-                        }
+                for (int r = 0; r < strlen(inp_buff); r++) {
+                    if (inp_buff[r] == '\n') {
+                        inp_buff[r] = '\0';
                     }
-                    return get_webpage(inp_buff);
                 }
+                return get_webpage(inp_buff);
             }
         } else {
             // invalid arguments command name has to be provided
@@ -165,9 +148,7 @@ int get_webpage(char* command_name) {
             if (print_flag == 1 && strcmp(tkns[y], "AUTHOR") != 0) {        // if printing is on and we have not reached the AUTHOR heading
                 overall_flag = 1;               // We have printed something
                 // writing onto the global buffer
-                char buff[MAX_LEN] = {0};
-                sprintf(buff, "%s\n", tkns[y]);
-                bprintf(global_buffer, buff);
+                printf("%s\n", tkns[y]);
             } else if (print_flag == 0 && strcmp(tkns[y], "NAME") == 0) {   // if we have not started printing yet and NAME heading is encountered
                 char buff[MAX_LEN] = {0};
                 sprintf(buff, "%s\n", tkns[y]);

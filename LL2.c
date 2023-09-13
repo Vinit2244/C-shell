@@ -44,7 +44,7 @@ void free_linked_list(linked_list_head linked_list) {
     free(linked_list);
 }
 
-void traverse_and_print(linked_list_head linked_list, int file, int dir, char* path_to_base_dir, int ap, int w) {
+void traverse_and_print(linked_list_head linked_list, int file, int dir, char* path_to_base_dir) {
     linked_list_node trav = linked_list->first;
     while (trav != NULL) {
         struct stat dir_stat;
@@ -53,27 +53,9 @@ void traverse_and_print(linked_list_head linked_list, int file, int dir, char* p
         char* p = relative_path(trav->path, path_to_base_dir);
 
         if (S_ISDIR(dir_stat.st_mode) == 0 && file) {
-            if (ap == 1 || w == 1) {
-                char buff[MAX_LEN] = {0};
-                sprintf(buff, "%s\n", p);
-                bprintf(global_buffer, buff);
-            }
-            else {
-                char buff[MAX_LEN] = {0};
-                sprintf(buff, "\033[1;32m%s\033[1;0m\n", p);
-                bprintf(global_buffer, buff);
-            }
+            printf("\033[1;32m%s\033[1;0m\n", p);
         } else if (S_ISDIR(dir_stat.st_mode) != 0 && dir) {
-            if (ap == 1 || w == 1) {
-                char buff[MAX_LEN] = {0};
-                sprintf(buff, "%s\n", p);
-                bprintf(global_buffer, buff);
-            }
-            else {
-                char buff[MAX_LEN] = {0};
-                sprintf(buff, "\033[1;34m%s\033[1;0m\n", p);
-                bprintf(global_buffer, buff);
-            }
+            printf("\033[1;34m%s\033[1;0m\n", p);
         }
         trav = trav->next;
         free(p);

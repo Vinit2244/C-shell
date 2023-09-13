@@ -1,6 +1,6 @@
 #include "headers.h"
 
-int ping(char** argument_tokens, int no_of_arguments, int w, int ap) {
+int ping(char** argument_tokens, int no_of_arguments) {
     if (no_of_arguments < 2) {
         fprintf(stderr, "\033[1;31mping : Invalid Arguments\033[1;0m\n");
         return 0;
@@ -8,12 +8,12 @@ int ping(char** argument_tokens, int no_of_arguments, int w, int ap) {
         int pid = atoi(argument_tokens[1]);
         int sig = atoi(argument_tokens[2]);
 
-        return ping_sig(pid, sig, ap, w);
+        return ping_sig(pid, sig);
     }
     return 1;
 }
 
-int ping_sig(int pid, int sig, int ap, int w) {
+int ping_sig(int pid, int sig) {
     // checking if the process exists
     int result = kill(pid, 0);
 
@@ -21,9 +21,7 @@ int ping_sig(int pid, int sig, int ap, int w) {
         // process exists
         int response = kill(pid, sig);
         if (response == 0) {
-            char buff[MAX_LEN] = {0};
-            sprintf(buff, "Sent signal %d to process with pid %d\n", sig, pid);
-            bprintf(global_buffer, buff);
+            printf("Sent signal %d to process with pid %d\n", sig, pid);
 
             LL_Node trav = LL->first;
             while (trav != NULL) {

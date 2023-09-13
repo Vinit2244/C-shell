@@ -13,6 +13,7 @@ I branched the Part A first half submission in 'final' branch and then continued
 - ctrl + d works only when no foreground process is currently running (just like as in a real shell).
 - Vim & is not working properly but rest everything like gedit & and all works fine.
 - If wrong commands names are provided which are neither user defined commands nor system commands than that command gets stored in past_commands.txt
+- Multiple output redirections '>>' and '>' are not provided consequently
 
 ### Warp:
 - File path does not contain any spaces.

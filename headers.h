@@ -44,5 +44,6 @@
 #include "bg.h"
 #include "fg.h"
 #include "sys_commands.h"
+#include "pipe.h"
 
 #endif

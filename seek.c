@@ -1,7 +1,7 @@
 #include "headers.h"
 
 // Searches for a given file/directory recursively
-int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, int ip, char* input_file_name_redirection) {
+int find_file_dir(char** argument_tokens, int no_of_arguments, int ip) {
     char base_dir[MAX_LEN] = {0};   // stores the path to base dir
     char file_name[MAX_LEN] = {0};  // stores the name of the file to be searched
 
@@ -56,34 +56,16 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                     strcpy(base_dir, curr_argument);
                 } else if (ip == 1) {   // if input is to be taken from a file
                     char inp_buff[999999] = {0};
-
-                    char file_path[MAX_LEN];
-                    if (input_file_name_redirection[0] != '/') {
-                        strcpy(file_path, cwd);
-                        strcat(file_path, "/");
-                        strcat(file_path, input_file_name_redirection);
-                    } else if (input_file_name_redirection[0] == '/') {
-                        strcpy(file_path, input_file_name_redirection);
-                    }
-
-                    int fd = open(file_path, O_RDONLY);
-                    if (fd < 0) {
-                        fprintf(stderr, "\033[1;31mError in opening input file\033[1;0m\n");
-                        return 0;
-                    } else {
-                        if (read(fd, inp_buff, 999998) < 0) {
+                        if (read(STDIN_FILENO, inp_buff, 999998) < 0) {
                             fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
-                            close(fd);
                             return 0;
                         } else {
-                            close(fd);
                             // removing the last endline character
                             if (inp_buff[strlen(inp_buff) - 1] == '\n') {
                                 inp_buff[strlen(inp_buff) - 1] = '\0';
                             }
                             strcpy(base_dir, inp_buff);
                         }
-                    }
                 }
             } else {
                 if (file_name_flag == 1) {
@@ -117,7 +99,7 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
             seek(path_to_base_dir, file_name, paths);
 
             if (paths->number_of_nodes == 0) {
-                bprintf(global_buffer, "No match found!\n");
+                printf("No match found!\n");
             } else {
                 int no_of_files = 0;
                 int no_of_dir = 0;
@@ -132,6 +114,7 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                     } else {
                         no_of_files++;
                     }   
+                    temp = temp->next;
                 }
 
                 if (e) {
@@ -145,16 +128,7 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                                 lstat(trav->path, &dir_stat);
                                 if (S_ISDIR(dir_stat.st_mode) != 0) { // checking if it's a dir
                                     if (dir_stat.st_mode & S_IXUSR) {
-                                        if (ap == 1 || w == 1) {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(buff, "%s\n", relative_path(trav->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
-                                        else {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(global_buffer, "\033[1;34m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
+                                        printf("\033[1;34m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
                                         strcpy(prev_dir, cwd);
                                         strcpy(cwd, trav->path);
                                     } else {
@@ -170,16 +144,7 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                                 lstat(trav->path, &dir_stat);
                                 if (S_ISDIR(dir_stat.st_mode) == 0) { // checking if it's a file
                                     if (dir_stat.st_mode & S_IRUSR) {
-                                        if (ap == 1 || w == 1) {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(buff, "%s\n", relative_path(trav->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
-                                        else {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(buff, "\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
+                                        printf("\033[1;32m%s\033[1;0m\n", relative_path(trav->path, path_to_base_dir));
                                         char buffer[100000];
                                         int fd = open(trav->path, O_RDONLY);
                                         if (fd < 0) {
@@ -191,14 +156,12 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                                                 close(fd);
                                                 return 0;
                                             } else {
-                                                char buff[100001] = {0};
-                                                sprintf(buff, "%s\n", buffer);
-                                                bprintf(global_buffer, buff);
+                                                printf("%s\n", buffer);
                                                 close(fd);
                                             }
                                         }
                                     } else {
-                                        bprintf(global_buffer, "Missing permissions for task!\n");
+                                        printf("Missing permissions for task!\n");
                                     }
                                 }
                                 trav = trav->next;
@@ -211,16 +174,7 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                                 lstat(paths->first->path, &dir_stat);
                                 if (S_ISDIR(dir_stat.st_mode) == 0) { // checking if it's a file
                                     if (dir_stat.st_mode & S_IRUSR) {
-                                        if (ap == 1 || w == 1) {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(buff, "%s\n", relative_path(paths->first->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
-                                        else {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(buff, "\033[1;32m%s\033[1;0m\n", relative_path(paths->first->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
+                                        printf("\033[1;32m%s\033[1;0m\n", relative_path(paths->first->path, path_to_base_dir));
                                         char buffer[100000];
                                         int fd = open(paths->first->path, O_RDONLY);
                                         if (fd < 0) {
@@ -232,27 +186,16 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                                                 close(fd);
                                                 return 0;
                                             } else {
-                                                char buff[100001] = {0};
-                                                sprintf(buff, "%s\n", buffer);
-                                                bprintf(global_buffer, buff);
+                                                printf("%s\n", buffer);
                                                 close(fd);
                                             }
                                         }
                                     } else {
-                                        bprintf(global_buffer, "Missing permissions for task!\n");
+                                        printf("Missing permissions for task!\n");
                                     }
                                 } else {
                                     if (dir_stat.st_mode & S_IXUSR) {
-                                        if (ap == 1 || w == 1) {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(buff, "%s\n", relative_path(paths->first->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
-                                        else {
-                                            char buff[MAX_LEN] = {0};
-                                            sprintf(global_buffer, "\033[1;34m%s\033[1;0m\n", relative_path(paths->first->path, path_to_base_dir));
-                                            bprintf(global_buffer, buff);
-                                        }
+                                        printf("\033[1;34m%s\033[1;0m\n", relative_path(paths->first->path, path_to_base_dir));
                                         strcpy(prev_dir, cwd);
                                         strcpy(cwd, paths->first->path);
                                     } else {
@@ -264,11 +207,11 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                     }
                 } else {
                     if (f) {
-                        traverse_and_print(paths, 1, 0, path_to_base_dir, ap, w);
+                        traverse_and_print(paths, 1, 0, path_to_base_dir);
                     } else if (d) {
-                        traverse_and_print(paths, 0, 1, path_to_base_dir, ap, w);
+                        traverse_and_print(paths, 0, 1, path_to_base_dir);
                     } else {
-                        traverse_and_print(paths, 1, 1, path_to_base_dir, ap, w);
+                        traverse_and_print(paths, 1, 1, path_to_base_dir);
                     }
                 }
             }

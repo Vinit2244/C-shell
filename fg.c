@@ -22,4 +22,5 @@ int bring_process_to_foreground(char** argument_tokens) {
         fprintf(stderr, "\033[1;31mNo such process exists\033[1;0m\n");
         return 0;
     }
+    return 1;
 }

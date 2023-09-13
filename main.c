@@ -58,7 +58,13 @@ int main()
     // Keep accepting commands
     while (1)
     {
-        input(NULL, 1, 0, 0, 0, NULL, NULL);
+        int fd_in = dup(STDIN_FILENO);
+        int fd_out = dup(STDOUT_FILENO);
+        input(NULL, 1, 0);
+        dup2(fd_in, STDIN_FILENO);
+        dup2(fd_out, STDOUT_FILENO);
+        close(fd_in);
+        close(fd_out);
     }
 
     free(home_directory);

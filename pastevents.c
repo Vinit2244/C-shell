@@ -1,6 +1,6 @@
 #include "headers.h"
 
-int history(char** argument_tokens, int no_of_arguments, int* pastevents_present, int ap, int w, int ip, char* curr_command, char* input_file_name_redirection, int store, int* pastevents_execute_present, char* input_string) {
+int history(char** argument_tokens, int no_of_arguments, int* pastevents_present, int ip, char* curr_command, int store, int* pastevents_execute_present, char* input_string) {
     *pastevents_present = 1;    // flag to denote pastevents command is executed
     if (no_of_arguments == 0) { // no arguments are passed than just print the pastevents
         return pastevents();
@@ -11,7 +11,7 @@ int history(char** argument_tokens, int no_of_arguments, int* pastevents_present
                 return 0;
             }
             // clears the stored list
-            return purge(ap, w);
+            return purge();
         } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
             if (no_of_arguments == 1 && ip == 0) {
                 // if no index is given which command to execute then show error
@@ -24,34 +24,21 @@ int history(char** argument_tokens, int no_of_arguments, int* pastevents_present
 
                 char inp_buff[999999] = {0};
 
-                char file_path[MAX_LEN];
-                strcpy(file_path, cwd);
-                strcat(file_path, "/");
-                strcat(file_path, input_file_name_redirection);
-
-                int fd = open(file_path, O_RDONLY);
-                if (fd < 0) {
-                    fprintf(stderr, "\033[1;31mpastevents : Error in opeaning the input file\033[1;0m\n");
+                if (read(STDIN_FILENO, inp_buff, 999998) < 0) {
+                    fprintf(stderr, "\033[1;31mpastevents : Error in reading\033[1;0m\n");
                     return 0;
-                } else {
-                    if (read(fd, inp_buff, 999998) < 0) {
-                        fprintf(stderr, "\033[1;31mpastevents : Error in reading\033[1;0m\n");
-                        close(fd);
-                        return 0;
-                    }
-
-                    close(fd);
-                    if (inp_buff[strlen(inp_buff) - 1] == '\n') {
-                        inp_buff[strlen(inp_buff) - 1] = '\0';
-                    }
-                    strcpy(number, inp_buff);
                 }
+
+                if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                    inp_buff[strlen(inp_buff) - 1] = '\0';
+                }
+                strcpy(number, inp_buff);
                 // converting char to int
                 // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
-                convert_to_int(number, &num, &flag, ap, w);
+                convert_to_int(number, &num, &flag);
                 if (flag) {
                     // executing the command at the given index
-                    if (execute(num, store, ap, w, curr_command, pastevents_execute_present, input_string) == 0) {
+                    if (execute(num, store, curr_command, pastevents_execute_present, input_string) == 0) {
                         return 0;
                     }
                 }
@@ -62,10 +49,10 @@ int history(char** argument_tokens, int no_of_arguments, int* pastevents_present
                 
                 // converting char to int
                 // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
-                convert_to_int(number, &num, &flag, ap, w);
+                convert_to_int(number, &num, &flag);
                 if (flag) {
                     // executing the command at the given index
-                    if (execute(num, store, ap, w, curr_command, pastevents_execute_present, input_string) == 0) {
+                    if (execute(num, store, curr_command, pastevents_execute_present, input_string) == 0) {
                         return 0;
                     }
                 }
@@ -170,9 +157,7 @@ int pastevents() {
 
         for (int i = 14; i >= 0; i--) {
             if (past_commands[i][0] != '\0'){
-                char buff[MAX_LEN] = {0};
-                sprintf(buff, "%s\n", past_commands[i]);
-                bprintf(global_buffer, buff);
+                printf("%s\n", past_commands[i]);
             }
         }
 
@@ -185,7 +170,7 @@ int pastevents() {
 }
 
 // Clears the past_commands.txt file
-int purge(int ap, int w) {
+int purge() {
     FILE *fptr;
     // Generating 'past_commands.txt' file path
     char past_commands_path[MAX_LEN] = {0};
@@ -203,7 +188,7 @@ int purge(int ap, int w) {
 }
 
 // Executes a particular command from the history based on index [1, 15]
-int execute(int num, int store, int ap, int w, char* curr_command, int* pastevents_execute_present, char* input_string) {
+int execute(int num, int store, char* curr_command, int* pastevents_execute_present, char* input_string) {
     FILE *fptr;
     char past_commands_path[MAX_LEN] = {0};
     strcpy(past_commands_path, home_directory);
@@ -255,7 +240,7 @@ int execute(int num, int store, int ap, int w, char* curr_command, int* pasteven
                 strcpy(input_string, temp);
             }
             *pastevents_execute_present = 1;
-            input(past_commands[num - 1], store, 0, 0, 0, NULL, NULL);
+            input(past_commands[num - 1], store, 0);
         }
 
         for (int i = 0; i < 15; i++) {

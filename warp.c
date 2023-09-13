@@ -1,19 +1,19 @@
 #include "headers.h"
 
-int change_cwd(int w, int ap, int ip, char** argument_tokens, int no_of_arguments) {
+int change_cwd(char** argument_tokens, int no_of_arguments, int ip) {
     if (ip == 1) {
-        // if input redirection is provided to warp it just goes back to home directory
+        // if input redirection is provided to warp it just does nothing
         // warp does not accept input redirection
-        return warp("~", ap, w);
+        return 1;
     } else {
         if (no_of_arguments == 0) { // if no argument is passed then warp to the home directory
             char* c = "~";
             // returns 1 if successfull and returns 0 if some error occured
-            return warp(c, ap, w);
+            return warp(c);
         } else {                    // if multiple arguments are passed then warp to those arguments one by one (each argument treated as a separate command)
             int status = 1;
             for (int i = 1; i <= no_of_arguments; i++) {
-                int exit_status = warp(argument_tokens[i], ap, w);
+                int exit_status = warp(argument_tokens[i]);
                 status = status && exit_status;
             }
             return status;
@@ -22,7 +22,7 @@ int change_cwd(int w, int ap, int ip, char** argument_tokens, int no_of_argument
     return 1;
 }
 
-int warp(char* path, int ap, int w) {
+int warp(char* path) {
     if (strlen(path) > 0) {
         // checking if absolute path - absolute path always starts with '/'
         if (path[0] == '/') {
@@ -78,9 +78,7 @@ int warp(char* path, int ap, int w) {
 
         free(new_path);
 
-        char buff[MAX_LEN] = {0};
-        sprintf(buff, "%s\n", cwd);
-        bprintf(global_buffer, buff);
+        printf("%s\n", cwd);
     }
     return 1;
 }
