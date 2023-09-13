@@ -2,6 +2,11 @@
 
 int print_info_pid(char** argument_tokens, int no_of_arguments, int w, int ap, int ip, char* input_file_name_redirection) {
     char* pid = (char*) calloc(50, sizeof(char));
+    if (no_of_arguments > 1) {
+        fprintf(stderr, "\033[1;31mproclore : Invalid Arguments: Excess of arguments provided\033[1;0m\n");
+        return 0;
+    }
+    
     if (no_of_arguments == 0 && ip == 0) {         // if no arguments are passed than print the details of the termianl process
         int curr_pid = getpid();        // getting the pid of the current running process
         sprintf(pid, "%d", curr_pid);   // writing the pid in the form of a string to pass

@@ -7,6 +7,7 @@ void handle_sigtstp(int sig) {
     } else {
         kill(global_fg_pid, SIGTSTP);
         insert_node_in_LL(global_fg_pid, -2, fg_command_name);
+        printf("\n");
     }
 }
 
@@ -16,6 +17,7 @@ void handle_sigint(int sig) {
         // do nothing
     } else {
         kill(global_fg_pid, SIGKILL);
+        printf("\n");
     }
 }
 

@@ -59,7 +59,7 @@ int peek(char* path, int a, int l, int ap, int w) {
     } else {
         new_path = generate_new_path(path);
         if (new_path == NULL) {
-            fprintf(stderr, "\033[1;31mpeek: no such file or directory %s\033[1;0m\n", path);
+            fprintf(stderr, "\033[1;31mpeek: no such directory %s\033[1;0m\n", path);
             return 0;
         }
     }

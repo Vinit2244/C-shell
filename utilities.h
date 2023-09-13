@@ -12,6 +12,9 @@ extern char* prev_dir;
 extern char* last_command;
 extern int t;
 
+extern int shell_pid;
+extern int bg_gpid;
+
 void free_tokens(char** tokens);
 char** generate_tokens(char* str, char c);
 int check_if_dir(char* path, char* file_name);

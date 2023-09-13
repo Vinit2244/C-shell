@@ -124,12 +124,14 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
 
                 // iterating through the list and calculating the number of files and directories
                 linked_list_node temp = paths->first;
-                struct stat dir_stat_temp;
-                lstat(temp->path, &dir_stat_temp);
-                if (S_ISDIR(dir_stat_temp.st_mode) != 0) {
-                    no_of_dir++;
-                } else {
-                    no_of_files++;
+                while (temp != NULL) {
+                    struct stat dir_stat_temp;
+                    lstat(temp->path, &dir_stat_temp);
+                    if (S_ISDIR(dir_stat_temp.st_mode) != 0) {
+                        no_of_dir++;
+                    } else {
+                        no_of_files++;
+                    }   
                 }
 
                 if (e) {
@@ -205,7 +207,58 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int w, int ap, in
                             if (paths->number_of_nodes > 1) {
                                 // do nothing
                             } else {
-                                traverse_and_print(paths, 1, 1, path_to_base_dir, ap, w);
+                                struct stat dir_stat;
+                                lstat(paths->first->path, &dir_stat);
+                                if (S_ISDIR(dir_stat.st_mode) == 0) { // checking if it's a file
+                                    if (dir_stat.st_mode & S_IRUSR) {
+                                        if (ap == 1 || w == 1) {
+                                            char buff[MAX_LEN] = {0};
+                                            sprintf(buff, "%s\n", relative_path(paths->first->path, path_to_base_dir));
+                                            bprintf(global_buffer, buff);
+                                        }
+                                        else {
+                                            char buff[MAX_LEN] = {0};
+                                            sprintf(buff, "\033[1;32m%s\033[1;0m\n", relative_path(paths->first->path, path_to_base_dir));
+                                            bprintf(global_buffer, buff);
+                                        }
+                                        char buffer[100000];
+                                        int fd = open(paths->first->path, O_RDONLY);
+                                        if (fd < 0) {
+                                            fprintf(stderr, "\033[1;31mopen: Could not open file for reading\033[1;0m\n");
+                                            return 0;
+                                        } else {
+                                            if (read(fd, buffer, 100000 - 1) < 0) {
+                                                fprintf(stderr, "\033[1;31mread: could not read data\033[1;0m\n");
+                                                close(fd);
+                                                return 0;
+                                            } else {
+                                                char buff[100001] = {0};
+                                                sprintf(buff, "%s\n", buffer);
+                                                bprintf(global_buffer, buff);
+                                                close(fd);
+                                            }
+                                        }
+                                    } else {
+                                        bprintf(global_buffer, "Missing permissions for task!\n");
+                                    }
+                                } else {
+                                    if (dir_stat.st_mode & S_IXUSR) {
+                                        if (ap == 1 || w == 1) {
+                                            char buff[MAX_LEN] = {0};
+                                            sprintf(buff, "%s\n", relative_path(paths->first->path, path_to_base_dir));
+                                            bprintf(global_buffer, buff);
+                                        }
+                                        else {
+                                            char buff[MAX_LEN] = {0};
+                                            sprintf(global_buffer, "\033[1;34m%s\033[1;0m\n", relative_path(paths->first->path, path_to_base_dir));
+                                            bprintf(global_buffer, buff);
+                                        }
+                                        strcpy(prev_dir, cwd);
+                                        strcpy(cwd, paths->first->path);
+                                    } else {
+                                        fprintf(stderr, "\033[1;31mMissing permissions for task!\033[1;0m\n");
+                                    }
+                                }
                             }
                         }
                     }

@@ -13,8 +13,13 @@ char* prev_dir;             // Directory we were previously on
 char* last_command;         // Last executed command
 int t;                      // Time taken for executing a command
 
+int shell_pid;
+int bg_gpid;
+
 int main()
 {
+    shell_pid = getpid();
+    bg_gpid = -1;
     fg_command_name = NULL; // Initially no foreground process is running by my shell
 
     struct sigaction sa;

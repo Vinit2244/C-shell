@@ -32,7 +32,9 @@ int system_command(char** argument_tokens, int no_of_arguments, char* curr_comma
     int pid = fork();
 
     if (pid == 0) {
-        setpgid(0, 0);
+        if (bg_process == 1)  {
+            setpgid(0, 0);
+        }
         // creating absolute path to the file (input)
         char inp_file_path[MAX_LEN];
         if (input_file_name_redirection == NULL) {
@@ -137,6 +139,7 @@ int system_command(char** argument_tokens, int no_of_arguments, char* curr_comma
             free(fg_command_name);
             fg_command_name = NULL;
         } else {
+            bg_gpid = pid;
             printf("%d\n", pid);
             insert_in_LL(pid, -1, argument_tokens);
         }

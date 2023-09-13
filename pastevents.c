@@ -105,6 +105,8 @@ int store_command(char* command) {
             fscanf(fptr, " %[^\n]", past_commands[i]);
 
             if (i == 0) {
+                remove_leading_and_trailing_spaces(command);
+                remove_leading_and_trailing_spaces(past_commands[0]);
                 if (strcmp(command, past_commands[0]) == 0) {
                     write = 0;
                     break;

@@ -5,12 +5,16 @@ int print_pid_of_latest_process_in_interval(char** argument_tokens) {
         fprintf(stderr, "\033[1;31mneonate: Invalid argument\033[1;0m\n");
         return 0;
     } else {
+        if (argument_tokens[1][0] == '-' && strcmp(argument_tokens[1], "-n") != 0) {
+            fprintf(stderr, "\033[1;31mneonate : Invalid flag: must be -n\033[1;0m\n");
+            return 0;
+        }
         if (strcmp(argument_tokens[1], "-n") != 0) {
-            fprintf(stderr, "\033[1;31mneonate: Invalid argument (-n missing)\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mneonate : Invalid argument (-n missing)\033[1;0m\n");
             return 0;
         } else {
             if (argument_tokens[2] == NULL) {
-                fprintf(stderr, "\033[1;31mneonate: missing argument (time)\033[1;0m\n");
+                fprintf(stderr, "\033[1;31mneonate : missing argument (time)\033[1;0m\n");
                 return 0;
             } else {
                 int t_sec = atoi(argument_tokens[2]);
@@ -56,6 +60,8 @@ int neonate(int time_in_seconds) {
     char *inp = malloc(sizeof(char) * 100);
     char c;
 
+    enableRawMode();
+
     while (1) {
         char read_buff[MAX_LEN];
 
@@ -78,7 +84,7 @@ int neonate(int time_in_seconds) {
         free_tokens(fields);
 
         setbuf(stdout, NULL);
-        enableRawMode();
+        
         printf("%d\n", pid_latest);
         memset(inp, '\0', 100);
         int pt = 0;
@@ -103,9 +109,9 @@ int neonate(int time_in_seconds) {
         }
 
         if (flag == 1) {
-            disableRawMode();
             break;
         }
     }
+    disableRawMode();
     return 1;
 }

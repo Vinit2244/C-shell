@@ -10,6 +10,7 @@ linked_list_head create_linked_list_head() {
 
 linked_list_node create_linked_list_node(char* path) {
     linked_list_node N = (linked_list_node) malloc(sizeof(linked_list_node_struct));
+    N->next = NULL;
     N->path = (char*) calloc(MAX_LEN, sizeof(char));
     strcpy(N->path, path);
     return N;
