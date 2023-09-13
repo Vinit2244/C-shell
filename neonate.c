@@ -1,5 +1,26 @@
 #include "headers.h"
 
+int print_pid_of_latest_process_in_interval(char** argument_tokens) {
+    if (argument_tokens[1] == NULL) {
+        fprintf(stderr, "\033[1;31mneonate: Invalid argument\033[1;0m\n");
+        return 0;
+    } else {
+        if (strcmp(argument_tokens[1], "-n") != 0) {
+            fprintf(stderr, "\033[1;31mneonate: Invalid argument (-n missing)\033[1;0m\n");
+            return 0;
+        } else {
+            if (argument_tokens[2] == NULL) {
+                fprintf(stderr, "\033[1;31mneonate: missing argument (time)\033[1;0m\n");
+                return 0;
+            } else {
+                int t_sec = atoi(argument_tokens[2]);
+                return neonate(t_sec);
+            }
+        }
+    }
+    return 1;
+}
+
 void die(const char *s) {
     perror(s);
     return;

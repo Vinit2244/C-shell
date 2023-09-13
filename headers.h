@@ -42,5 +42,7 @@
 #include "iMan.h"
 #include "neonate.h"
 #include "bg.h"
+#include "fg.h"
+#include "sys_commands.h"
 
 #endif

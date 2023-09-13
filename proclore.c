@@ -1,5 +1,47 @@
 #include "headers.h"
 
+int print_info_pid(char** argument_tokens, int no_of_arguments, int w, int ap, int ip, char* input_file_name_redirection) {
+    char* pid = (char*) calloc(50, sizeof(char));
+    if (no_of_arguments == 0 && ip == 0) {         // if no arguments are passed than print the details of the termianl process
+        int curr_pid = getpid();        // getting the pid of the current running process
+        sprintf(pid, "%d", curr_pid);   // writing the pid in the form of a string to pass
+    } else if (no_of_arguments == 0 && ip == 1) {
+        char inp_buff[999999] = {0};
+
+        char file_path[MAX_LEN];
+        if (input_file_name_redirection[0] != '/') {
+            strcpy(file_path, cwd);
+            strcat(file_path, "/");
+            strcat(file_path, input_file_name_redirection);
+        } else if (input_file_name_redirection[0] == '/') {
+            strcpy(file_path, input_file_name_redirection);
+        }
+
+        int fd = open(file_path, O_RDONLY);
+        if (fd < 0) {
+            fprintf(stderr, "\033[1;31mError in opening input file\033[1;0m\n");
+            return 0;
+        } else {
+            int bytes_read = read(fd, inp_buff, 999998);
+            if (bytes_read < 0) {
+                fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
+                close(fd);
+                return 0;
+            } else {
+                close(fd);
+                if (inp_buff[strlen(inp_buff) - 1] == '\n') {
+                    inp_buff[strlen(inp_buff) - 1] = '\0';
+                }
+                strcpy(pid, inp_buff);
+            }
+        }
+    } else { // if pid of the process is provided
+        strcpy(pid, argument_tokens[1]);
+    }
+    proclore(pid, ap, w);
+    free(pid);
+}
+
 void proclore(char* pid, int ap, int w) {
     char path_stat[256] = {0};
     sprintf(path_stat, "/proc/%d/stat", atoi(pid));

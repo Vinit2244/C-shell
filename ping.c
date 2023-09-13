@@ -1,6 +1,6 @@
 #include "headers.h"
 
-int ping(char** argument_tokens, int no_of_arguments, int ap, int w) {
+int ping(char** argument_tokens, int no_of_arguments, int w, int ap) {
     if (no_of_arguments < 2) {
         fprintf(stderr, "\033[1;31mping : Invalid Arguments\033[1;0m\n");
         return 0;

@@ -1,4 +1,7 @@
 exit
+ping 58331 9
+gedit &
+warp test
 gedit &
 exit
 gedit &
@@ -10,6 +13,3 @@ exit
 gedit &
 exit
 gedit &
-exit
-gedit &
-exit

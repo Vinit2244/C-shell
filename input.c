@@ -4,14 +4,14 @@ int bg_process = 0; // Flag to mark if a process is background process or not
 int start = 0;      // Variable to hold the start time of command execution
 time_t tyme = 0;    // Variable to hold the time of execution
 
-int global_fg_pid;
+int global_fg_pid;  // Stores the pid of the currently running foreground process
 
 void input(char* command, int store, int w, int ap, int ip, char* output_file_name_redirection, char* input_file_name_redirection) {
 
-    global_fg_pid = -1; // -1 represents no foreground process is initiated by my terminal
+    global_fg_pid = -1;         // -1 represents no foreground process is initiated by my terminal
 
     tyme = time(NULL) - start;  // current time - start time
-    t = tyme;                  // global variable to hold the time of last executed command
+    t = tyme;                   // global variable to hold the time of last executed command
 
     start = 0;                  // reset start time to zero
     tyme = 0;                   // reset execution time to zero
@@ -20,8 +20,7 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
     int pastevents_present = 0; // flag to mark if pastevents command is present
     int pastevents_execute_present = 0;
 
-    char* input_string = (char*) calloc(5000, sizeof(char));
-    input_string[0] = '\0';
+    char input_string[5000] = {0};
     
     if (command == NULL) {  // command is NULL if the input function is called from main and not from pastevents execute function
         store = 1;          // flag to reflect if the command inputted is to be stored or not
@@ -40,28 +39,19 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
         input_string[strlen(input_string)] = '\0';
 
         // removing endline character
-        for (int i = 0; i < strlen(input_string); i++) {
-            if (input_string[i] != '\n') continue;
-            else {
-                input_string[i] = '\0';
-            }
-        }
+        if (input_string[strlen(input_string) - 1] == '\n') input_string[strlen(input_string) - 1] = '\0';
+
         // check through the linked list of all the background processes that were running and print the ones which are done
         check_and_print();
         
-        if (bg_process_buffer[0] == '\0') {
-            // don't print anything
-        } else {
+        if (bg_process_buffer[0] != '\0') {
             printf("%s", bg_process_buffer);
             bg_process_buffer[0] = '\0';
         }
 
     } else {        // input is called by pastevents execute
         store = 0;  // don't store the command as it was called by pastevents execute
-        for (int i = 0; i < strlen(command); i++) {
-            input_string[i] = command[i];
-        }
-        input_string[strlen(command)] = '\0';
+        strcpy(input_string, command);
     }
 
     last_command[0] = '\0';
@@ -245,9 +235,6 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             free(app_cmd);
             free(to_file);
         } else {
-            // ================= Printing the commands =================
-            // printf("Command %d: %s\n", idx + 1, curr_command);
-
             // tokenize the command based on strings
             char** argument_tokens = generate_tokens(curr_command, ' ');
 
@@ -256,13 +243,19 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             while(argument_tokens[no_of_arguments] != NULL) {
                 no_of_arguments++;
             }
+            // Number of arguments is one less than the total number of tokens because,
+            // the first token will be the command name and rest will be arguments
             no_of_arguments--;
 
             // Different commands
     // ===================================================================================
             // iMan
             /*
-                Reads the Man pages of the specified command from man.he.net website and prints it
+                DESCRIPTION: 
+                    Reads the Man pages of the specified command from man.he.net website and prints it
+                
+                SYNTAX : 
+                    iMan <name of command>
             */
 
             // checking if iMan command is present
@@ -276,7 +269,11 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
     // ===================================================================================
             // warp
             /*
-                Changes the current working directory to the relative/absolute path provided
+                DESCRIPTION: 
+                    Changes the current working directory to the relative/absolute path provided
+                
+                SYNTAX: 
+                    warp [<relative/absolute path to directory>, ...]
             */
 
             // checking if warp command is present
@@ -290,7 +287,12 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
     // ===================================================================================
             // peek
             /*
-                Prints the files/directories present in the path of file provided
+                DESCRIPTION: 
+                    Prints the files/directories present in the path of file provided
+                    flags: -l: Displays extra information
+                           -a: Displays all files, including hidden files
+                
+                SYNTAX: peek <flags> <path/name>
             */
 
             // checking if peek command is present
@@ -304,7 +306,15 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
     // ===================================================================================
             // pastevents
             /*
-                Prints the pastevents that has been executed or executes some pastevents
+            DESCRIPTION:
+                pastevents             : Prints the last 15 commands executed
+                pastevents purge       : Clears History
+                pastevents execute <i> : Executes the last ith command executed (1 <= i <= 15)
+            
+            SYNTAX: 
+                pastevents
+                pastevents purge
+                pastevents execute <int>
             */
 
             // checking if pastevents command is present
@@ -318,64 +328,37 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
     // ===================================================================================
             // proclore
             /*
-                Prints all the details about the process whose process id is passed as an argument
+                DESCRIPTION: 
+                    Prints all the details about the process whose process id is passed as an argument. 
+                    If no pid is provided it prints the details about the current process (shell)
+
+                SYNTAX: 
+                    proclore <pid>
             */
 
             // checking if proclore command is present
             else if (strcmp("proclore", argument_tokens[0]) == 0) {
-                char* pid = (char*) calloc(50, sizeof(char));
-                if (no_of_arguments == 0 && ip == 0) {         // if no arguments are passed than print the details of the termianl process
-                    int curr_pid = getpid();        // getting the pid of the current running process
-                    sprintf(pid, "%d", curr_pid);   // writing the pid in the form of a string to pass
-                } else if (no_of_arguments == 0 && ip == 1) {
-                    char inp_buff[999999] = {0};
+                int exit_status = print_info_pid(argument_tokens, no_of_arguments, w, ap, ip, input_file_name_redirection);
 
-                    char file_path[MAX_LEN];
-                    if (input_file_name_redirection[0] != '/') {
-                        strcpy(file_path, cwd);
-                        strcat(file_path, "/");
-                        strcat(file_path, input_file_name_redirection);
-                    } else if (input_file_name_redirection[0] == '/') {
-                        strcpy(file_path, input_file_name_redirection);
-                    }
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
 
-                    int fd = open(file_path, O_RDONLY);
-                    if (fd < 0) {
-                        fprintf(stderr, "\033[1;31mError in opening input file\033[1;0m\n");
-                        overall_success = 0;
-                    } else {
-                        int bytes_read = read(fd, inp_buff, 999998);
-                        if (bytes_read < 0) {
-                            fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
-                            close(fd);
-                            overall_success = 0;
-                        } else {
-                            close(fd);
-                            if (inp_buff[strlen(inp_buff) - 1] == '\n') {
-                                inp_buff[strlen(inp_buff) - 1] = '\0';
-                            }
-                            strcpy(pid, inp_buff);
-                        }
-                    }
-                } else { // if pid of the process is provided
-                    strcpy(pid, argument_tokens[1]);
-                }
-                proclore(pid, ap, w);
-
-                io_redirection(ap, w, cwd, output_file_name_redirection);
-
-                free(pid);
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // seek
             /*
-                Searches for a file/directory in the relative/absolute path provided
-                Searches the entire depth of the tree starting from the provided path
-                flags: -e: Checks if only one directory/file with the given name is found
-                        (if file is found      : prints it's outpus)
-                        (if directory is found : changes cwd to that directory)
-                    -f: Checks only for files of specified name
-                    -d: Checks only for directories of specified name
+                DESCRIPTION:
+                    Searches for a file/directory in the relative/absolute path provided
+                    Searches the entire depth of the tree starting from the provided path
+                    flags: -e: Checks if only one directory/file with the given name is found
+                            (if file is found      : prints it's outpus)
+                            (if directory is found : changes cwd to that directory)
+                           -f: Checks only for files of specified name
+                           -d: Checks only for directories of specified name
+                    If no relative/absolute path to the base directory is provided it just searches in the cwd
+
+                SYNTAX: 
+                    seek <flags> <name of file to be searched> [<relative/absolute path to base directory>]
             */
 
             // checking if seek command is present
@@ -388,6 +371,13 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             }
     // ===================================================================================
             // exit
+            /*
+                DESCRIPTION:
+                    Exits the shell after ending all the running background processes spawned by the shell
+
+                SYNTAX:
+                    exit
+            */
 
             // checking if exit command is present
             else if (strcmp("exit", argument_tokens[0]) == 0) {
@@ -409,6 +399,14 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             }
     // ===================================================================================
             // activities
+            /*
+                DESCRIPTION:
+                    Prints the list of all the background processes spawned by my shell which is currently
+                    running or stopped in lexicographical order of pid
+                
+                SYNTAX:
+                    activities
+            */
 
             // checking if activities command is present
             else if (strcmp("activities", argument_tokens[0]) == 0) {
@@ -420,10 +418,17 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             }
     // ===================================================================================
             // ping
+            /*
+                DESCRIPTION:
+                    Sends given signal signal to the process with the given pid
+
+                SYNTAX:
+                    ping <pid> <signal number>
+            */
 
             // checking if ping command is present
             else if (strcmp("ping", argument_tokens[0]) == 0) {
-                int exit_status = ping(argument_tokens, no_of_arguments, ap, w);
+                int exit_status = ping(argument_tokens, no_of_arguments, w, ap);
 
                 int success = io_redirection(ap, w, cwd, output_file_name_redirection);
 
@@ -431,6 +436,14 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             }
     // ===================================================================================
             // bg
+            /*
+                DESCRIPTION:
+                    Changes the state of the background process whose pid is given to running if 
+                    it is blocked else leaves it as it is
+                
+                SYNTAX:
+                    bg <pid>
+            */
 
             // checking if bg command is present
             else if (strcmp("bg", argument_tokens[0]) == 0) {
@@ -442,220 +455,50 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
             }
     // ===================================================================================
             // fg
+            /*
+                DESCRIPTION:
+                    Brings the background process with the given pid to foreground
+                
+                SYNTAX:
+                    fg <pid>
+            */
 
             // checking if fg command is present
             else if (strcmp("fg", argument_tokens[0]) == 0) {
-                int pid = atoi(argument_tokens[1]);
+                int exit_status = bring_process_to_foreground(argument_tokens);
 
-                int result = kill(pid, 0);
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
 
-                if (result == 0) {
-                    int cstatus;
-                    tcsetpgrp(STDIN_FILENO, pid);
-                    kill(pid, SIGCONT);
-                    waitpid(pid, &cstatus, WUNTRACED);
-                } else {
-                    fprintf(stderr, "\033[1;31mNo such process exists\033[1;0m\n");
-                    overall_success = 0;
-                }
-
-                io_redirection(ap, w, cwd, output_file_name_redirection);
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // neonate
+            /*
+                DESCRIPTION:
+                    Prints the pid of the most recently created process in the system at regular
+                    time intervals (provided as argument) and exits on pressing 'x' on keyboard
+                
+                SYNTAX:
+                    neonate -n <int>
+            */
 
             //checking if neonate is present
             else if (strcmp("neonate", argument_tokens[0]) == 0) {
-                if (argument_tokens[1] == NULL) {
-                    fprintf(stderr, "\033[1;31mneonate: Invalid argument\033[1;0m\n");
-                    overall_success = 0;
-                } else {
-                    if (strcmp(argument_tokens[1], "-n") != 0) {
-                        fprintf(stderr, "\033[1;31mneonate: Invalid argument (-n missing)\033[1;0m\n");
-                        overall_success = 0;
-                    } else {
-                        if (argument_tokens[2] == NULL) {
-                            fprintf(stderr, "\033[1;31mneonate: missing argument (time)\033[1;0m\n");
-                            overall_success = 0;
-                        } else {
-                            int t_sec = atoi(argument_tokens[2]);
-                            int exit_status = neonate(t_sec);
-                            if (exit_status == 0) overall_success = 0;
-                        }
-                    }
-                }
-                io_redirection(ap, w, cwd, output_file_name_redirection);
+                int exit_status = print_pid_of_latest_process_in_interval(argument_tokens);
+                
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
+
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // system commands
+            /*
+                DESCRIPTION:
+                    Runs all other system commands using execvp
+            */
 
             else {
-                if (strcmp(argument_tokens[0], "echo") == 0) {
-                    for (int i = 1; i <= no_of_arguments; i++) {
-                        if (argument_tokens[i] != NULL) {
-                            if (argument_tokens[i][0] == '"') {
-                                for (int j = 0; j < strlen(argument_tokens[i]) - 1; j++) {
-                                    argument_tokens[i][j] = argument_tokens[i][j + 1];
-                                }
-                                argument_tokens[i][strlen(argument_tokens[i]) - 1] = '\0';
-                            } 
-                            if (argument_tokens[i][strlen(argument_tokens[i]) - 1] == '"') {
-                                argument_tokens[i][strlen(argument_tokens[i]) - 1] = '\0';
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
-
-                bg_process = 0;
-
-                if (curr_command[strlen(curr_command) - 1] == '&') {
-                    bg_process = 1;
-                    argument_tokens[no_of_arguments][strlen(argument_tokens[no_of_arguments]) - 1] = '\0';
-                } else {
-                    bg_process = 0;
-                }
-
-                int fd[2];
-                if (pipe(fd) < 0) {
-                    fprintf(stderr, "033[1;31msystem commands : Error occured while piping\033[1;0m\n");
-                    return;
-                }
-
-                int ppid = getpid();
-                int pid = fork();
-
-                if (pid == 0) {
-                    // setpgid(0, 0);
-                    close(fd[0]);
-                    // creating absolute path to the file (input)
-                    char inp_file_path[MAX_LEN];
-                    if (input_file_name_redirection == NULL) {
-                        // do nothing
-                    } else if (input_file_name_redirection[0] != '/') {
-                        strcpy(inp_file_path, cwd);
-                        strcat(inp_file_path, "/");
-                        strcat(inp_file_path, input_file_name_redirection);
-                    } else if (input_file_name_redirection[0] == '/') {
-                        strcpy(inp_file_path, input_file_name_redirection);
-                    }
-
-                    // creating absolute path to the file (output)
-                    char out_file_path[MAX_LEN];
-                    if (output_file_name_redirection == NULL) {
-                        // do nothing
-                    } else if (output_file_name_redirection[0] != '/') {
-                        strcpy(out_file_path, cwd);
-                        strcat(out_file_path, "/");
-                        strcat(out_file_path, output_file_name_redirection);
-                    } else if (output_file_name_redirection[0] == '/') {
-                        strcpy(out_file_path, output_file_name_redirection);
-                    }
-
-                    if (w == 1 && ip == 1) {
-                        close(STDOUT_FILENO);
-                        open(out_file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-
-                        int inp_fd = open(inp_file_path, O_RDONLY);
-                        if (inp_fd < 0) {
-                            // open failed
-                            fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
-                            // killing child process
-                            write(fd[1], "0", 1);
-                            kill(getpid(), SIGTERM);
-                        } else {
-                            if (dup2(inp_fd, STDIN_FILENO) == -1) {
-                                // dup2 failed
-                                fprintf(stderr, "\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
-                                // closing the opened file
-                                close(inp_fd);
-                                // killing child process
-                                write(fd[1], "0", 1);
-                                kill(getpid(), SIGTERM);
-                            } else {
-                                close(inp_fd);
-                                execvp(argument_tokens[0],  argument_tokens);
-                                // execvp failed
-                                fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
-                                write(fd[1], "0", 1);
-                                kill(getpid(), SIGTERM);
-                            }
-                        }
-                    } if (w == 1) {
-                        close(STDOUT_FILENO);
-                        open(out_file_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-                        execvp(argument_tokens[0], argument_tokens);
-                        // error
-                        fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                        write(fd[1], "0", 1);
-                        kill(getpid(), SIGTERM);
-                    } else if (ap == 1) {
-                        close(STDOUT_FILENO);
-                        open(out_file_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
-                        execvp(argument_tokens[0], argument_tokens);
-                        // error
-                        fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                        write(fd[1], "0", 1);
-                        kill(getpid(), SIGTERM);
-                    } else if (ip == 1) {
-                        int inp_fd = open(inp_file_path, O_RDONLY);
-                        if (inp_fd < 0) {
-                            // open failed
-                            fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
-                            write(fd[1], "0", 1);
-                            kill(getpid(), SIGTERM);
-                        } else {
-                            if (dup2(inp_fd, STDIN_FILENO) == -1) {
-                                // dup2 failed
-                                fprintf(stderr, "\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
-                                close(inp_fd);
-                                write(fd[1], "0", 1);
-                                kill(getpid(), SIGTERM);
-                            } else {
-                                close(inp_fd);
-                                execvp(argument_tokens[0],  argument_tokens);
-                                // execvp failed
-                                fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));write(fd[1], "0", 1);
-                                kill(getpid(), SIGTERM);
-                            }
-                        }
-                    } else {
-                        execvp(argument_tokens[0], argument_tokens);
-                        // execvp failed
-                        fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
-                        write(fd[1], "0", 1);
-                        kill(getpid(), SIGTERM);
-                    }
-                } else if (pid > 0) {
-                    close(fd[1]);
-                    if (bg_process == 0) {
-                        global_fg_pid = pid;
-
-                        char* temp = (char*) calloc(MAX_LEN, sizeof(char));
-                        strcpy(temp, curr_command);
-                        fg_command_name = temp;
-
-                        int cstatus;
-                        waitpid(pid, &cstatus, WUNTRACED);
-
-                        global_fg_pid = -1;
-                        free(fg_command_name);
-                        fg_command_name = NULL;
-                    } else {
-                        printf("%d\n", pid);
-                        insert_in_LL(pid, -1, argument_tokens);
-                    }
-                    char read_buff[10] = {0};
-                    read(fd[0], read_buff, 1);
-                    close(fd[0]);
-                    if (strcmp(read_buff, "0") == 0) {
-                        overall_success = 0;
-                    }
-                } else {
-                    fprintf(stderr, "\033[1;31mfork: could not fork\033[1;0m\n");
-                    overall_success = 0;
-                }
+                overall_success = system_command(argument_tokens, no_of_arguments, curr_command, w, ap, ip, input_file_name_redirection, output_file_name_redirection);
             }
     // ===================================================================================
             if (overall_success == 1) {
@@ -686,6 +529,5 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
         }
     }
 
-    free(input_string);
     free_commands_list(list_of_commands);
 }
