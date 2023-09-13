@@ -1,5 +1,18 @@
 #include "headers.h"
 
+int ping(char** argument_tokens, int no_of_arguments, int ap, int w) {
+    if (no_of_arguments < 2) {
+        fprintf(stderr, "\033[1;31mping : Invalid Arguments\033[1;0m\n");
+        return 0;
+    } else {
+        int pid = atoi(argument_tokens[1]);
+        int sig = atoi(argument_tokens[2]);
+
+        return ping_sig(pid, sig, ap, w);
+    }
+    return 1;
+}
+
 int ping_sig(int pid, int sig, int ap, int w) {
     // checking if the process exists
     int result = kill(pid, 0);
@@ -22,12 +35,12 @@ int ping_sig(int pid, int sig, int ap, int w) {
                 trav = trav->next;
             }
         } else {
-            fprintf(stderr, "\033[1;31mkill: could not send signal\033[1;0m\n");
+            fprintf(stderr, "\033[1;31mping : kill: could not send signal\033[1;0m\n");
             return 0;
         }
     } else {
         // process does not exist
-        fprintf(stderr, "\033[1;31mNo such process exists\033[1;0m\n");
+        fprintf(stderr, "\033[1;31mping : No such process exists\033[1;0m\n");
         return 0;
     }
     return 1;

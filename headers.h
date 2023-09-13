@@ -41,5 +41,6 @@
 #include "signal_handlers.h"
 #include "iMan.h"
 #include "neonate.h"
+#include "bg.h"
 
 #endif
