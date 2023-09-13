@@ -1,170 +1,58 @@
-test - check file types and compare values
-
-SYNOPSIS
-test EXPRESSION
-test
-[ EXPRESSION ]
-[ ]
-[ OPTION
-
-DESCRIPTION
-Exit with the status determined by EXPRESSION.
-
---help display this help and exit
-
---version
-output version information and exit
-
-An omitted EXPRESSION defaults to false.  Otherwise, EXPRESSION is true
-or false and sets exit status.  It is one of:
-
-( EXPRESSION )
-EXPRESSION is true
-
-! EXPRESSION
-EXPRESSION is false
-
-EXPRESSION1 -a EXPRESSION2
-both EXPRESSION1 and EXPRESSION2 are true
-
-EXPRESSION1 -o EXPRESSION2
-either EXPRESSION1 or EXPRESSION2 is true
-
--n STRING
-the length of STRING is nonzero
-
-STRING equival
-ent to -n STRING
-
--z STRING
-the length of STRING is zero
-
-STRING1 = STRING2
-the strings are equal
-
-STRING1 != STRING2
-the strings are not equal
-
-INTEGER1 -eq INTEGER2
-INTEGER1 is equal to INTEGER2
-
-INTEGER1 -ge INTEGER2
-INTEGER1 is greater than or equal to INTEGER2
-
-INTEGER1 -gt INTEGER2
-INTEGER1 is greater than INTEGER2
-
-INTEGER1 -le INTEGER2
-INTEGER1 is less than or equal to INTEGER2
-
-INTEGER1 -lt INTEGER2
-INTEGER1 is less than INTEGER2
-
-INTEGER1 -ne INTEGER2
-INTEGER1 is not equal to INTEGER2
-
-FILE1 -ef FILE2
-FILE1 and FILE2 have the same device and inode numbers
-
-FILE1 -nt FILE2
-FILE1 is newer (modification date) than FILE2
-
-FILE1 -ot FILE2
-FILE1 is older than FILE2
-
--b FILE
-FILE exists and is block special
-
--c FILE
-FILE exists and is character special
-
--d FILE
-FILE exists and is a directory
-
--e FILE
-FILE exists
-
--f FILE
-FILE exists and is a regular file
-
--g FILE
-FILE exists and is set-group-ID
-
--G FILE
-FILE exists and is owned by the effective group ID
-
--h FILE
-FILE exists and is a symbolic link (same as -L)
-
--k FILE
-FILE exists and has its sticky bit set
-
--L FILE
-FILE exists and is a symbolic link (same as -h)
-
--O FILE
-FILE exists and is owned by the effective user ID
-
--p FILE
-FILE exists and is a named pipe
-
--r FILE
-FILE exists and read permission is granted
-
--s FILE
-FILE exists and has a size greater than zero
-
--S FILE
-FILE exists and is a socket
-
--t FD  file descriptor FD is opened on a terminal
-
--u FILE
-FILE exists and its set-user-ID bit is set
-
--w FILE
-FILE exists and write permission is granted
-
--x FILE
-FILE exists and execute (or search) permission is granted
-
-Except for -h and  -L,  all  FILE-related  tests  dereference  symbolic
-links.   Beware  that  parentheses  need  to be escaped (e.g., by back-
-slashes) for shells.  INTEGER may also be -l STRING, which evaluates to
-the length of STRING.
-
-NOTE:  Binary  -a  and -o are inherently ambiguous.  Use 'test EXPR1 &amp;&amp;
-       test EXPR2' or 'test EXPR1 || test EXPR2' instead.
-
-NOTE: [ honors the --help and --version options,  but  test  does  not.
-test treats each of those as it treats any other nonempty STRING.
-
-NOTE:  your shell may have its own version of test and/or [, which usu-
-ally supersedes the version  described  here.   Please  refer  to  your
-shell's documentation for details about the options it supports.
-
-AUTHOR
-       Written by Kevin Braunsdorf and Matthew Bradburn.
-
-REPORTING BUGS
-       GNU coreutils online help: &lt;https://www.gnu.org/software/coreutils/&gt;
-       Report [ translation bugs to &lt;https://translationproject.org/team/&gt;
-
-COPYRIGHT
-       Copyright  (C) 2018 Free Software Foundation, Inc.  License GPLv3+: GNU
-       GPL version 3 or later &lt;https://gnu.org/licenses/gpl.html&gt;.
-       This is free software: you are free  to  change  and  redistribute  it.
-       There is NO WARRANTY, to the extent permitted by law.
-
-SEE ALSO
-       Full documentation at: &lt;https://www.gnu.org/software/coreutils/[&gt;
-       or available locally via: info '(coreutils) test invocation'
-
-GNU coreutils 8.30              September 2019                         <STRONG><A HREF="/man1/TEST">TEST(1)</A></STRONG></PRE>
-<center>
-<h6>Man Pages Copyright Respective Owners.  Site Copyright (C) 1994 - 2023
-<a href="http://www.he.net">Hurricane Electric</a>.
-All Rights Reserved.</h6></center>
-</body>
-</html>
-
+total 744
+drwxr-xr-x@ 57 vinitmehta  staff   1824 Sep 13 21:34 .
+drwxr-xr-x   6 vinitmehta  staff    192 Sep 13 18:00 ..
+-rw-r--r--   1 vinitmehta  staff  10244 Sep 13 21:32 .DS_Store
+drwxr-xr-x@ 15 vinitmehta  staff    480 Sep 13 21:33 .git
+-rw-r--r--   1 vinitmehta  staff   1966 Sep 13 20:13 LL2.c
+-rw-r--r--   1 vinitmehta  staff    782 Sep 13 18:52 LL2.h
+-rw-r--r--   1 vinitmehta  staff   4293 Sep 13 19:19 README.md
+-rwxr-xr-x   1 vinitmehta  staff  85266 Sep 13 21:34 a.out
+drwxr-xr-x@  3 vinitmehta  staff     96 Sep 13 10:02 a.out.dSYM
+-rw-r--r--   1 vinitmehta  staff   2511 Sep 13 20:09 activities.c
+-rw-r--r--   1 vinitmehta  staff    194 Sep 13 12:48 activities.h
+-rw-r--r--   1 vinitmehta  staff   1434 Sep 13 20:09 bg.c
+-rw-r--r--   1 vinitmehta  staff    103 Sep 13 12:48 bg.h
+-rw-r--r--   1 vinitmehta  staff    768 Sep 13 18:01 fg.c
+-rw-r--r--   1 vinitmehta  staff     95 Sep 13 13:48 fg.h
+-rw-r--r--   1 vinitmehta  staff    928 Sep 13 18:09 headers.h
+-rw-r--r--   1 vinitmehta  staff   8217 Sep 13 20:09 iMan.c
+-rw-r--r--   1 vinitmehta  staff    144 Sep 13 18:33 iMan.h
+-rw-r--r--   1 vinitmehta  staff  22890 Sep 13 21:25 input.c
+-rw-r--r--   1 vinitmehta  staff    139 Sep 13 18:32 input.h
+-rw-r--r--   1 vinitmehta  staff   3157 Sep 13 12:48 linked_list.c
+-rw-r--r--   1 vinitmehta  staff    728 Sep 13 12:48 linked_list.h
+-rw-r--r--   1 vinitmehta  staff   2750 Sep 13 21:26 main.c
+-rw-r--r--   1 vinitmehta  staff    217 Sep 13 18:08 makefile
+-rw-r--r--   1 vinitmehta  staff   3245 Sep 13 17:58 neonate.c
+-rw-r--r--   1 vinitmehta  staff    221 Sep 13 13:53 neonate.h
+-rw-r--r--   1 vinitmehta  staff   7530 Sep 13 12:48 network_rough.c
+-rw-r--r--   1 vinitmehta  staff    224 Sep 13 21:34 past_commands.txt
+-rw-r--r--   1 vinitmehta  staff   9654 Sep 13 20:13 pastevents.c
+-rw-r--r--   1 vinitmehta  staff    403 Sep 13 18:46 pastevents.h
+-rw-r--r--   1 vinitmehta  staff   9517 Sep 13 21:33 peek.c
+-rw-r--r--   1 vinitmehta  staff    271 Sep 13 18:42 peek.h
+-rw-r--r--   1 vinitmehta  staff   1266 Sep 13 20:16 ping.c
+-rw-r--r--   1 vinitmehta  staff    129 Sep 13 18:53 ping.h
+-rw-r--r--   1 vinitmehta  staff   4629 Sep 13 21:27 pipe.c
+-rw-r--r--   1 vinitmehta  staff     81 Sep 13 18:10 pipe.h
+-rw-r--r--   1 vinitmehta  staff   6224 Sep 13 12:48 pipe_rough.c
+-rw-r--r--   1 vinitmehta  staff   3307 Sep 13 20:17 proclore.c
+-rw-r--r--   1 vinitmehta  staff    149 Sep 13 18:49 proclore.h
+-rw-r--r--   1 vinitmehta  staff   7944 Sep 13 12:48 prompt.c
+-rw-r--r--   1 vinitmehta  staff    184 Sep 13 12:48 prompt.h
+-rw-r--r--   1 vinitmehta  staff   2506 Sep 13 12:48 redirection.c
+-rw-r--r--   1 vinitmehta  staff    143 Sep 13 12:48 redirection.h
+-rw-r--r--   1 vinitmehta  staff   1564 Sep 13 12:48 rough.c
+-rw-r--r--   1 vinitmehta  staff  12255 Sep 13 20:18 seek.c
+-rw-r--r--   1 vinitmehta  staff    217 Sep 13 18:53 seek.h
+-rw-r--r--   1 vinitmehta  staff    614 Sep 13 16:11 signal_handlers.c
+-rw-r--r--   1 vinitmehta  staff    145 Sep 13 12:48 signal_handlers.h
+-rw-r--r--   1 vinitmehta  staff   2089 Sep 13 18:56 sys_commands.c
+-rw-r--r--   1 vinitmehta  staff    149 Sep 13 18:57 sys_commands.h
+-rw-r--r--   1 vinitmehta  staff      5 Sep 13 21:30 temp.txt
+-rw-r--r--   1 vinitmehta  staff      0 Sep 13 21:34 tess.txt
+drwxr-xr-x@  6 vinitmehta  staff    192 Sep 13 12:48 test
+-rw-r--r--   1 vinitmehta  staff  11036 Sep 13 20:18 utilities.c
+-rw-r--r--   1 vinitmehta  staff   1152 Sep 13 20:19 utilities.h
+-rw-r--r--   1 vinitmehta  staff   3239 Sep 13 20:19 warp.c
+-rw-r--r--   1 vinitmehta  staff    133 Sep 13 18:35 warp.h

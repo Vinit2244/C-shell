@@ -1,3 +1,11 @@
+warp test
+exit
+cat < past_commands.txt
+warp test
+cat tess.txt
+ls -la > tess.txt
+cat tess.txt
+ls > tess.txt
 exit
 cat < past_commands.txt
 warp test
@@ -5,11 +13,3 @@ cat tess.txt
 iMan < temp.txt > tess.txt
 cat temp.txt
 echo "test" > temp.txt
-cat temp.txt
-cat tess.txt
-peek > tess.txt
-seek prog
-ls | wc | wc | wc
-ls -la | wc
-ls -a | wc
-ls | wc
