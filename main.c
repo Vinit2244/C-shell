@@ -16,9 +16,10 @@ int bg_gpid;                // stores the group id of background processes
 
 int main()
 {
+    fg_command_name = (char*) calloc(MAX_LEN, sizeof(char));
     shell_pid = getpid();
     bg_gpid = -1;
-    fg_command_name = NULL; // Initially no foreground process is running by my shell
+    fg_command_name[0] = '\0'; // initially no foreground process is running on our shell
 
     // Handling Ctrl + z (SIGTSTP) signal
     struct sigaction sa;
@@ -70,5 +71,6 @@ int main()
     free(cwd);
     free(prev_dir);
     free(last_command);
+    free(fg_command_name);
     return 0;
 }

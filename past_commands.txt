@@ -1,15 +1,12 @@
 exit
-cat teess.txt
-cat < past_commands.txt >> teess.txt
+git commit -m "FINAL SUBMISSION"
+git add .
+rm teess.txt
+rm tess.txt
+clear
+cat tess.txt
+cat past_commands.txt | wc | wc < past_commands.txt > tess.txt
 cat past_commands.txt
+cat pastevents.txt
 cat temp.txt
-exit
-sleep 100
-warp test
-exit
-warp ~
-sleep 2; warp test; vim
-warp ~
-vim
-sleep 100
-sleep100
+clear

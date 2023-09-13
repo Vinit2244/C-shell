@@ -6,7 +6,9 @@ void handle_sigtstp(int sig) {
         // do nothing
     } else {
         kill(global_fg_pid, SIGTSTP);
-        insert_node_in_LL(global_fg_pid, -2, fg_command_name);
+        char* temp = (char*) calloc(MAX_LEN, sizeof(char));
+        strcpy(temp, fg_command_name);
+        insert_node_in_LL(global_fg_pid, -2, temp);
         printf("\n");
     }
 }

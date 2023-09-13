@@ -42,17 +42,13 @@ int system_command(char** argument_tokens, int no_of_arguments, char* curr_comma
     } else if (pid > 0) {
         if (bg_process == 0) {
             global_fg_pid = pid;
-
-            char* temp = (char*) calloc(MAX_LEN, sizeof(char));
-            strcpy(temp, curr_command);
-            fg_command_name = temp;
+            strcpy(fg_command_name, curr_command);
 
             int cstatus;
             waitpid(pid, &cstatus, WUNTRACED);
 
             global_fg_pid = -1;
-            free(fg_command_name);
-            fg_command_name = NULL;
+            fg_command_name[0] = '\0';
         } else {
             bg_gpid = pid;
             printf("%d\n", pid);
