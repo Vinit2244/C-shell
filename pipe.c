@@ -83,26 +83,13 @@ int handle_piping(char* curr_command) {
 
             int redirection_present = (inp_flag || write_flag || append_flag);
 
-            if (strcmp(curr_pipe_command_name, "iMan")          == 0 ||
-                strcmp(curr_pipe_command_name, "warp")          == 0 ||
-                strcmp(curr_pipe_command_name, "peek")          == 0 ||
-                strcmp(curr_pipe_command_name, "pastevents")    == 0 ||
-                strcmp(curr_pipe_command_name, "proclore")      == 0 ||
-                strcmp(curr_pipe_command_name, "seek")          == 0 ||
-                strcmp(curr_pipe_command_name, "exit")          == 0 ||
-                strcmp(curr_pipe_command_name, "activities")    == 0 ||
-                strcmp(curr_pipe_command_name, "ping")          == 0 ||
-                strcmp(curr_pipe_command_name, "bg")            == 0 ||
-                strcmp(curr_pipe_command_name, "fg")            == 0 ||
-                strcmp(curr_pipe_command_name, "neonate")       == 0 ||
-                redirection_present) {
-
+            if (strcmp(curr_pipe_command_name, "iMan") == 0 || strcmp(curr_pipe_command_name, "warp") == 0 || strcmp(curr_pipe_command_name, "peek") == 0 || strcmp(curr_pipe_command_name, "pastevents") == 0 || strcmp(curr_pipe_command_name, "proclore") == 0 || strcmp(curr_pipe_command_name, "seek") == 0 || strcmp(curr_pipe_command_name, "exit") == 0 || strcmp(curr_pipe_command_name, "activities") == 0 || strcmp(curr_pipe_command_name, "ping") == 0 || strcmp(curr_pipe_command_name, "bg") == 0 || strcmp(curr_pipe_command_name, "fg") == 0 || strcmp(curr_pipe_command_name, "neonate") == 0 || redirection_present == 1) {
                 input(curr_pipe_command, 0, 1);
-                kill(pid_i, SIGTERM);
+                kill(getpid(), SIGTERM);
             } else {
                 execvp(argument_tokens[0], argument_tokens);
                 fprintf(stderr, "033[1;31merror : execvp\033[1;0m\n");
-                kill(pid_i, SIGTERM);
+                kill(getpid(), SIGTERM);
             }
         }
     }

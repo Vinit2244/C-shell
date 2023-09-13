@@ -54,12 +54,5 @@ I branched the Part A first half submission in 'final' branch and then continued
 ### iMan:
 - Assuming that the html will have the format where it first starts with "NAME" and after "DESCRIPTION" it contains "AUTHOR" heading (Just as shown in the example given in mini-project-1 document).
 
-# To-do:
-- [ ] Implement piping along with input output
-- [ ] Implement piping for user defined commands
-- [ ] Add const infront of all the variables that aren't gonna change
-- [ ] Keep checking Q226 and Q227 in doubts doc
-- [ ] pipe '|' and '<' should work together
-- [ ] Vim/Vi not working properly in foreground and background. Gedit working fine
-- [ ] pastevents execute should work with piping
-- [ ] ctrl + c not working after bring the process to foreground (ctrl + c/z/d not working for fg)
+### fg:
+- When Vim is run in background first using "vim &" and then bought to foreground using fg <pid> then on quitting the vim the shell also gets terminated. Rest all works fine!

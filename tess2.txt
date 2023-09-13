@@ -1,6 +1,3 @@
-vim &
-cat tess2.txt
-cat < past_commands.txt > tess2.txt
 cat tess2.txt
 cat < past_commands.txt | wc > tess2.txt
 cat past_commands.txt | wc
@@ -13,3 +10,6 @@ peek | wc
 peek | wc | cat
 exit
 peek
+seek prog
+warp ~
+seek -de programming
