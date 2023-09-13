@@ -83,11 +83,13 @@ void input(char *command, int store, int ip)
         else
         {
             // output redirection '>>'
+            // app_cmd >> to_file
             char app_cmd[MAX_LEN] = {0};
             char to_file[MAX_LEN] = {0};
             int append_flag = is_append_present(curr_command, app_cmd, to_file);
 
             // output redirection '>'
+            // NOTE that when even '>>' is present is_write_returns 1 so we need to recheck
             int write_flag = is_write_present(curr_command);
 
             // input redirection '<'
@@ -130,7 +132,8 @@ void input(char *command, int store, int ip)
                     }
 
                     int fd_in = open(inp_file_path, O_RDONLY);
-                    if (fd_in < 0) {
+                    if (fd_in < 0)
+                    {
                         fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                         return;
                     }
@@ -177,13 +180,15 @@ void input(char *command, int store, int ip)
                         }
 
                         int fd_in = open(inp_file_path, O_RDONLY);
-                        if (fd_in < 0) {
+                        if (fd_in < 0)
+                        {
                             fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                             return;
                         }
 
                         int fd_out = open(out_file_path, O_WRONLY | O_CREAT | O_APPEND, 0644);
-                        if (fd_out < 0) {
+                        if (fd_out < 0)
+                        {
                             fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                             return;
                         }
@@ -229,13 +234,15 @@ void input(char *command, int store, int ip)
                         }
 
                         int fd_in = open(inp_file_path, O_RDONLY);
-                        if (fd_in < 0) {
+                        if (fd_in < 0)
+                        {
                             fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                             return;
                         }
 
                         int fd_out = open(out_file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                        if (fd_out < 0) {
+                        if (fd_out < 0)
+                        {
                             fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                             return;
                         }
@@ -270,7 +277,8 @@ void input(char *command, int store, int ip)
                 }
 
                 int fd_out = open(out_file_path, O_WRONLY | O_CREAT | O_APPEND, 0644);
-                if (fd_out < 0) {
+                if (fd_out < 0)
+                {
                     fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                     return;
                 }
@@ -300,7 +308,8 @@ void input(char *command, int store, int ip)
                 }
 
                 int fd_out = open(out_file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (fd_out < 0) {
+                if (fd_out < 0)
+                {
                     fprintf(stderr, "\033[1;31mopen : File not found\033[1;0m\n");
                     return;
                 }

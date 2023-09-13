@@ -1,15 +1,15 @@
 exit
+cat teess.txt
+cat < past_commands.txt >> teess.txt
+cat past_commands.txt
+cat temp.txt
+exit
+sleep 100
+warp test
+exit
 warp ~
 sleep 2; warp test; vim
 warp ~
 vim
 sleep 100
 sleep100
-sleep 10
-seek -de programming
-seek -de prog
-peek
-warp ..
-warp test
-exit
-peek | wc > teess.txt | cat

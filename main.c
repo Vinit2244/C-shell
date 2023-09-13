@@ -55,9 +55,11 @@ int main()
     // Keep accepting commands
     while (1)
     {
+        // Store the initial stdin and stdout pointers
         int fd_in = dup(STDIN_FILENO);
         int fd_out = dup(STDOUT_FILENO);
         input(NULL, 1, 0);
+        // Restore stdin and stdout
         dup2(fd_in, STDIN_FILENO);
         dup2(fd_out, STDOUT_FILENO);
         close(fd_in);
@@ -67,7 +69,6 @@ int main()
     free(home_directory);
     free(cwd);
     free(prev_dir);
-
     free(last_command);
     return 0;
 }
