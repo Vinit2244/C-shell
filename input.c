@@ -18,6 +18,7 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
 
     int overall_success = 1;    // flag to mark if the complete command ran without failing
     int pastevents_present = 0; // flag to mark if pastevents command is present
+    int pastevents_execute_present = 0;
 
     char* input_string = (char*) calloc(5000, sizeof(char));
     input_string[0] = '\0';
@@ -308,84 +309,11 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
 
             // checking if pastevents command is present
             else if (strcmp("pastevents", argument_tokens[0]) == 0) {
-                pastevents_present = 1;
-                if (no_of_arguments == 0) { // no arguments are passed than just print the pastevents
-                    pastevents();
-                } else {                    // if some argument is present
-                    if (strcmp(argument_tokens[1], "purge") == 0) {
-                        if (no_of_arguments > 1) {
-                            overall_success = 0;
-                            fprintf(stderr, "\033[1;31mpastevents: invalid arguments\033[1;0m\n");
-                        } else {
-                            // clears the stored list
-                            int exit_status = purge(ap, w);
-                            if (exit_status == 0) overall_success = 0;
-                        }
-                    } else if (strcmp(argument_tokens[1], "execute") == 0) { // execute some pastevent whose event is given
-                        if (no_of_arguments == 1 && ip == 0) {
-                            // if no index is given which command to execute then show error
-                            fprintf(stderr, "\033[1;31mpastevents: missing argument in \"%s\"\033[1;0m\n", curr_command);
-                        } else if (no_of_arguments == 1 && ip == 1) {
-                            char number[MAX_LEN] = {0};
-                            int num = 0;    // variable to store the index of command to execute
-                            int flag = 1;   // valid index is passed between 1 and 15 (both inclusive)
+                int exit_status = history(argument_tokens, no_of_arguments, &pastevents_present, ap, w, ip, curr_command, input_file_name_redirection, store, &pastevents_execute_present, input_string);
+                
+                int success = io_redirection(ap, w, cwd, output_file_name_redirection);
 
-                            char inp_buff[999999] = {0};
-
-                            char file_path[MAX_LEN];
-                            strcpy(file_path, cwd);
-                            strcat(file_path, "/");
-                            strcat(file_path, input_file_name_redirection);
-
-                            int fd = open(file_path, O_RDONLY);
-                            if (fd < 0) {
-                                fprintf(stderr, "\033[1;31mError in opeaning the input file\033[1;0m\n");
-                                overall_success = 0;
-                            } else {
-                                int bytes_read = read(fd, inp_buff, 999998);
-                                if (bytes_read < 0) {
-                                    fprintf(stderr, "\033[1;31mError in reading\033[1;0m\n");
-                                    close(fd);
-                                    overall_success = 0;
-                                } else {
-                                    close(fd);
-                                    if (inp_buff[strlen(inp_buff) - 1] == '\n') {
-                                        inp_buff[strlen(inp_buff) - 1] = '\0';
-                                    }
-                                    strcpy(number, inp_buff);
-                                }
-                            }
-                            // converting char to int
-                            // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
-                            convert_to_int(number, &num, &flag, ap, w);
-                            if (flag) {
-                                // executing the command at the given index
-                                int exit_code = execute(num, store, ap, w);
-                                if (exit_code == 0) overall_success = 0;
-                            }
-                        } else if (no_of_arguments == 2) {
-                            char* number = argument_tokens[2];
-                            int num = 0;    // variable to store the index of command to execute
-                            int flag = 1;   // valid index is passed between 1 and 15 (both inclusive)
-                            
-                            // converting char to int
-                            // doing it the long way since some invalid string can also be given in argument so i had to handle it manually and not use atoi()
-                            convert_to_int(number, &num, &flag, ap, w);
-                            if (flag) {
-                                // executing the command at the given index
-                                int exit_code = execute(num, store, ap, w);
-                                if (exit_code == 0) overall_success = 0;
-                            }
-                        } else {
-                            // excess of arguments are passed
-                            fprintf(stderr, "\033[1;31mpastevents: excess arguments in \"%s\"\033[1;0m\n", curr_command);
-                        }
-                    } else {
-                        // invalid arguments are passed
-                        fprintf(stderr, "\033[1;31mpastevents: invalid arguments in \"%s\"\033[1;0m\n", curr_command);
-                    }
-                }
-                io_redirection(ap, w, cwd, output_file_name_redirection);
+                if (exit_status == 0 || success == 0) overall_success = 0;
             }
     // ===================================================================================
             // proclore
@@ -689,8 +617,12 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                         kill(trav->pid, SIGKILL);
                         trav = trav->next;
                     }
-                    store_command(curr_command);
-                    exit(0);
+                    if (store_command(curr_command) == 1) {
+                        exit(0);
+                    } else {
+                        fprintf(stderr, "\033[1;31mexit : Error occured while storing the command\033[1;0m\\n");
+                        return;
+                    }
                 }
             }
     // ===================================================================================
@@ -812,10 +744,17 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                     bg_process = 0;
                 }
 
+                int fd[2];
+                if (pipe(fd) < 0) {
+                    fprintf(stderr, "033[1;31msystem commands : Error occured while piping\033[1;0m\n");
+                    return;
+                }
+
                 int ppid = getpid();
                 int pid = fork();
 
                 if (pid == 0) {
+                    close(fd[0]);
                     // creating absolute path to the file (input)
                     char inp_file_path[MAX_LEN];
                     if (input_file_name_redirection == NULL) {
@@ -849,6 +788,7 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                             // open failed
                             fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
                             // killing child process
+                            write(fd[1], "0", 1);
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
@@ -857,12 +797,14 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                                 // closing the opened file
                                 close(inp_fd);
                                 // killing child process
+                                write(fd[1], "0", 1);
                                 kill(getpid(), SIGTERM);
                             } else {
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
                                 fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
+                                write(fd[1], "0", 1);
                                 kill(getpid(), SIGTERM);
                             }
                         }
@@ -872,6 +814,7 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                         execvp(argument_tokens[0], argument_tokens);
                         // error
                         fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        write(fd[1], "0", 1);
                         kill(getpid(), SIGTERM);
                     } else if (ap == 1) {
                         close(STDOUT_FILENO);
@@ -879,24 +822,27 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                         execvp(argument_tokens[0], argument_tokens);
                         // error
                         fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        write(fd[1], "0", 1);
                         kill(getpid(), SIGTERM);
                     } else if (ip == 1) {
                         int inp_fd = open(inp_file_path, O_RDONLY);
                         if (inp_fd < 0) {
                             // open failed
                             fprintf(stderr, "\033[1;31mopen : %s\033[1;0m\n", strerror(errno));
+                            write(fd[1], "0", 1);
                             kill(getpid(), SIGTERM);
                         } else {
                             if (dup2(inp_fd, STDIN_FILENO) == -1) {
                                 // dup2 failed
                                 fprintf(stderr, "\033[1;31mdup2 : %s\033[1;0m\n", strerror(errno));
                                 close(inp_fd);
+                                write(fd[1], "0", 1);
                                 kill(getpid(), SIGTERM);
                             } else {
                                 close(inp_fd);
                                 execvp(argument_tokens[0],  argument_tokens);
                                 // execvp failed
-                                fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));
+                                fprintf(stderr, "\033[1;31mexecvp : %s\033[1;0m\n", strerror(errno));write(fd[1], "0", 1);
                                 kill(getpid(), SIGTERM);
                             }
                         }
@@ -904,9 +850,11 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                         execvp(argument_tokens[0], argument_tokens);
                         // execvp failed
                         fprintf(stderr, "\033[1;31m%s : %s\033[1;0m\n", argument_tokens[0], strerror(errno));
+                        write(fd[1], "0", 1);
                         kill(getpid(), SIGTERM);
                     }
                 } else if (pid > 0) {
+                    close(fd[1]);
                     if (bg_process == 0) {
                         global_fg_pid = pid;
 
@@ -923,6 +871,12 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
                     } else {
                         printf("%d\n", pid);
                         insert_in_LL(pid, -1, argument_tokens);
+                    }
+                    char read_buff[10] = {0};
+                    read(fd[0], read_buff, 1);
+                    close(fd[0]);
+                    if (strcmp(read_buff, "0") == 0) {
+                        overall_success = 0;
                     }
                 } else {
                     fprintf(stderr, "\033[1;31mfork: could not fork\033[1;0m\n");
@@ -949,8 +903,13 @@ void input(char* command, int store, int w, int ap, int ip, char* output_file_na
         curr_command = list_of_commands[idx];
     }
 
-    if (store == 1 && pastevents_present == 0 && overall_success == 1) {
-        store_command(input_string);
+    if (store == 0 || (pastevents_present == 1 && pastevents_execute_present == 0) || overall_success == 0) {
+        // do not store
+    } else {
+        if (store_command(input_string) == 0) {
+            overall_success = 0;
+            return;
+        }
     }
 
     free(input_string);

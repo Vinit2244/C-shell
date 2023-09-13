@@ -1,15 +1,15 @@
 exit
-peek ~
-peek ..
-peek -al ./test
-peek ./test -la
-peek ./test
-peek -la
-peek -a
-peek -l
-peek
+sleep 1; warp test
+sleep 2; warp test
+warp test
+clear
 exit
-peek
+clear
 exit
-warp ~
-warp -
+pastevents execute 2
+exit
+warp test
+clear
+exit
+pasteventss
+clear
