@@ -1,3 +1,6 @@
+exit
+peek | wc > teess.txt | cat
+peek | wc < past_commands.txt | cat
 vim &
 cat tess2.txt
 cat < past_commands.txt > tess2.txt
@@ -10,6 +13,3 @@ iMan sleep | wd
 peek | wc
 seek prog | wc
 peek | wc
-peek | wc | cat
-exit
-peek

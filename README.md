@@ -42,8 +42,8 @@ I branched the Part A first half submission in 'final' branch and then continued
 ### Ping:
 - Assuming the process can only be blocked by SIGSTOP = 19 signal through ping command and can be resumed only through SIGCONT = 18 and killed only using SIGKILL = 9.
 
-### Pipe:
-- When piping '|' is used then the program creates a new temp file to store the output of the pipe 1st command temporarily names "a_a.txt" so it is assumed that the user never creates a custom file names "a_a.txt".
+### Piping:
+- While piping if multiple input (from pipe and one from < is provided then the input from < will be prioritized) and if multiple outputs (pipe and to >> or >) is provided then the >> and > are given priority above output through pipe and so nothing will be outputted to pipe.
 
 ### Errors:
 - If some error occurs in redirection then the error is just printed on the terminal and not redirected (just as the terminal on mac)
