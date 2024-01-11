@@ -38,6 +38,7 @@ void disableRawMode() {
 }
 
 void enableRawMode() {
+    // tcgetattr() gets the curretn terminal settings and we store it in a temporary variable (used to reset when raw mode is turned off)
     if (tcgetattr(STDIN_FILENO, &orig_termios) == -1) die("tcgetattr");
     atexit(disableRawMode);
     struct termios raw = orig_termios;
@@ -51,7 +52,7 @@ void enableRawMode() {
 }
 
 int neonate(int time_in_seconds) {
-    if (time_in_seconds == 0) {
+    if (time_in_seconds <= 0) {
         fprintf(stderr, "\033[1;31mneonate: Invalid time in seconds - should be a positive integer\033[1;0m\n");
         return 0;
     }
@@ -113,5 +114,6 @@ int neonate(int time_in_seconds) {
         }
     }
     disableRawMode();
+    free(inp);
     return 1;
 }

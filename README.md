@@ -1,58 +1,119 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/76mHqLr5)
-# Description
-I branched the Part A first half submission in 'final' branch and then continued pushing Part B and C on main branch itself.
+# Shell Implementation in C - README
 
-# Assumptions
+This is a C language implementation of a shell, completely developed by me (Vinit Mehta) during the 3rd semester for the Operating Systems and Networks course. The project covers various features and functionalities commonly found in Unix-like shells. Below are the details of the features implemented, along with certain assumptions and considerations.
+
+## Features
+
+1. **Basic System Calls:**
+   - Display requirements: Shows the current path, user and command in prompt with color coding
+
+2. **Warp Command:**
+   - Changes the current working directory.
+   - Supports symbols like ".", "..", "~", and "-".
+   - Handles both absolute and relative paths.
+
+3. **Peek Command:**
+   - Lists files and directories in lexicographic order.
+   - Supports flags like -a and -l for additional information.
+   - Color-coded output for executables, files, and directories.
+
+4. **Pastevents Command:**
+   - Keeps track of the 15 most recent command statements.
+   - Executes stored commands and purges the command history.
+
+5. **System Commands:**
+   - Executes other system commands present in Bash.
+   - Works in both foreground and background processes.
+
+6. **I/O Redirection:**
+   - Supports >, <, and >> for input/output redirection.
+   - Handles file creation, overwriting, and appending.
+
+7. **Pipes:**
+   - Supports pipes for passing information between commands.
+   - Handles any number of pipes in sequential execution.
+
+8. **Activities Command:**
+   - Lists information about currently running processes.
+   - Displays Command Name, PID, and state (running or stopped).
+
+9. **Proclore Command:**
+   - Provides detailed information about a process.
+   - Displays PID, process status, process group, virtual memory, and executable path.
+
+10. **Signals and Ping Command:**
+    - Sends signals to processes using the `ping` command.
+    - Handles signals for stopping, resuming, and killing processes.
+
+11. **Foreground (fg) and Background (bg) Commands:**
+    - Brings background processes to the foreground and vice versa.
+
+12. **Neonate Command:**
+    - Prints the Process-ID of the most recently created process at regular intervals until the 'x' key is pressed.
+
+13. **iMan Command:**
+    - Fetches and displays man pages from http://man.he.net/.
+
+## Assumptions
+
 ### General:
-- '&' and ';' always occur in special sense.
-- Absolute file paths always begin with a '/' for example "/Users/vinitmehta/desktop/abcd".
-- In the warp command if multiple commands are given separated by space ex: "warp .. test" then the complete command is saved in pastevents.
-- assuming both the <filename/path> along with input redirection won't be provided to warp and peek.
-- Multiple output redirections are not given in the same command same for multiple input redirections
-- NOTE: handling ctrl + z does not work when we compile using Makefile. So we can just copy paste the gcc command on terminal and it will work
-- ctrl + d works only when no foreground process is currently running (just like as in a real shell).
-- Vim & is not working properly but rest everything like gedit & and all works fine.
-- If wrong commands names are provided which are neither user defined commands nor system commands than that command gets stored in past_commands.txt
-- Multiple output redirections '>>' and '>' are not provided consequently
+
+- '&' and ';' are always used in a special sense.
+- Absolute file paths always begin with a '/'.
+- Multiple commands in `warp` are stored in `pastevents`.
+- File paths do not contain spaces.
+- Handling `ctrl + z` might not work with Makefile; manual compilation is suggested.
+- `ctrl + d` only works when no foreground process is running.
 
 ### Warp:
-- File path does not contain any spaces.
-- When the output of warp is redirected into some file then the file gets created into the final path of the folder.
-- Warp does not support input redirection so whenever some input redirection is provided warp just changes the cwd to home directory
+
+- Does not support input redirection; changes the current working directory to home on input redirection.
 
 ### Peek:
-- "peek -" gives error.
-- Peek does not accept input using input redirection '<' so we just peek cwd
 
-### Background processes:
-- If some invalid command is passed to be run as background process then it's pid will get stored and it would print the error but won't execute and in the next run the terminal will print process exited abnormally.
+- "peek -" gives an error.
+- Does not accept input using input redirection '<'.
+
+### Background Processes:
+
+- If an invalid command is passed as a background process, it gets stored in `past_commands.txt`.
 
 ### Seek:
-- Assuming that if the base directory provided in relative to the current folder starts with "." always.
-- If flag -e is provided and only one file is found then a maximum of 100000 characters will be read and printed as output even if the file is bigger than that.
-- Only path of the file to seek can be provided throught the input of '<' (redirection input).
+
+- Assumes that the base directory provided in relative paths to the current folder always starts with ".".
+- If flag `-e` is provided and only one file is found, a maximum of 100000 characters will be read and printed as output.
+- Only the path of the file to seek can be provided through input redirection '<'.
 
 ### Proclore:
-- I am considering all the processes spawned by my shell background process only as background process all other processes spawned by the PC terminal is considered as foreground only.
 
-### IO Redirection:
-- In input output redirection the errors which are printed in color on terminal is not printed in color in the text file it is just written normally without color coding.
-- I/O and piping are not provided as background process.
+- Considers all processes spawned by the shell as background processes.
+
+### I/O Redirection:
+
+- Errors printed in color on the terminal are not printed in color in the text file.
 
 ### Ping:
-- Assuming the process can only be blocked by SIGSTOP = 19 signal through ping command and can be resumed only through SIGCONT = 18 and killed only using SIGKILL = 9.
+
+- Processes can only be blocked by `SIGSTOP = 19` signal through the `ping` command and resumed only through `SIGCONT = 18` and killed only using `SIGKILL = 9`.
 
 ### Piping:
-- While piping if multiple input (from pipe and one from < is provided then the input from < will be prioritized) and if multiple outputs (pipe and to >> or >) is provided then the >> and > are given priority above output through pipe and so nothing will be outputted to pipe.
+
+- If multiple inputs and outputs are provided, priorities are given to '<', '>>', and '>'.
 
 ### Errors:
-- If some error occurs in redirection then the error is just printed on the terminal and not redirected (just as the terminal on mac)
+
+- If an error occurs in redirection, the error is only printed on the terminal and not redirected.
 
 ### Activities:
-- I have considered processes with status 'R' and 'S' as running and with 'T', 'D' and 'Z' as stopped. (Status read from /proc/pid/stat)
+
+- Considers processes with status 'R' and 'S' as running, and 'T', 'D', and 'Z' as stopped.
 
 ### iMan:
-- Assuming that the html will have the format where it first starts with "NAME" and after "DESCRIPTION" it contains "AUTHOR" heading (Just as shown in the example given in mini-project-1 document).
+
+- Assumes that the HTML format follows a specific structure.
 
 ### fg:
-- When Vim is run in background first using "vim &" and then bought to foreground using fg <pid> then on quitting the vim the shell also gets terminated. Rest all works fine!
+
+- When Vim is run in the background and brought to the foreground using `fg <pid>`, quitting Vim terminates the shell.
+
+These assumptions provide context for the implementation and help in understanding the expected behavior of the shell. Users are encouraged to review these assumptions while working with the shell.

@@ -67,6 +67,9 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int ip) {
                             strcpy(base_dir, inp_buff);
                         }
                 }
+            } else if (curr_argument[0] == '/') { // absolute path is provided
+                strcpy(base_dir, curr_argument);
+                base_dir_flag = 1;
             } else {
                 if (file_name_flag == 1) {
                     fprintf(stderr, "\033[1;31mseek: invalid arguments\033[1;0m\n");
@@ -89,7 +92,12 @@ int find_file_dir(char** argument_tokens, int no_of_arguments, int ip) {
             linked_list_head paths = create_linked_list_head();
             char* path_to_base_dir;
             if (base_dir_flag) {
-                path_to_base_dir = generate_new_path(base_dir);
+                if (base_dir[0] == '/') {
+                    path_to_base_dir = (char*) calloc(MAX_LEN, sizeof(char));
+                    strcpy(path_to_base_dir, base_dir);
+                } else {
+                    path_to_base_dir = generate_new_path(base_dir);
+                }
             } else {
                 path_to_base_dir = (char*) calloc(MAX_LEN, sizeof(char));
                 strcpy(path_to_base_dir, cwd);

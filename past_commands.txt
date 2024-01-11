@@ -1,12 +1,15 @@
 exit
-git commit -m "FINAL SUBMISSION"
-git add .
-rm teess.txt
-rm tess.txt
-clear
-cat tess.txt
-cat past_commands.txt | wc | wc < past_commands.txt > tess.txt
-cat past_commands.txt
-cat pastevents.txt
+ls
+warp ..
+ls
+cd ..
+ls
+cat abcd.txt
+echo "helo hheriha" > abcd.txt
+ls
 cat temp.txt
-clear
+peek
+echo "hello how are you" > temp.txt
+peek
+seek -de programming
+seek -d programming

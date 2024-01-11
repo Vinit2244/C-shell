@@ -23,13 +23,13 @@ int main()
 
     // Handling Ctrl + z (SIGTSTP) signal
     struct sigaction sa;
-    sa.sa_handler = &handle_sigtstp; // Ctrl + Z (Windows/Linux) or Cmd + Z (Mac)
+    sa.sa_handler = &handle_sigtstp; // Ctrl + Z (Windows/Linux/Mac)
     sa.sa_flags = SA_RESTART;        // Automatically restart the system call
     sigaction(SIGTSTP, &sa, NULL);   // Ctrl + Z sends SIGTSTP signal (Signal Stop) - sends foreground process to background
 
     // Handling Ctrl + C (SIGINT) signal
     struct sigaction sa2;
-    sa2.sa_handler = &handle_sigint; // Ctrl + C (Windows/Linux) or Cmd + C (Mac)
+    sa2.sa_handler = &handle_sigint; // Ctrl + C (Windows/Linux/Mac)
     sa2.sa_flags = SA_RESTART;       // Automatically restart the system call
     sigaction(SIGINT, &sa2, NULL);   // Ctrl + C sends SIGINT signal (Signal Interrupt) - terminates the currently running foreground process
 

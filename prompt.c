@@ -111,7 +111,8 @@ char** get_list_of_commands(char* input) {
             no_of_commands++;
         }
     }
-    no_of_commands++;
+    if (input[strlen(input) - 1] != ';' && input[strlen(input) - 1] != '&')
+        no_of_commands++;
     char** list_of_commands = (char**) calloc((no_of_commands + 1), sizeof(char*));
     for (int i = 0; i < no_of_commands + 1; i++) {
         list_of_commands[i] = (char*) calloc(5000, sizeof(char));

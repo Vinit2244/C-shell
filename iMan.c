@@ -3,8 +3,7 @@
 // standard http port
 #define SERVER_PORT 80
 
-#define SA struct sockaddr
-
+// ip stands for input flag whether input is provided through redirection or not
 int iMan(char** argument_tokens, int no_of_arguments, int ip) {
     if (no_of_arguments == 0) {
         // Can read the name of the command from input redirection
@@ -102,7 +101,7 @@ int get_webpage(char* command_name) {
     }
 
     // trying to connect to the server
-    if (connect(socket_fd, (SA *) &server_addr, sizeof(server_addr)) < 0) {
+    if (connect(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
         fprintf(stderr, "\033[1;31miMan : connection failed: Error while connecting to the server\033[1;0m\n");
         return 0;
     }
